@@ -1,0 +1,10 @@
+.DS_Store
+input-cache/
+output/
+temp/
+template/
+bundles/
+input/tests/*-bundle.json
+input/tests/*/*-bundle.json
+input/tests/*/*/*-bundle.json
+input/tests/results/
