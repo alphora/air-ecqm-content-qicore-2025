@@ -1,4 +1,4 @@
-library HIVScreeningFHIR version '0.2.000'
+library HIVScreeningFHIRQ6 version '0.2.000'
 
 using QICore version '6.0.0'
 
@@ -44,11 +44,11 @@ define "Numerator":
 
 define "Denominator Exclusions":
   exists ( 
-  // [ConditionProblemsHealthConcerns: "HIV"] union 
-  [ConditionEncounterDiagnosis: "HIV"] ) HIVirus
-    where HIVirus.prevalenceInterval ( ) starts before day of start of "Measurement Period"
-      and HIVirus.verificationStatus !~ "refuted"
-
+  ([ConditionProblemsHealthConcerns: "HIV"] union 
+  [ConditionEncounterDiagnosis: "HIV"]) HIVDiagnosis
+    where HIVDiagnosis.prevalenceInterval() starts before day of start of "Measurement Period"
+      and HIVDiagnosis.verificationStatus !~ "refuted"
+)
 define "Denominator Exceptions":
   "Patient Expired"
 
@@ -69,7 +69,7 @@ define "Has HIV Test Performed":
     union ["LaboratoryResultObservation": "HIV 1 and 2 tests - Meaningful Use set"] ) HIVTest
     where HIVTest.value is not null
       and AgeInYearsAt(date from start of HIVTest.effective.toInterval()) in Interval[15, 65]
-      and HIVTest.effective.toInterval ( ) starts before end of "Measurement Period"
+      and HIVTest.effective.toInterval() starts before end of "Measurement Period"
       and ( HIVTest.status = 'final'
           or HIVTest.status = 'amended'
           or HIVTest.status = 'corrected'

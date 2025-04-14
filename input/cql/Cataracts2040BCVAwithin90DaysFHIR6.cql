@@ -1,8 +1,4 @@
-/*
-Test impact for QICore6 uplift: HL7 FHIR profile urls and resource types should be changed to ConditionProblemsHealthConcerns, ConditionEncounterDiagnosis, and ObservationClinicalResult
-*/
-
-library Cataracts2040BCVAwithin90DaysFHIR6 version '0.1.000'
+library Cataracts2040BCVAwithin90DaysFHIRQ6 version '0.1.000'
 
 using QICore version '6.0.0'
 
@@ -73,7 +69,7 @@ valueset "Visual Field Defects": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.
 
 code "Best corrected visual acuity (observable entity)": '419775003' from "SNOMEDCT" display 'Best corrected visual acuity (observable entity)'
 
-parameter "Measurement Period" Interval<DateTime>
+parameter "Measurement Period" Interval<DateTime> default Interval[@2026-01-01, @2027-01-01)
 
 context Patient
 
@@ -86,17 +82,14 @@ define "Initial Population":
 
 define "Cataract Surgery Between January and September of Measurement Period":
   [Procedure: "Cataract Surgery"] CataractSurgery
-    where CataractSurgery.performed.toInterval ( ) during "Measurement Period"
-      and CataractSurgery.performed.toInterval ( ) starts 92 days or more before end of "Measurement Period"
+    where CataractSurgery.performed.toInterval() during "Measurement Period"
+      and CataractSurgery.performed.toInterval() starts 92 days or more before end of "Measurement Period"
       and CataractSurgery.status = 'completed'
 
-/*
-@QICore6Uplift: Each Condition should be updated to be a union of ConditionEncounterDiagnosis and ConditionProblemsHealthConcerns
-*/ 
-
-
-
 define "Denominator Exclusions":
+"Cataract Surgeries in Patients with Significant Ocular Conditions Impacting the Visual Outcome of Surgery"
+        
+define "Cataract Surgeries in Patients with Significant Ocular Conditions Impacting the Visual Outcome of Surgery":
   "Cataract Surgery Between January and September of Measurement Period" CataractSurgeryPerformed
     with ( (["ConditionProblemsHealthConcerns": "Acute and Subacute Iridocyclitis"] union ["ConditionEncounterDiagnosis": "Acute and Subacute Iridocyclitis"])
       union (["ConditionProblemsHealthConcerns": "Amblyopia"] union ["ConditionEncounterDiagnosis": "Amblyopia"])
@@ -153,17 +146,14 @@ define "Denominator Exclusions":
       union (["ConditionProblemsHealthConcerns": "Uveitis"] union ["ConditionEncounterDiagnosis": "Uveitis"])
       union (["ConditionProblemsHealthConcerns": "Vascular Disorders of Iris and Ciliary Body"] union ["ConditionEncounterDiagnosis": "Vascular Disorders of Iris and Ciliary Body"])
       union (["ConditionProblemsHealthConcerns": "Visual Field Defects"] union ["ConditionEncounterDiagnosis": "Visual Field Defects"])) ComorbidDiagnosis
-      such that ComorbidDiagnosis.prevalenceInterval ( ) overlaps before CataractSurgeryPerformed.performed.toInterval ( )
-        and ComorbidDiagnosis.isActive ( )
+      such that ComorbidDiagnosis.prevalenceInterval() overlaps before CataractSurgeryPerformed.performed.toInterval()
+        and ComorbidDiagnosis.isActive()
 
-/*
-@QICore6Uplift: Update Observation to ObservationClinicalResult
-*/ 
 define "Numerator":
   "Cataract Surgery Between January and September of Measurement Period" CataractSurgeryPerformed
     with ( [ObservationClinicalResult: "Best corrected visual acuity (observable entity)"]
       union [ObservationClinicalResult: "Best Corrected Visual Acuity Exam Using Snellen Chart"] ) VisualAcuityExamPerformed
-      such that VisualAcuityExamPerformed.effective.toInterval ( ) 90 days or less after day of end of CataractSurgeryPerformed.performed.toInterval ( )
+      such that VisualAcuityExamPerformed.effective.toInterval() 90 days or less after day of end of CataractSurgeryPerformed.performed.toInterval()
         and VisualAcuityExamPerformed.status in { 'final', 'amended', 'corrected', 'preliminary' }
         and VisualAcuityExamPerformed.value as Concept in "Visual Acuity 20/40 or Better"
 

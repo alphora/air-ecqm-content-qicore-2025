@@ -1,13 +1,12 @@
-library FunctionalStatusAssessmentforTotalHipReplacementFHIR version '1.0.000'
+library FunctionalStatusAssessmentforTotalHipReplacementFHIRQ6 version '1.0.000'
 
 using QICore version '6.0.0'
 
 include FHIRHelpers version '4.4.000' called FHIRHelpers
-include QICoreCommon version '4.0.000' called QICoreCommon 
+include QICoreCommon version '4.0.000' called QICoreCommon
 include SupplementalDataElements version '5.1.000' called SDE
-include Hospice version '6.14.000' called Hospice
-include PalliativeCare version '1.13.000' called PalliativeCare
-include Status version '1.10.000' called Status
+include Hospice version '6.15.000' called Hospice
+include Status version '1.13.000' called Status
 
 codesystem "LOINC": 'http://loinc.org'
 codesystem "CPT": 'http://www.ama-assn.org/go/cpt'
@@ -115,7 +114,7 @@ define "Has Total Hip Arthroplasty with 1 or More Lower Body Fractures":
   exists ("Total Hip Arthroplasty Procedure" THAProcedure
       with ([ConditionEncounterDiagnosis: "Lower Body Fractures Excluding Ankle and Foot"]
         union [ConditionProblemsHealthConcerns: "Lower Body Fractures Excluding Ankle and Foot"]) LowerBodyFracture
-        such that LowerBodyFracture.prevalenceInterval() starts 24 hours or less on or before start of THAProcedure.performed."toInterval"()
+        such that LowerBodyFracture.prevalenceInterval() starts 48 hours or less on or before start of THAProcedure.performed.toInterval()
  )
 
 define "Has Partial Hip Arthroplasty Procedure":

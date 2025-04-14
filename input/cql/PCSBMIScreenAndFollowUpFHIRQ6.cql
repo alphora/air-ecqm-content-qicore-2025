@@ -3,8 +3,8 @@ library PCSBMIScreenAndFollowUpFHIRQ6 version '0.2.000'
 using QICore version '6.0.0'
 
 include FHIRHelpers version '4.4.000' called FHIRHelpers
-include Hospice version '6.14.000' called Hospice
-include PalliativeCare version '1.13.000' called PalliativeCare
+include Hospice version '6.15.000' called Hospice
+include PalliativeCare version '1.15.000' called PalliativeCare
 include QICoreCommon version '4.0.000' called QICoreCommon
 include SupplementalDataElements version '5.1.000' called SDE
 
@@ -35,7 +35,7 @@ parameter "Measurement Period" Interval<DateTime> default Interval[@2026-01-01, 
 context Patient
 
 define "Initial Population":
-  exists "Qualifying Encounter during Day of Measurement Period" QualifyingEncounter
+  exists "Qualifying Encounter During Day Of Measurement Period" QualifyingEncounter
     where "AgeInYearsAt"(date from start of QualifyingEncounter.period) >= 18
 
 define "Denominator":
@@ -44,44 +44,44 @@ define "Denominator":
 define "Denominator Exclusions":
   Hospice."Has Hospice Services"
     or PalliativeCare."Has Palliative Care in the Measurement Period"
-    or exists "Is Pregnant during Day of Measurement Period"
+    or exists "Is Pregnant During Day Of Measurement Period"
 
 define "Numerator":
-  exists "High BMI and Follow up Provided"
-    or exists "Low BMI and Follow up Provided"
+  exists "High BMI And Follow Up Provided"
+    or exists "Low BMI And Follow Up Provided"
     or "Has Normal BMI"
 
 define "Denominator Exceptions":
-  exists "Medical Reason for Not Documenting a Follow up Plan for Low or High BMI"
-    or exists "Medical Reason or Patient Reason for Not Performing BMI Exam"
+  exists "Medical Reason For Not Documenting A Follow Up Plan For Low Or High BMI"
+    or exists "Medical Reason Or Patient Reason For Not Performing BMI Exam"
 
-define "BMI during Measurement Period":
+define "BMI During Measurement Period":
   [USCoreBMIProfile] BMI
     where BMI.value > 0 'kg/m2'
       and BMI.status in { 'final', 'amended', 'corrected' }
-      and BMI.effective.toInterval ( ) during day of "Measurement Period"
+      and BMI.effective.toInterval() during day of "Measurement Period"
 
-define "Documented Low BMI during Measurement Period":
-  "BMI during Measurement Period" BMI
-    where BMI.effective.toInterval ( ) during day of "Measurement Period"
+define "Documented Low BMI During Measurement Period":
+  "BMI During Measurement Period" BMI
+    where BMI.effective.toInterval() during day of "Measurement Period"
       and BMI.value < 18.5 'kg/m2'
 
-define "Documented High BMI during Measurement Period":
-  "BMI during Measurement Period" BMI
-    where BMI.effective.toInterval ( ) during day of "Measurement Period"
+define "Documented High BMI During Measurement Period":
+  "BMI During Measurement Period" BMI
+    where BMI.effective.toInterval() during day of "Measurement Period"
       and BMI.value >= 25 'kg/m2'
 
 define "Has Normal BMI":
-  exists ( "BMI during Measurement Period" BMI
+  exists ( "BMI During Measurement Period" BMI
       where BMI.value >= 18.5 'kg/m2'
         and BMI.value < 25 'kg/m2'
   )
-    and not ( exists "Documented High BMI during Measurement Period"
-        or exists "Documented Low BMI during Measurement Period"
+    and not ( exists "Documented High BMI During Measurement Period"
+        or exists "Documented Low BMI During Measurement Period"
     )
 
-define "High BMI and Follow up Provided":
-  "Documented High BMI during Measurement Period" HighBMI
+define "High BMI And Follow Up Provided":
+  "Documented High BMI During Measurement Period" HighBMI
     with ( "High BMI Interventions Ordered"
       union "High BMI Interventions Performed" ) HighBMIInterventions
       such that Coalesce(HighBMIInterventions.performed.toInterval(), HighBMIInterventions.authoredOn.toInterval()) starts during day of "Measurement Period"
@@ -92,11 +92,11 @@ define "High BMI Interventions Ordered":
       union [MedicationRequest: "Medications for Above Normal BMI"] ) HighInterventionsOrdered
       where HighInterventionsOrdered.reasonCode in "Overweight or Obese"
         or ( exists [ConditionProblemsHealthConcerns: "Overweight or Obese"] OverweightObese
-            where ( OverweightObese.isProblemListItem ( )
-                or OverweightObese.isHealthConcern ( )
+            where ( OverweightObese.isProblemListItem()
+                or OverweightObese.isHealthConcern()
             )
-              and OverweightObese.isActive ( )
-              and OverweightObese.prevalenceInterval ( ) starts before or on day of HighInterventionsOrdered.authoredOn
+              and OverweightObese.isActive()
+              and OverweightObese.prevalenceInterval() starts before or on day of HighInterventionsOrdered.authoredOn
         )
   )
 
@@ -104,15 +104,15 @@ define "High BMI Interventions Performed":
   ( [Procedure: "Follow Up for Above Normal BMI"] HighInterventionsPerformed
       where HighInterventionsPerformed.reasonCode in "Overweight or Obese"
         or ( exists [ConditionProblemsHealthConcerns: "Overweight or Obese"] OverweightObese
-            where OverweightObese.prevalenceInterval ( ) starts before or on day of HighInterventionsPerformed.performed
-              and not ( OverweightObese.prevalenceInterval ( ) ends before day of HighInterventionsPerformed.performed )
+            where OverweightObese.prevalenceInterval() starts before or on day of start of HighInterventionsPerformed.performed.toInterval()
+              and not ( OverweightObese.prevalenceInterval() ends before day of start of HighInterventionsPerformed.performed.toInterval() )
         )
   )
 
-define "Medical Reason or Patient Reason for Not Performing BMI Exam":
+define "Medical Reason Or Patient Reason For Not Performing BMI Exam":
   [ObservationCancelled: code = "Body mass index (BMI) [Ratio]"] NoBMI
-    with "Qualifying Encounter during Day of Measurement Period" QualifyingEncounter
-      such that NoBMI.effective.toInterval ( ) ends same day as start of QualifyingEncounter.period
+    with "Qualifying Encounter During Day Of Measurement Period" QualifyingEncounter
+      such that NoBMI.effective.toInterval() ends same day as start of QualifyingEncounter.period
     where NoBMI.status = 'cancelled'
       and (NoBMI.notDoneReason in "Patient Declined" or NoBMI.notDoneReason in "Medical Reason")
 
@@ -121,10 +121,10 @@ define "Low BMI Interventions Ordered":
       union [ServiceRequest: "Referrals Where Weight Assessment May Occur"]
       union [MedicationRequest: "Medications for Below Normal BMI"] ) LowInterventionsOrdered
       where LowInterventionsOrdered.reasonCode in "Underweight"
-        or ( exists [ConditionProblemsHealthConcerns: "Underweight"] Under
-            where ( Under.isHealthConcern ( ) )
-              and Under.isActive ( )
-              and Under.prevalenceInterval ( ) starts before or on day of LowInterventionsOrdered.authoredOn
+        or ( exists [ConditionProblemsHealthConcerns: "Underweight"] UnderweightDiagnosis
+            where ( UnderweightDiagnosis.isHealthConcern() )
+              and UnderweightDiagnosis.isActive()
+              and UnderweightDiagnosis.prevalenceInterval() starts before or on day of LowInterventionsOrdered.authoredOn
               and LowInterventionsOrdered.authoredOn during day of "Measurement Period"
         )
   )
@@ -133,48 +133,49 @@ define "Low BMI Interventions Performed":
   ( [Procedure: "Follow Up for Below Normal BMI"] LowInterventionsPerformed
       where LowInterventionsPerformed.reasonCode in "Underweight"
         and LowInterventionsPerformed.status = 'completed'
-        or ( exists [ConditionProblemsHealthConcerns: "Underweight"] Under
-            where ( Under.isHealthConcern ( ) )
-              and Under.isActive ( )
-              and Under.prevalenceInterval ( ) starts before or on day of LowInterventionsPerformed.performed.toInterval ( )
-              and LowInterventionsPerformed.performed.toInterval ( ) during day of "Measurement Period"
-              and not ( Under.prevalenceInterval ( ) ends before day of LowInterventionsPerformed.performed.toInterval ( ) )
+        or ( exists [ConditionProblemsHealthConcerns: "Underweight"] UnderweightDiagnosis
+            where ( UnderweightDiagnosis.isHealthConcern() )
+              and UnderweightDiagnosis.isActive()
+              and UnderweightDiagnosis.prevalenceInterval() starts before or on day of start of LowInterventionsPerformed.performed.toInterval()
+              and LowInterventionsPerformed.performed.toInterval() during day of "Measurement Period"
+              and not ( UnderweightDiagnosis.prevalenceInterval() ends before day of start of LowInterventionsPerformed.performed.toInterval() )
         )
   )
 
-define "Low BMI and Follow up Provided":
-  ( "Documented Low BMI during Measurement Period" LowBMI
+define "Low BMI And Follow Up Provided":
+  ( "Documented Low BMI During Measurement Period" LowBMI
       with ( "Low BMI Interventions Ordered"
         union "Low BMI Interventions Performed" ) LowBMIInterventions
         such that Coalesce(LowBMIInterventions.performed.toInterval(), LowBMIInterventions.authoredOn.toInterval()) starts during day of "Measurement Period"
   )
 
-define "Medical Reason for Not Documenting a Follow up Plan for Low or High BMI":
+define "Medical Reason For Not Documenting A Follow Up Plan For Low Or High BMI":
   ( ( [ServiceNotRequested: "Referrals Where Weight Assessment May Occur"]
       union [ServiceNotRequested: "Follow Up for Above Normal BMI"]
       union [ServiceNotRequested: "Follow Up for Below Normal BMI"] ) NoBMIFollowUp
-      with "Qualifying Encounter during Day of Measurement Period" QualifyingEncounter
+      with "Qualifying Encounter During Day Of Measurement Period" QualifyingEncounter
         such that NoBMIFollowUp.authoredOn same day as start of QualifyingEncounter.period
       where NoBMIFollowUp.status ~ 'completed'
         and NoBMIFollowUp.reasonRefused in "Medical Reason"
   )
     union ( ( [MedicationNotRequested: "Medications for Above Normal BMI"]
         union [MedicationNotRequested: "Medications for Below Normal BMI"] ) NoBMIFollowUp
-        with "Qualifying Encounter during Day of Measurement Period" QualifyingEncounter
+        with "Qualifying Encounter During Day Of Measurement Period" QualifyingEncounter
           such that NoBMIFollowUp.authoredOn same day as start of QualifyingEncounter.period
         where NoBMIFollowUp.status ~ 'completed'
-          // TODO: this line is not working as expected
-          and NoBMIFollowUp.reasonCode in "Medical Reason" // 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1007'
+          // TODO: https://oncprojectracking.healthit.gov/support/projects/MADIE/issues/MADIE-2124
+          // Expecting 4 failures until this translator issue is incorporated into MADiE
+          and NoBMIFollowUp.reasonCode in "Medical Reason"
     )
 
-define "Is Pregnant during Day of Measurement Period":
+define "Is Pregnant During Day Of Measurement Period":
   ([ConditionProblemsHealthConcerns: "Pregnancy or Other Related Diagnoses"]
     union [ConditionEncounterDiagnosis: "Pregnancy or Other Related Diagnoses"]) PregnancyDiagnosis
-    with "Qualifying Encounter during Day of Measurement Period" QualifyingEncounter
+    with "Qualifying Encounter During Day Of Measurement Period" QualifyingEncounter
       such that PregnancyDiagnosis.clinicalStatus ~ QICoreCommon."active"
-        and PregnancyDiagnosis.prevalenceInterval ( ) overlaps day of "Measurement Period"
+        and PregnancyDiagnosis.prevalenceInterval() overlaps day of "Measurement Period"
 
-define "Qualifying Encounter during Day of Measurement Period":
+define "Qualifying Encounter During Day Of Measurement Period":
   [Encounter: type in "Encounter to Evaluate BMI"] BMIEncounter
     where BMIEncounter.period during day of "Measurement Period"
       and BMIEncounter.class !~ "virtual"
