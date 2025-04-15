@@ -7,7 +7,6 @@ include Hospice version '6.14.000' called Hospice
 include PalliativeCare version '1.13.000' called PalliativeCare
 include QICoreCommon version '4.0.000' called QICoreCommon
 include SupplementalDataElements version '5.1.000' called SDE
-include CQMCommon version '4.0.000' called CQMCommon
 include CumulativeMedicationDuration version '6.0.000' called CMD
 
 codesystem "ICD10CM": 'http://hl7.org/fhir/sid/icd-10-cm'
@@ -229,7 +228,7 @@ define "Medication Active during the Measurement Period":
     ( [MedicationRequest: "Low Intensity Statin Therapy"]
         union [MedicationRequest: "Moderate Intensity Statin Therapy"]
         union [MedicationRequest: "High Intensity Statin Therapy"] ) ActiveStatin
-        where CQMCommon.ToDateInterval( ActiveStatin.medicationRequestPeriod() ) overlaps day of "Measurement Period"
+        where ActiveStatin.medicationRequestPeriod().toInterval() overlaps day of "Measurement Period"
 
 
 define "Patients Aged 20 to 75 with LDL Cholesterol Result Greater than or Equal to 190 or Hypercholesterolemia without ASCVD":
