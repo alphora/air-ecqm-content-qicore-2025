@@ -195,6 +195,17 @@ define fluent function isOrderedDuringHeartFailureOutpatientEncounter(Medication
           )
 
 /*
+@overloaded
+@description: Returns true if the given MedicationNotRequested overlaps after the day of the heart failure outpatient encounter with history of moderate or severe LVSD
+*/                    
+define fluent function isOrderedDuringHeartFailureOutpatientEncounter(MedicationRequest MedicationNotRequested): 
+  exists ( "Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD" ModerateOrSevereLVSDHFOutpatientEncounter
+             where MedicationRequest.authoredOn during day of ModerateOrSevereLVSDHFOutpatientEncounter.period 
+               and MedicationRequest.status = 'completed'
+               and MedicationRequest.intent in { 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order' }
+          )
+
+/*
 @description: Returns true if the given Condition overlaps the heart failure outpatient encounter with history of moderate or severe LVSD at any point
 */
 define fluent function overlapsHeartFailureOutpatientEncounter(Condition Choice<ConditionEncounterDiagnosis, ConditionProblemsHealthConcerns>): 
