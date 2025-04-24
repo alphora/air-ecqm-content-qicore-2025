@@ -8,59 +8,72 @@ include QICoreCommon version '4.0.000' called QICoreCommon
 include Hospice version '6.14.000' called Hospice
 include Status version '1.10.000' called Status
 
+codesystem "ActCode": 'http://terminology.hl7.org/CodeSystem/v3-ActCode'
 codesystem "SNOMEDCT": 'http://snomed.info/sct'
 
-valueset "Acquired Absence Bilateral Feet": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.278'
-// TODO: valueset "Absence Bilateral Feet": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.381'
-valueset "Acquired Absence of Left Foot": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.281'
-valueset "Acquired Absence of Right Foot": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.284'
-valueset "Amputation of Bilateral Feet": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.287'
-// TODO: valueset "Bilateral Feet Amputation": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.285'
-valueset "Amputation of Left Foot": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.291'
-valueset "Amputation of Right Foot": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.294'
-valueset "Amputation of Unspecified Foot": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.295'
-valueset "Callus of Foot": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.306'
-valueset "Deformity of Foot": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.309'
+// Denominator
 valueset "Diabetes": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.103.12.1001'
-valueset "Follow Up Within 12 Months": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.326'
-valueset "Foot Care Education": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.383'
-valueset "Foot Care Referral": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.313'
-valueset "Foot Pressure Offloading Devices": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.322'
-valueset "Foot Pressure Offloading Interventions": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.321'
-valueset "Home Visits": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.388'
+
+// Denominator - Eligible Encounters
 valueset "Initial Preventive and Annual Wellness Visits": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.379'
-valueset "Ipswich Soft Touch Test Abnormal Finding": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.333'
-valueset "Ipswich Soft Touch Test and Finding": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.348'
-valueset "Ipswich Soft Touch Test Normal Finding": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.341'
-valueset "Lower Extremity Visual Exam": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.305'
-valueset "Lower Extremity Visual Exam Normal Finding": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.346'
+valueset "Office Visit": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1001'
+valueset "Preventive Services Established": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1025'
+valueset "Preventive Services Initial": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1023'
+valueset "Home Visits": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.388'
+
+// Denominator Exclusions - Foot Amputations
+valueset "Absence Bilateral Feet": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.381'
+valueset "Absence Left Foot": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.281'
+valueset "Absence Right Foot": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.284'
+valueset "Bilateral Feet Amputation": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.285'
+valueset "Left Foot Amputation": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.291'
+valueset "Right Foot Amputation": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.294'
+valueset "Unspecified Foot Amputation": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.295'
+
+// Numerator - Lower Extremity Neurological Exam (>= 2 of the following tests)
 valueset "Monofilament Foot Test": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.296'
 valueset "Monofilament Test Abnormal Finding": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.328'
 valueset "Monofilament Test Normal Finding": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.338'
-valueset "Office Visit": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1001'
-valueset "Pedal Pulse Palpation Foot Test": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.304'
-valueset "Pedal Pulse Test Abnormal Finding": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.337'
-valueset "Pedal Pulse Test Normal Finding": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.345'
 valueset "Pinprick Sensation Test Abnormal Finding": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.329'
 valueset "Pinprick Sensation Test and Finding": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.347'
 valueset "Pinprick Sensation Test Normal Finding": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.339'
-valueset "Preventive Services Established": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1025'
-valueset "Preventive Services Initial": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1023'
-valueset "Temperature Discrimination Foot Test": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.299'
-valueset "Temperature Discrimination Test Abnormal Finding": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.334'
-valueset "Temperature Discrimination Test Normal Finding": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.342'
-valueset "Therapeutic Footwear Interventions": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.323'
-valueset "Therapeutic Footwear": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.324'
-valueset "Ulcer of Foot": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.317'
 valueset "Vibration Sensation Foot Test": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.297'
 valueset "Vibration Test Abnormal Finding": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.330'
 valueset "Vibration Test Normal Finding": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.340'
+valueset "Ipswich Soft Touch Test Abnormal Finding": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.333'
+valueset "Ipswich Soft Touch Test and Finding": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.348'
+valueset "Ipswich Soft Touch Test Normal Finding": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.341'
+valueset "Temperature Discrimination Foot Test": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.299'
+valueset "Temperature Discrimination Test Abnormal Finding": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.334'
+valueset "Temperature Discrimination Test Normal Finding": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.342'
 
+// Numerator - Lower Extremity Vascular Exam
+valueset "Pedal Pulse Palpation Foot Test": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.304'
+valueset "Pedal Pulse Test Abnormal Finding": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.337'
+valueset "Pedal Pulse Test Normal Finding": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.345'
+
+// Numerator - Lower Extremity Visual Exam
+valueset "Lower Extremity Visual Exam": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.305'
+valueset "Lower Extremity Visual Exam Normal Finding": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.346'
+valueset "Callus of Foot": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.306'
+valueset "Deformity of Foot": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.309'
+valueset "Ulcer of Foot": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.317'
+
+// Numerator - Foot Care Follow-ups
+valueset "Foot Care Education": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.383'
+valueset "Foot Care Referral": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.313'
+valueset "Foot Pressure Offloading Interventions": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.321'
+valueset "Foot Pressure Offloading Devices": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.322'
+valueset "Therapeutic Footwear Interventions": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.323'
+valueset "Therapeutic Footwear": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.324'
+valueset "Follow Up Within 12 Months": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.326'
+
+code "virtual": 'VR' from "ActCode" display 'virtual'
 code "Right (qualifier value)": '24028007' from "SNOMEDCT" display 'Right (qualifier value)'
 code "Left (qualifier value)": '7771000' from "SNOMEDCT" display 'Left (qualifier value)'
 code "Right and left (qualifier value)": '51440002' from "SNOMEDCT" display 'Right and left (qualifier value)'
 
-parameter "Measurement Period" Interval<DateTime>
+parameter "Measurement Period" Interval<DateTime> default Interval[@2026-01-01T00:00:00.000, @2027-01-01T00:00:00.000)
 
 context Patient
 
@@ -73,13 +86,16 @@ define "Denominator":
     "Initial Population"
 
 define "Qualifying Encounters":
-  ([Encounter: "Home Visits"]
-    union [Encounter: "Initial Preventive and Annual Wellness Visits"]
-    union [Encounter: "Office Visit"]
-    union [Encounter: "Preventive Services Established"]
-    union [Encounter: "Preventive Services Initial"]) QualifyingEncounter
-        where QualifyingEncounter.status in {'finished', 'arrived', 'triaged', 'in-progress', 'onleave'}
-            and QualifyingEncounter.period during day of "Measurement Period"
+  (
+    [Encounter: "Initial Preventive and Annual Wellness Visits"] 
+        union [Encounter: "Office Visit"]
+        union [Encounter: "Preventive Services Established"]
+        union [Encounter: "Preventive Services Initial"]
+        union [Encounter: "Home Visits"]
+  ) QualifyingEncounter
+        where QualifyingEncounter.period during day of "Measurement Period"
+            and QualifyingEncounter.status = 'finished'
+            and QualifyingEncounter.class !~ "virtual"
 
 define "Denominator Exclusions":
     "Has Bilateral Lower Extremity Amputation at the Foot or Above"
@@ -114,23 +130,23 @@ define "Right Foot Absent":
         or exists ("Amputation of Right Foot Procedures")
 
 define "Acquired Absence Bilateral Feet Conditions":
-    [ConditionProblemsHealthConcerns: "Acquired Absence Bilateral Feet"] BilateralFootAbsence
+    [ConditionProblemsHealthConcerns: "Absence Bilateral Feet"] BilateralFootAbsence
         where BilateralFootAbsence.prevalenceInterval() starts before "First Qualifying Encounter Period"
 
 define "Acquired Absence Left Foot Conditions":
-    [ConditionProblemsHealthConcerns: "Acquired Absence of Left Foot"] LeftFootAbsence
+    [ConditionProblemsHealthConcerns: "Absence Left Foot"] LeftFootAbsence
         where LeftFootAbsence.prevalenceInterval() starts before "First Qualifying Encounter Period"
 
 define "Acquired Absence Right Foot Conditions":
-    [ConditionProblemsHealthConcerns: "Acquired Absence of Right Foot"] RightFootAbsence
+    [ConditionProblemsHealthConcerns: "Absence Right Foot"] RightFootAbsence
         where RightFootAbsence.prevalenceInterval() starts before "First Qualifying Encounter Period"
 
 define "Amputation of Bilateral Feet Procedures":
     (
-        [Procedure: "Amputation of Bilateral Feet"]
+        [Procedure: "Bilateral Feet Amputation"]
     ) 
     union (
-        [Procedure: "Amputation of Unspecified Foot"] UnspecifiedFootAmputation
+        [Procedure: "Unspecified Foot Amputation"] UnspecifiedFootAmputation
             where exists (
                 UnspecifiedFootAmputation.bodySite BodySite where BodySite ~ "Right and left (qualifier value)"
             )
@@ -140,10 +156,10 @@ define "Amputation of Bilateral Feet Procedures":
 
 define "Amputation of Left Foot Procedures":
     (
-        [Procedure: "Amputation of Left Foot"] 
+        [Procedure: "Left Foot Amputation"] 
     ) 
     union (
-        [Procedure: "Amputation of Unspecified Foot"] UnspecifiedFootAmputation
+        [Procedure: "Unspecified Foot Amputation"] UnspecifiedFootAmputation
             where exists (
                 UnspecifiedFootAmputation.bodySite BodySite where BodySite ~ "Left (qualifier value)"
             )
@@ -153,10 +169,10 @@ define "Amputation of Left Foot Procedures":
 
 define "Amputation of Right Foot Procedures":
     (
-        [Procedure: "Amputation of Right Foot"]
+        [Procedure: "Right Foot Amputation"]
     ) 
     union (
-        [Procedure: "Amputation of Unspecified Foot"] UnspecifiedFootAmputation
+        [Procedure: "Unspecified Foot Amputation"] UnspecifiedFootAmputation
             where exists (
                 UnspecifiedFootAmputation.bodySite BodySite where BodySite ~ "Right (qualifier value)"
             )
