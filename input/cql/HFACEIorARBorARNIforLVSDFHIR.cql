@@ -109,10 +109,11 @@ define "Has Diagnosis of Renal Failure Due to ACEI":
 
 define "Has Medical or Patient Reason for Not Ordering ACEI or ARB or ARNI":
   exists ( [MedicationNotRequested: medication in "ACE Inhibitor or ARB or ARNI"] NoACEIOrARBOrARNIOrdered
-      with AHA."Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD" ModerateOrSevereLVSDHFOutpatientEncounter
-        such that NoACEIOrARBOrARNIOrdered.authoredOn during day of ModerateOrSevereLVSDHFOutpatientEncounter.period
-      where NoACEIOrARBOrARNIOrdered.status = 'completed'
-        and NoACEIOrARBOrARNIOrdered.intent in { 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order' }
+      // with AHA."Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD" ModerateOrSevereLVSDHFOutpatientEncounter
+      //   such that NoACEIOrARBOrARNIOrdered.authoredOn during day of ModerateOrSevereLVSDHFOutpatientEncounter.period
+      // where NoACEIOrARBOrARNIOrdered.status = 'completed'
+      //   and NoACEIOrARBOrARNIOrdered.intent in { 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order' }
+      where NoACEIOrARBOrARNIOrdered.isOrderedDuringHeartFailureOutpatientEncounter()
         and ( NoACEIOrARBOrARNIOrdered.reasonCode in "Medical Reason"
             or NoACEIOrARBOrARNIOrdered.reasonCode in "Patient Reason"
             or NoACEIOrARBOrARNIOrdered.reasonCode in "Patient Reason for ACE Inhibitor or ARB Decline"
