@@ -3,8 +3,8 @@ library StatinsforthePreventionandTreatmentofCardiovascularDiseaseFHIR version '
 using QICore version '6.0.0'
 
 include FHIRHelpers version '4.4.000' called FHIRHelpers
-include Hospice version '6.14.000' called Hospice
-include PalliativeCare version '1.13.000' called PalliativeCare
+include Hospice version '6.15.000' called Hospice
+include PalliativeCare version '1.15.000' called PalliativeCare
 include QICoreCommon version '4.0.000' called QICoreCommon
 include SupplementalDataElements version '5.1.000' called SDE
 include CQMCommon version '4.0.000' called CQMCommon

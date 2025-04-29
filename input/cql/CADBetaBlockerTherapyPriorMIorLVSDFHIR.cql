@@ -9,7 +9,7 @@ using USCore version '6.1.0'
 include FHIRHelpers version '4.4.000' called FHIRHelpers
 include SupplementalDataElements version '5.1.000' called SDE
 include QICoreCommon version '4.0.000' called QICoreCommon
-include AHAOverallSTU6Prototype version '0.1.000' called AHA
+include AHAOverall version '3.0.000' called AHA
 
 codesystem "SNOMEDCT": 'http://snomed.info/sct'
 

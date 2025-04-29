@@ -378,6 +378,25 @@ define fluent function getCondition(reference Reference):
   singleton from (([ConditionEncounterDiagnosis] union [ConditionProblemsHealthConcerns]) C where reference.references(C.id))
 
 /*
+@description: Returns the condition that is specified as the principal diagnosis for the encounter
+@deprecated: This function is deprecated. Use the fluent function `principalDiagnosis()` instead.
+*/
+define function "PrincipalDiagnosis"(Encounter Encounter):
+	singleton from (
+	(Encounter.diagnosis D where D.rank = 1 and D.use ~ "Billing") PD
+      return singleton from (([ConditionEncounterDiagnosis] union [ConditionProblemsHealthConcerns]) C where PD.condition.references(C.id))
+	)
+
+/*
+@description: Returns the claim diagnosis element that is specified as the principal diagnosis for the encounter
+ @comment: See the QICore 6 Authoring Patterns discussion on [Principal Diagnosis and Present on Admission](https://github.com/cqframework/CQL-Formatting-and-Usage-Wiki/wiki/Authoring-Patterns-QICore-v6.0.0#conditions-present-on-admission-and-principal-diagnoses) for more information
+*/
+define fluent function principalDiagnosis(encounter Encounter):
+singleton from (
+     (encounter.claimDiagnosis()) CD
+       where CD.type.includesCode("Principal Diagnosis")
+   )
+/*
 @description: Returns the claim diagnosis elements for the given encounter
 @comment: See the QICore 6 Authoring Patterns discussion on [Principal Diagnosis and Present on Admission](https://github.com/cqframework/CQL-Formatting-and-Usage-Wiki/wiki/Authoring-Patterns-QICore-v6.0.0#conditions-present-on-admission-and-principal-diagnoses) for more information
 */
@@ -388,48 +407,29 @@ define fluent function claimDiagnosis(encounter Encounter):
       claimItem: (claim.item I where I.encounter.references(E))
     return claim.diagnosis D where D.sequence in claimItem.diagnosisSequence
 
-/*
-@description: Returns the condition that is specified as the principal diagnosis for the encounter
-@deprecated: This function is deprecated. Use the fluent function `principalDiagnosisOf()` instead.
-*/
-define function "PrincipalDiagnosis"(Encounter Encounter):
-  singleton from (
-    (Encounter.diagnosis D where D.rank = 1 and D.use ~ "Billing") PD
-      return singleton from (([ConditionEncounterDiagnosis] union [ConditionProblemsHealthConcerns]) C where PD.condition.references(C.id))
-  )
 
 /*
-@description: Returns the claim diagnosis element that is specified as the principal diagnosis for the encounter
-@comment: See the QICore 6 Authoring Patterns discussion on [Principal Diagnosis and Present on Admission](https://github.com/cqframework/CQL-Formatting-and-Usage-Wiki/wiki/Authoring-Patterns-QICore-v6.0.0#conditions-present-on-admission-and-principal-diagnoses) for more information
-*/
-define fluent function principalDiagnosis(encounter Encounter):
-  singleton from (
-    (encounter.claimDiagnosis()) CD
-      where CD.type.includesCode("Principal Diagnosis")
-  )
+ @description: Returns the condition that is specified as the principal diagnosis for the encounter and has a code in the given valueSet.
+ @comment: See the QICore 6 Authoring Patterns discussion on [Principal Diagnosis and Present on Admission](https://github.com/cqframework/CQL-Formatting-and-Usage-Wiki/wiki/Authoring-Patterns-QICore-v6.0.0#conditions-present-on-admission-and-principal-diagnoses) for more information
+ */
+ define fluent function hasPrincipalDiagnosisOf(encounter Encounter, valueSet ValueSet):
+   (encounter.principalDiagnosis()) PD
+     return PD.diagnosis in valueSet
+       or PD.diagnosis.getCondition().code in valueSet
 
 /*
-@description: Returns the condition that is specified as the principal diagnosis for the encounter and has a code in the given valueSet.
-@comment: See the QICore 6 Authoring Patterns discussion on [Principal Diagnosis and Present on Admission](https://github.com/cqframework/CQL-Formatting-and-Usage-Wiki/wiki/Authoring-Patterns-QICore-v6.0.0#conditions-present-on-admission-and-principal-diagnoses) for more information
-*/
-define fluent function hasPrincipalDiagnosisOf(encounter Encounter, valueSet ValueSet):
-  (encounter.principalDiagnosis()) PD
-    return PD.diagnosis in valueSet
-      or PD.diagnosis.getCondition().code in valueSet
-
-/*
-@description: Returns true if the given diagnosis is present on admission, based on the given poaValueSet
-@comment: See the QICore 6 Authoring Patterns discussion on [Principal Diagnosis and Present on Admission](https://github.com/cqframework/CQL-Formatting-and-Usage-Wiki/wiki/Authoring-Patterns-QICore-v6.0.0#conditions-present-on-admission-and-principal-diagnoses) for more information
-*/
-define fluent function isDiagnosisPresentOnAdmission(encounter Encounter, diagnosisValueSet ValueSet, poaValueSet ValueSet):
-  exists (
-    (encounter.claimDiagnosis()) CD
-      where CD.onAdmission in poaValueSet
-        and (
-          CD.diagnosis in diagnosisValueSet
-            or CD.diagnosis.getCondition().code in diagnosisValueSet
-        )
-  )
+ @description: Returns true if the given diagnosis is present on admission, based on the given poaValueSet
+ @comment: See the QICore 6 Authoring Patterns discussion on [Principal Diagnosis and Present on Admission](https://github.com/cqframework/CQL-Formatting-and-Usage-Wiki/wiki/Authoring-Patterns-QICore-v6.0.0#conditions-present-on-admission-and-principal-diagnoses) for more information
+ */
+ define fluent function isDiagnosisPresentOnAdmission(encounter Encounter, diagnosisValueSet ValueSet, poaValueSet ValueSet):
+   exists (
+     (encounter.claimDiagnosis()) CD
+       where CD.onAdmission in poaValueSet
+         and (
+           CD.diagnosis in diagnosisValueSet
+             or CD.diagnosis.getCondition().code in diagnosisValueSet
+         )
+   )
 
 /*
 @description: Returns the Location resource specified by the given reference
@@ -471,9 +471,9 @@ define fluent function getMedicationCode(request MedicationRequest):
 @description: Returns the claim procedure elements for the given encounter
 */
 define fluent function principalProcedure(encounter Encounter):  	  
-  encounter E
-    let 
-      claim: ([Claim] C where C.status = 'active' and C.use = 'claim'),
-      claimItem: claim.item I where I.encounter.references(E),
-      claimProcedure: singleton from (claim.procedure P where P.sequence in claimItem.procedureSequence and P.type.includesCode("Primary procedure"))
-    return claimProcedure
+  	 encounter E
+  	 let 
+        claim: [Claim] C where C.status = 'active' and C.use = 'claim' and exists (C.item I where I.encounter.references(E)),
+        claimItem: claim.item I where I.encounter.references(E),
+        princProcedure: singleton from (claim.procedure P where P.sequence in claimItem.procedureSequence and P.type.includesCode("Primary procedure"))
+    return princProcedure

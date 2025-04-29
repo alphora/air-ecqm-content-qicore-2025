@@ -1,4 +1,4 @@
-library AHAOverallSTU6Prototype version '0.1.000'
+library AHAOverall version '3.0.000'
 
 using QICore version '6.0.0'
 using USCore version '6.1.0'
@@ -25,7 +25,7 @@ valueset "Patient Provider Interaction": 'http://cts.nlm.nih.gov/fhir/ValueSet/2
 
 code "Left ventricular systolic dysfunction (disorder)": '134401001' from "SNOMEDCT" display 'Left ventricular systolic dysfunction (disorder)'
 
-parameter "Measurement Period" Interval<DateTime> default Interval[@2026-01-01, @2027-01-01)
+parameter "Measurement Period" Interval<DateTime>
 
 context Patient
 
