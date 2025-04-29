@@ -1,8 +1,4 @@
-/*
-Test impact for QICore6 uplift: HL7 FHIR profile urls and resource types should be changed to ConditionProblemsHealthConcerns, ConditionEncounterDiagnosis, and ObservationClinicalResult
-*/
-
-library DRCommunicationWithPhysicianManagingDiabetesFHIR6 version '0.1.000'
+library DRCommunicationWithPhysicianManagingDiabetesFHIR6 version '0.2.000'
 
 using QICore version '6.0.0'
 
@@ -44,7 +40,7 @@ code "virtual": 'VR' from "ActCode" display 'virtual'
 
 code "AMB": 'AMB' from "ActCode" display 'Ambulatory'
 
-parameter "Measurement Period" Interval<DateTime>
+parameter "Measurement Period" Interval<DateTime> default Interval[@2026-01-01, @2027-01-01)
 
 context Patient
 
@@ -79,33 +75,27 @@ define "Denominator Exceptions":
     or exists "Medical or Patient Reason for Not Communicating Absence of Macular Edema"
     or exists "Medical or Patient Reason for Not Communicating Presence of Macular Edema"
 
-define "Qualifying Encounter During Measurement Period":
+define "Qualifying Encounter During Day of Measurement Period":
   ( ["Encounter": "Office Visit"]
     union ["Encounter": "Ophthalmological Services"]
     union ["Encounter": "Outpatient Consultation"]
     union ["Encounter": "Care Services in Long-Term Residential Facility"]
     union ["Encounter": "Nursing Facility Visit"] ) QualifyingEncounter
-    where QualifyingEncounter.period during "Measurement Period"
+    where QualifyingEncounter.period during day of "Measurement Period"
       and QualifyingEncounter.status = 'finished'
       and QualifyingEncounter.class !~ "virtual"
 
-/*
-@QICore6Uplift: Update Condition to be a union of ConditionProblemsHealthConcerns and ConditionEncounterDiagnosis
-*/ 
 define "Diabetic Retinopathy Encounter":
-  "Qualifying Encounter During Measurement Period" ValidQualifyingEncounter
+  "Qualifying Encounter During Day of Measurement Period" ValidQualifyingEncounter
     with (["ConditionProblemsHealthConcerns": "Diabetic Retinopathy"]
      union ["ConditionEncounterDiagnosis": "Diabetic Retinopathy"] ) DiabeticRetinopathy
-      such that DiabeticRetinopathy.prevalenceInterval ( ) overlaps ValidQualifyingEncounter.period
+      such that DiabeticRetinopathy.prevalenceInterval ( ) overlaps day of ValidQualifyingEncounter.period
         and DiabeticRetinopathy.isActive ( )
         and not ( DiabeticRetinopathy.verificationStatus ~ QICoreCommon."unconfirmed"
             or DiabeticRetinopathy.verificationStatus ~ QICoreCommon."refuted"
             or DiabeticRetinopathy.verificationStatus ~ QICoreCommon."entered-in-error"
         )
 
-/*
-@QICore6Uplift: Update Observation to ObservationClinicalResult
-*/ 
 define "Macular Exam Performed":
   ["ObservationClinicalResult": "Macular Exam"] MacularExam
     with "Diabetic Retinopathy Encounter" EncounterDiabeticRetinopathy
@@ -119,13 +109,8 @@ define "Results of Dilated Macular or Fundus Exam Communicated":
         or exists "Macular Edema Presence Communicated"
     )
 
-/*
-@QICore6Uplift: Workaround applied by adding "category in" as shown below to avoid tests failure.
-*/ 
-
 define "Level of Severity of Retinopathy Findings Communicated":
   ["Communication": category in "Level of Severity of Retinopathy Findings"] LevelOfSeverityCommunicated
-  //["Communication"] LevelOfSeverityCommunicated
     with "Diabetic Retinopathy Encounter" EncounterDiabeticRetinopathy
       such that LevelOfSeverityCommunicated.sent after start of EncounterDiabeticRetinopathy.period
         and LevelOfSeverityCommunicated.sent during day of "Measurement Period"
@@ -133,7 +118,6 @@ define "Level of Severity of Retinopathy Findings Communicated":
 
 define "Macular Edema Absence Communicated":
   ["Communication": category in "Macular edema absent (situation)"] MacularEdemaAbsentCommunicated
-  //["Communication"] MacularEdemaAbsentCommunicated
     with "Diabetic Retinopathy Encounter" EncounterDiabeticRetinopathy
       such that MacularEdemaAbsentCommunicated.sent after start of EncounterDiabeticRetinopathy.period
         and MacularEdemaAbsentCommunicated.sent during day of "Measurement Period"
@@ -141,7 +125,6 @@ define "Macular Edema Absence Communicated":
 
 define "Macular Edema Presence Communicated":
   ["Communication": category in "Macular Edema Findings Present"] MacularEdemaPresentCommunicated
-  //["Communication"] MacularEdemaPresentCommunicated
     with "Diabetic Retinopathy Encounter" EncounterDiabeticRetinopathy
       such that MacularEdemaPresentCommunicated.sent after start of EncounterDiabeticRetinopathy.period
         and MacularEdemaPresentCommunicated.sent during day of "Measurement Period"
@@ -167,7 +150,6 @@ define "Medical or Patient Reason for Not Communicating Presence of Macular Edem
 below definition workaround for 
 https://oncprojectracking.healthit.gov/support/browse/CQLIT-371. Using value set workaround has been applied for now
 but when QI Core STU 5 gets in the tool, it may be reverted back to a DRC */
-
 
 define "Medical or Patient Reason for Not Communicating Absence of Macular Edema":
   [CommunicationNotDone: category in "Macular edema absent (situation)"] MacularEdemaAbsentNotCommunicated

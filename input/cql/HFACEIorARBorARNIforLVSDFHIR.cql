@@ -1,4 +1,4 @@
-library HFACEIorARBorARNIforLVSDFHIR version '0.2.000'
+library HFACEIorARBorARNIforLVSDFHIR version '0.4.000'
 
 using QICore version '6.0.0'
 
@@ -45,16 +45,9 @@ define "Numerator":
   "Has ACEI or ARB or ARNI Ordered"
     or "Is Currently Taking ACEI or ARB or ARNI"
 
-/*
-@commentedOut: "Has Medical or Patient Reason for Not Ordering ACEI or ARB or ARNI"
-@commentedOutReason: Negation issue noted in https://github.com/cqframework/cql-execution/issues/296, which is tied to https://oncprojectracking.healthit.gov/support/browse/BONNIEMAT-1455
-*/
-
-
 define "Denominator Exceptions":
-    //"Has Medical or Patient Reason for Not Ordering ACEI or ARB or ARNI" or
-  
-  "Has Allergy or Intolerance to ACEI or ARB or ARNI Ingredient"
+ "Has Medical or Patient Reason for Not Ordering ACEI or ARB or ARNI" 
+    or "Has Allergy or Intolerance to ACEI or ARB or ARNI Ingredient"
     or "Has Diagnosis of Allergy or Intolerance to ACEI or ARB"
     or "Has Diagnosis of Pregnancy"
     or "Has Diagnosis of Renal Failure Due to ACEI"
@@ -84,18 +77,12 @@ define "Has Allergy or Intolerance to ACEI or ARB or ARNI Ingredient":
       where ACEIOrARBOrARNIAllergyIntolerance.overlapsAfterHeartFailureOutpatientEncounter ( )
   )
 
-/*
-@QICore6Uplift: Update Condition to ConditionProblemsHealthConcerns
-*/ 
 define "Has Diagnosis of Allergy or Intolerance to ACEI or ARB":
   exists ( ( ["ConditionProblemsHealthConcerns": "Allergy to ACE Inhibitor or ARB"]
       union ["ConditionProblemsHealthConcerns": "Intolerance to ACE Inhibitor or ARB"] ) ACEIOrARBAllergyOrIntoleranceDiagnosis
       where ACEIOrARBAllergyOrIntoleranceDiagnosis.overlapsAfterHeartFailureOutpatientEncounter ( )
   )
 
-/*
-@QICore6Uplift: Update Condition to ConditionProblemsHealthConcerns
-*/ 
 define "Has Diagnosis of Pregnancy":
   exists ( [ConditionProblemsHealthConcerns: "Pregnancy"] PregnancyDiagnosis
       with AHA."Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD" ModerateOrSevereLVSDHFOutpatientEncounter
@@ -106,6 +93,9 @@ define "Has Diagnosis of Renal Failure Due to ACEI":
   exists ( [ConditionEncounterDiagnosis: "Acute renal failure caused by angiotensin-converting-enzyme inhibitor (disorder)"] RenalFailureDueToACEI
       where RenalFailureDueToACEI.overlapsHeartFailureOutpatientEncounter ( )
   )
+
+// TODO: https://oncprojectracking.healthit.gov/support/projects/MADIE/issues/MADIE-2124
+// Expecting 1 failure per population until this translator issue is incorporated into MADiE
 
 define "Has Medical or Patient Reason for Not Ordering ACEI or ARB or ARNI":
   exists ( [MedicationNotRequested: medication in "ACE Inhibitor or ARB or ARNI"] NoACEIOrARBOrARNIOrdered

@@ -1,9 +1,9 @@
-library FunctionalStatusAssessmentsforHeartFailureFHIR version '0.1.000'
+library FunctionalStatusAssessmentsforHeartFailureFHIR version '0.3.000'
 
 using QICore version '6.0.0'
 
 include FHIRHelpers version '4.4.000' called FHIRHelpers
-include QICoreCommon version '4.0.000' called QICoreCommon 
+include QICoreCommon version '4.0.000' called QICoreCommon
 include SupplementalDataElements version '5.1.000' called SDE
 include Hospice version '6.15.000' called Hospice
 include Status version '1.13.000' called Status

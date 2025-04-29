@@ -1,13 +1,12 @@
-library PCSBPScreeningFollowUpFHIR6 version '0.2.000'
+library PCSBPScreeningFollowUpFHIR6 version '0.3.000'
 
-//@QICore6Uplift: Add "using USCore version '6.1.0'"
 using QICore version '6.0.0'
 using USCore version '6.1.0'
 
-include CQMCommon version '4.1.000' called CQMCommon
 include FHIRHelpers version '4.4.000' called FHIRHelpers
 include SupplementalDataElements version '5.1.000' called SDE
 include QICoreCommon version '4.0.000' called QICoreCommon
+
 
 codesystem "ActCode": 'http://terminology.hl7.org/CodeSystem/v3-ActCode'
 codesystem "LOINC": 'http://loinc.org'
@@ -36,7 +35,7 @@ code "EKG study": '11524-6' from "LOINC" display 'EKG study'
 code "Systolic blood pressure": '8480-6' from "LOINC" display 'Systolic blood pressure'
 code "virtual": 'VR' from "ActCode" display 'virtual'
 
-parameter "Measurement Period" Interval<DateTime>
+parameter "Measurement Period" Interval<DateTime> default Interval[@2026-01-01, @2027-01-01)
 
 context Patient
 
@@ -47,13 +46,11 @@ define "Initial Population":
 define "Denominator":
   "Initial Population"
 
-//@QICore6Uplift: Update Condition to ConditionProblemsHealthConcerns
 define "Denominator Exclusions":
   "Qualifying Encounter during Measurement Period" QualifyingEncounter
     with [ConditionProblemsHealthConcerns: "Diagnosis of Hypertension"] Hypertension
       such that ( Hypertension.isProblemListItem ( )
-          or Hypertension.isHealthConcern ( )
-      )
+          or Hypertension.isHealthConcern ( ))
         and Hypertension.prevalenceInterval ( ) starts before or on day of QualifyingEncounter.period
 
 define "Numerator":
@@ -163,7 +160,6 @@ define "Encounter with Elevated Blood Pressure Reading SBP 120 to 129 AND DBP le
           such that Referral.authoredOn during day of ElevatedEncounter.period
     )
 
-//@QICore6Uplift: Update observation-bp to USCoreBloodPressureProfile
 define "Encounter with Normal Blood Pressure Reading":
   "Qualifying Encounter during Measurement Period" QualifyingEncounter
     let EncounterLastBP: Last([USCoreBloodPressureProfile] BloodPressure
@@ -171,12 +167,9 @@ define "Encounter with Normal Blood Pressure Reading":
           and BloodPressure.status in { 'final', 'amended', 'corrected' }
         sort by start of effective.toInterval()
     )
-    // where EncounterLastBP.systolic.value in Interval[1 'mm[Hg]', 120 'mm[Hg]' )
-    //   and EncounterLastBP.diastolic.value in Interval[1 'mm[Hg]', 80 'mm[Hg]' )
     where (singleton from (EncounterLastBP.component C where C.code ~ "Systolic blood pressure")).value in Interval[1 'mm[Hg]', 120 'mm[Hg]' )
       and (singleton from (EncounterLastBP.component C where C.code ~ "Diastolic blood pressure")).value in Interval[1 'mm[Hg]', 80 'mm[Hg]' )
 
-//@QICore6Uplift: Update observation-bp to USCoreBloodPressureProfile
 define "Encounter with Elevated Blood Pressure Reading SBP 120 to 129 AND DBP less than 80":
   "Qualifying Encounter during Measurement Period" QualifyingEncounter
     let EncounterLastBP: Last([USCoreBloodPressureProfile] BloodPressure
@@ -184,14 +177,10 @@ define "Encounter with Elevated Blood Pressure Reading SBP 120 to 129 AND DBP le
           and BloodPressure.status in { 'final', 'amended', 'corrected' }
         sort by start of effective.toInterval()
     )
-    // where ( EncounterLastBP.systolic.value in Interval[120 'mm[Hg]', 129 'mm[Hg]']
-    //     and EncounterLastBP.diastolic.value in Interval[1 'mm[Hg]', 80 'mm[Hg]' )
-    // )
     where ( (singleton from (EncounterLastBP.component C where C.code ~ "Systolic blood pressure")).value in Interval[120 'mm[Hg]', 129 'mm[Hg]']
         and (singleton from (EncounterLastBP.component C where C.code ~ "Diastolic blood pressure")).value in Interval[1 'mm[Hg]', 80 'mm[Hg]' )
     )
 
-//@QICore6Uplift: Update observation-bp to USCoreBloodPressureProfile
 define "Encounter with Second Hypertensive Reading SBP Greater than or Equal to 140 OR DBP Greater than or Equal to 90":
   ( "Qualifying Encounter during Measurement Period" QualifyingEncounter
       let EncounterLastBP: Last([USCoreBloodPressureProfile] BloodPressure
@@ -199,12 +188,6 @@ define "Encounter with Second Hypertensive Reading SBP Greater than or Equal to 
             and BloodPressure.status in { 'final', 'amended', 'corrected' }
           sort by start of effective.toInterval()
       )
-    //   where ( EncounterLastBP.systolic.value > 0 'mm[Hg]'
-    //       and EncounterLastBP.diastolic.value > 0 'mm[Hg]'
-    //       and ( EncounterLastBP.systolic.value >= 140 'mm[Hg]'
-    //           or EncounterLastBP.diastolic.value >= 90 'mm[Hg]'
-    //       )
-    //   )
       where ( (singleton from (EncounterLastBP.component C where C.code ~ "Systolic blood pressure")).value > 0 'mm[Hg]'
           and (singleton from (EncounterLastBP.component C where C.code ~ "Diastolic blood pressure")).value > 0 'mm[Hg]'
           and ( (singleton from (EncounterLastBP.component C where C.code ~ "Systolic blood pressure")).value >= 140 'mm[Hg]'
@@ -214,7 +197,6 @@ define "Encounter with Second Hypertensive Reading SBP Greater than or Equal to 
         and ( exists "Encounter with Hypertensive Reading Within Year Prior" )
   )
 
-//@QICore6Uplift: Update observation-bp to USCoreBloodPressureProfile
 define "Encounter with Second Hypertensive Reading SBP 130 to 139 OR DBP 80 to 89":
   ( "Qualifying Encounter during Measurement Period" QualifyingEncounter
       let EncounterLastBP: Last([USCoreBloodPressureProfile] BloodPressure
@@ -222,13 +204,6 @@ define "Encounter with Second Hypertensive Reading SBP 130 to 139 OR DBP 80 to 8
             and BloodPressure.status in { 'final', 'amended', 'corrected' }
           sort by start of effective.toInterval()
       )
-    //   where ( ( EncounterLastBP.systolic.value in Interval[130 'mm[Hg]', 139 'mm[Hg]']
-    //         or EncounterLastBP.diastolic.value in Interval[80 'mm[Hg]', 89 'mm[Hg]']
-    //     )
-    //       and not ( EncounterLastBP.systolic.value >= 140 'mm[Hg]'
-    //           or EncounterLastBP.diastolic.value >= 90 'mm[Hg]'
-    //       )
-    //   )
       where ( ( (singleton from (EncounterLastBP.component C where C.code ~ "Systolic blood pressure")).value in Interval[130 'mm[Hg]', 139 'mm[Hg]']
             or (singleton from (EncounterLastBP.component C where C.code ~ "Diastolic blood pressure")).value in Interval[80 'mm[Hg]', 89 'mm[Hg]']
         )
@@ -239,20 +214,12 @@ define "Encounter with Second Hypertensive Reading SBP 130 to 139 OR DBP 80 to 8
         and ( exists "Encounter with Hypertensive Reading Within Year Prior" )
   )
 
-//@QICore6Uplift: Update observation-bp to USCoreBloodPressureProfile
 define "Encounter with First Hypertensive Reading SBP Greater than or Equal to 130 OR DBP Greater than or Equal to 80":
   ( "Qualifying Encounter during Measurement Period" QualifyingEncounter
       let EncounterLastBP: Last([USCoreBloodPressureProfile] BloodPressure
           where BloodPressure.effective.toInterval() ends during day of QualifyingEncounter.period
           sort by start of effective.toInterval()
       )
-    //   where ( ( EncounterLastBP.systolic.value > 0 'mm[Hg]'
-    //         and EncounterLastBP.diastolic.value > 0 'mm[Hg]'
-    //     )
-    //       and ( EncounterLastBP.systolic.value >= 130 'mm[Hg]'
-    //           or EncounterLastBP.diastolic.value >= 80 'mm[Hg]'
-    //       )
-    //   )
       where ( ( (singleton from (EncounterLastBP.component C where C.code ~ "Systolic blood pressure")).value > 0 'mm[Hg]'
             and (singleton from (EncounterLastBP.component C where C.code ~ "Diastolic blood pressure")).value > 0 'mm[Hg]'
         )
@@ -263,7 +230,6 @@ define "Encounter with First Hypertensive Reading SBP Greater than or Equal to 1
   )
     except "Encounter with Hypertensive Reading Within Year Prior"
 
-//@QICore6Uplift: Update observation-bp to USCoreBloodPressureProfile
 define "Encounter with Hypertensive Reading Within Year Prior":
   ( "Qualifying Encounter during Measurement Period" QualifyingEncounter
       let EncounterLastBP: Last([USCoreBloodPressureProfile] BloodPressure
@@ -271,12 +237,6 @@ define "Encounter with Hypertensive Reading Within Year Prior":
             and BloodPressure.status in { 'final', 'amended', 'corrected' }
           sort by start of effective.toInterval()
       )
-    //   where ( EncounterLastBP.systolic.value > 0 'mm[Hg]'
-    //       and EncounterLastBP.diastolic.value > 0 'mm[Hg]'
-    //       and ( EncounterLastBP.systolic.value >= 130 'mm[Hg]'
-    //           or EncounterLastBP.diastolic.value >= 80 'mm[Hg]'
-    //       )
-    //   )
       where ( (singleton from (EncounterLastBP.component C where C.code ~ "Systolic blood pressure")).value > 0 'mm[Hg]'
           and (singleton from (EncounterLastBP.component C where C.code ~ "Diastolic blood pressure")).value > 0 'mm[Hg]'
           and ( (singleton from (EncounterLastBP.component C where C.code ~ "Systolic blood pressure")).value >= 130 'mm[Hg]'
@@ -292,16 +252,11 @@ define "NonPharmacological Intervention Not Ordered":
     union [ServiceNotRequested: "Recommendation to Increase Physical Activity"]
     union [ServiceNotRequested: "Referral or Counseling for Alcohol Consumption"] ) NonPharmIntervention
       where NonPharmIntervention.status = 'completed'
-      
-      // TODO: https://oncprojectracking.healthit.gov/support/projects/MADIE/issues/MADIE-2124
-        // Expecting ? failures per population until this translator issue is incorporated into MADiE
-      
         and NonPharmIntervention.reasonRefused in "Patient Declined"
 
-//@QICore6Uplift: Update ObservationNotDone to ObservationCancelled
 define "Encounter with Medical Reason for Not Obtaining or Patient Declined Blood Pressure Measurement":
   "Qualifying Encounter during Measurement Period" QualifyingEncounter
-    with (  [ObservationCancelled:code ~ "Blood pressure panel with all children optional"]
+    with ( [ObservationCancelled:code ~ "Blood pressure panel with all children optional"]
         union [ObservationCancelled:code ~ "Systolic blood pressure"]
         union [ObservationCancelled:code ~ "Diastolic blood pressure"] ) NoBPScreen
          such that NoBPScreen.issued during day of QualifyingEncounter.period
@@ -313,13 +268,9 @@ define "Encounter with Medical Reason for Not Obtaining or Patient Declined Bloo
 define "Encounter with Order for Hypertension Follow Up Declined by Patient":
   ( ( "Encounter with Elevated Blood Pressure Reading SBP 120 to 129 AND DBP less than 80" ElevatedBPEncounter
         with ( [ServiceNotRequested: "Referral to Primary Care or Alternate Provider"]
-          union [ServiceNotRequested: "Follow Up Within 6 Months"] ) ElevatedBPDeclinedInterventions
+           union [ServiceNotRequested: "Follow Up Within 6 Months"] ) ElevatedBPDeclinedInterventions
           such that ElevatedBPDeclinedInterventions.authoredOn during day of ElevatedBPEncounter.period
             and ElevatedBPDeclinedInterventions.status = 'completed'
-            
-        // TODO: https://oncprojectracking.healthit.gov/support/projects/MADIE/issues/MADIE-2124
-        // Expecting ? failures per population until this translator issue is incorporated into MADiE
-        
             and ElevatedBPDeclinedInterventions.reasonRefused in "Patient Declined"
     )
       union ( "Encounter with Elevated Blood Pressure Reading SBP 120 to 129 AND DBP less than 80" ElevatedBPEncounter
@@ -331,10 +282,6 @@ define "Encounter with Order for Hypertension Follow Up Declined by Patient":
             union [ServiceNotRequested: "Referral to Primary Care or Alternate Provider"] ) FirstHTNDeclinedInterventions
             such that FirstHTNDeclinedInterventions.authoredOn during day of FirstHTNEncounter.period
               and FirstHTNDeclinedInterventions.status = 'completed'
-              
-        // TODO: https://oncprojectracking.healthit.gov/support/projects/MADIE/issues/MADIE-2124
-        // Expecting ? failures per population until this translator issue is incorporated into MADiE
-              
               and FirstHTNDeclinedInterventions.reasonRefused in "Patient Declined"
       )
       union ( "Encounter with First Hypertensive Reading SBP Greater than or Equal to 130 OR DBP Greater than or Equal to 80" FirstHTNEncounter
@@ -355,10 +302,6 @@ define "Second Hypertensive Reading SBP 130 to 139 OR DBP 80 to 89 Interventions
   ( ( [ServiceNotRequested: "Referral to Primary Care or Alternate Provider"]
         union [ServiceNotRequested: "Follow Up Within 6 Months"] ) SecondHTNDeclinedReferralAndFollowUp
         where SecondHTNDeclinedReferralAndFollowUp.status = 'completed'
-        
-        // TODO: https://oncprojectracking.healthit.gov/support/projects/MADIE/issues/MADIE-2124
-        // Expecting ? failures per population until this translator issue is incorporated into MADiE
-        
           and SecondHTNDeclinedReferralAndFollowUp.reasonRefused in "Patient Declined"
     )
       union "Laboratory Test or ECG for Hypertension Not Ordered"
@@ -368,10 +311,6 @@ define "Second Hypertensive Reading SBP Greater than or Equal to 140 OR DBP Grea
   ( ( ( [ServiceNotRequested: "Referral to Primary Care or Alternate Provider"]
         union [ServiceNotRequested: "Follow Up Within 4 Weeks"] ) SecondHTN140Over90ReferralFollowUpNotDone
         where SecondHTN140Over90ReferralFollowUpNotDone.status = 'completed'
-        
-        // TODO: https://oncprojectracking.healthit.gov/support/projects/MADIE/issues/MADIE-2124
-        // Expecting ? failures per population until this translator issue is incorporated into MADiE
-        
           and SecondHTN140Over90ReferralFollowUpNotDone.reasonRefused in "Patient Declined"
     )
       union ( [MedicationNotRequested: "Pharmacologic Therapy for Hypertension"] MedicationRequestNotOrdered
@@ -387,7 +326,7 @@ define "Laboratory Test or ECG for Hypertension Not Ordered":
     union [ServiceNotRequested: "Laboratory Tests for Hypertension"] ) LabECGNotDone
     where exists(LabECGNotDone.extension E
       where E.url = 'http://hl7.org/fhir/us/qicore/StructureDefinition/qicore-doNotPerformReason' 
-      and E.value as Code in "Patient Declined"
+      and E.value as Concept in "Patient Declined"
     )
 
 define "SDE Ethnicity":

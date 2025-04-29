@@ -1,4 +1,4 @@
-library HFBetaBlockerTherapyforLVSDFHIR version '1.4.000'
+library HFBetaBlockerTherapyforLVSDFHIR version '1.5.000'
 
 using QICore version '6.0.0'
 using USCore version '6.1.0'
@@ -6,7 +6,7 @@ using USCore version '6.1.0'
 include FHIRHelpers version '4.4.000' called FHIRHelpers
 include SupplementalDataElements version '5.1.000' called SDE
 include QICoreCommon version '4.0.000' called QICoreCommon
-include AHAOverall version '3.0.000' called AHA
+include AHAOverall version '3.0.000' called AHA 
 
 codesystem "SNOMEDCT": 'http://snomed.info/sct'
 
@@ -26,7 +26,7 @@ valueset "Patient Reason": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.1138
 
 code "Substance with beta adrenergic receptor antagonist mechanism of action (substance)": '373254001' from "SNOMEDCT" display 'Substance with beta adrenergic receptor antagonist mechanism of action (substance)'
 
-parameter "Measurement Period" Interval<DateTime>
+parameter "Measurement Period" Interval<DateTime> default Interval[@2026-01-01, @2027-01-01)
 
 context Patient
 
@@ -52,18 +52,17 @@ define "Numerator":
 @commentedOufReason: Negation issue noted in https://github.com/cqframework/cql-execution/issues/296, which is tied to https://oncprojectracking.healthit.gov/support/browse/BONNIEMAT-1455
 */
 
-
 define "Denominator Exceptions":
-  "Has Consecutive Heart Rates Less than 50"
-    //or "Has Medical or Patient Reason for Not Ordering Beta Blocker for LVSD"*/or "Has Arrhythmia Diagnosis"
-    
+  "Has Consecutive Heart Rates Less than 50" 
+    or "Has Medical or Patient Reason for Not Ordering Beta Blocker for LVSD"
+    or "Has Arrhythmia Diagnosis"
     or "Has Hypotension Diagnosis"
     or "Has Asthma Diagnosis"
     or "Has Diagnosis of Allergy or Intolerance to Beta Blocker Therapy"
     or "Has Bradycardia Diagnosis"
     or "Has Allergy or Intolerance to Beta Blocker Therapy Ingredient"
     or "Atrioventricular Block without Cardiac Pacer"
-
+    
 define "SDE Ethnicity":
   SDE."SDE Ethnicity"
 
@@ -172,15 +171,27 @@ define "Has Atrioventricular Block Diagnosis":
   )
 
 define "Has Beta Blocker Therapy for LVSD Ordered":
-  exists ( [MedicationRequest: "Beta Blocker Therapy for LVSD"] BetaBlockerOrdered
-      where BetaBlockerOrdered.isOrderedDuringHeartFailureOutpatientEncounter ( )
+  exists ( [MedicationRequest: medication in "Beta Blocker Therapy for LVSD"] BetaBlockerOrdered
+      where BetaBlockerOrdered.isOrderedDuringHeartFailureOutpatientEncounter2()
   )
 
 define "Has Medical or Patient Reason for Not Ordering Beta Blocker for LVSD":
   exists ( ["MedicationNotRequested": medication in "Beta Blocker Therapy for LVSD"] NoBetaBlockerOrdered
       with AHA."Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD" ModerateOrSevereLVSDHFOutpatientEncounter
         such that NoBetaBlockerOrdered.authoredOn during day of ModerateOrSevereLVSDHFOutpatientEncounter.period
-      where ( NoBetaBlockerOrdered.reasonCode in "Medical Reason"
-          or NoBetaBlockerOrdered.reasonCode in "Patient Reason"
-      )
+    //   where ( NoBetaBlockerOrdered.reasonCode in "Medical Reason"
+    //       or NoBetaBlockerOrdered.reasonCode in "Patient Reason"
+    //   )
   )
+ 
+ // TODO: Need to figure out why this function isn't working when invoked from AHAOverall v3.0.000
+ //       This test case fails when using AHAOverall v3.0.000, but passes with the copy below: 
+ //       https://madie.cms.gov/measures/67e2e174ede72744898ad54f/edit/test-cases/67e2e1cb2dcc81152d60e878
+ define fluent function isOrderedDuringHeartFailureOutpatientEncounter2(MedicationRequest MedicationRequest): 
+  exists ( AHA."Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD" ModerateOrSevereLVSDHFOutpatientEncounter
+            where MedicationRequest.authoredOn during day of ModerateOrSevereLVSDHFOutpatientEncounter.period
+              and MedicationRequest.status in {'active', 'completed'}
+              and MedicationRequest.intent in { 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order' }
+              /*Issue: The logic commented out below was added to the logic due to an issue described in the authoring patterns for QI-Core: https://github.com/cqframework/CQL-Formatting-and-Usage-Wiki/wiki/Authoring-Patterns---QICore-v4.1.1#medication-ordered. However, when this logic is present, it causes an issue in Coverage calculation for resources that must be QI-Core compliant, because the inverse cannot be tested for a QI-Core MedicationRequest profile instance. This logic was commented out to achieve 100% Coverage. This requirement is really to handle what would happen if a MedicationRequest instance that could be set to 'false' were provided, but this should not happen within a trusted environment where QI-Core profile instances must be provided.*/
+              // and MedicationRequest.doNotPerform is not true 
+          )
