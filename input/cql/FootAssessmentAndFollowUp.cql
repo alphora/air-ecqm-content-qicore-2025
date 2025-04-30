@@ -5,12 +5,12 @@ using QICore version '6.0.0'
 include FHIRHelpers version '4.4.000' called FHIRHelpers
 include SupplementalDataElements version '5.1.000' called SDE
 include QICoreCommon version '4.0.000' called QICoreCommon
-include Hospice version '6.14.000' called Hospice
-include Status version '1.10.000' called Status
+include Hospice version '6.15.000' called Hospice
+include Status version '1.13.000' called Status
 
 codesystem "ActCode": 'http://terminology.hl7.org/CodeSystem/v3-ActCode'
 codesystem "SNOMEDCT": 'http://snomed.info/sct'
-
+ 
 // Denominator
 valueset "Diabetes": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.103.12.1001'
 
@@ -58,6 +58,7 @@ valueset "Lower Extremity Visual Exam Normal Finding": 'http://cts.nlm.nih.gov/f
 valueset "Callus of Foot": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.306'
 valueset "Deformity of Foot": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.309'
 valueset "Ulcer of Foot": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.317'
+valueset "Fissure or Blister of Foot": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.393'
 
 // Numerator - Foot Care Follow-ups
 valueset "Foot Care Education": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.383'
@@ -122,11 +123,11 @@ define "Both Feet Absent":
         or exists ("Amputation of Bilateral Feet Procedures")
         
 define "Left Foot Absent":
-    exists ("Acquired Absence Right Foot Conditions")
+    exists ("Acquired Absence Left Foot Conditions")
         or exists ("Amputation of Left Foot Procedures")
 
 define "Right Foot Absent":
-    exists ("Acquired Absence Left Foot Conditions")
+    exists ("Acquired Absence Right Foot Conditions")
         or exists ("Amputation of Right Foot Procedures")
 
 define "Acquired Absence Bilateral Feet Conditions":
@@ -142,7 +143,7 @@ define "Acquired Absence Right Foot Conditions":
         where RightFootAbsence.prevalenceInterval() starts before "First Qualifying Encounter Period"
 
 define "Amputation of Bilateral Feet Procedures":
-    (
+    ((
         [Procedure: "Bilateral Feet Amputation"]
     ) 
     union (
@@ -150,12 +151,12 @@ define "Amputation of Bilateral Feet Procedures":
             where exists (
                 UnspecifiedFootAmputation.bodySite BodySite where BodySite ~ "Right and left (qualifier value)"
             )
-    ) BilateralFootAmputation
+    )) BilateralFootAmputation
         where BilateralFootAmputation.status ~ 'completed'
             and end of BilateralFootAmputation.performed.toInterval() before start of "First Qualifying Encounter Period"
 
 define "Amputation of Left Foot Procedures":
-    (
+    ((
         [Procedure: "Left Foot Amputation"] 
     ) 
     union (
@@ -163,12 +164,12 @@ define "Amputation of Left Foot Procedures":
             where exists (
                 UnspecifiedFootAmputation.bodySite BodySite where BodySite ~ "Left (qualifier value)"
             )
-    ) LeftFootAmputation
+    )) LeftFootAmputation
         where LeftFootAmputation.status ~ 'completed'
             and end of LeftFootAmputation.performed.toInterval() before start of "First Qualifying Encounter Period"
 
 define "Amputation of Right Foot Procedures":
-    (
+    ((
         [Procedure: "Right Foot Amputation"]
     ) 
     union (
@@ -176,7 +177,7 @@ define "Amputation of Right Foot Procedures":
             where exists (
                 UnspecifiedFootAmputation.bodySite BodySite where BodySite ~ "Right (qualifier value)"
             )
-    ) RightFootAmputation
+    )) RightFootAmputation
         where RightFootAmputation.status ~ 'completed'
             and end of RightFootAmputation.performed.toInterval() before start of "First Qualifying Encounter Period"
                 
@@ -269,6 +270,7 @@ define "Has Abnormal Exam Finding of Lower Extremity":
                 union "Abnormal Ipswich Soft Touch Test Finding"
                 union "Abnormal Temperature Discrimination Foot Test Finding"
                 union "Abnormal Vascular Exam Finding of Lower Extremity"
+                union "Abnormal Visual Exam Finding of Lower Extremity"
         ) AbnormalObservation
                 where AbnormalObservation.status in { 'final', 'amended', 'corrected' }
                     and AbnormalObservation.effective.toInterval() during day of "Measurement Period"
@@ -278,9 +280,10 @@ define "Has Abnormal Exam Finding of Lower Extremity":
             [ConditionEncounterDiagnosis: "Callus of Foot"]
                 union [ConditionEncounterDiagnosis: "Deformity of Foot"]
                 union [ConditionEncounterDiagnosis: "Ulcer of Foot"]
+                union [ConditionEncounterDiagnosis: "Fissure or Blister of Foot"]
         ) AbnormalCondition
             where AbnormalCondition.isActive()
-                and AbnormalCondition.onset.toInterval() during day of "Measurement Period"   
+                and AbnormalCondition.onset.toInterval() overlaps day of "Measurement Period"   
     )
 
 define "Abnormal Monofilament Foot Test Finding":
@@ -312,6 +315,16 @@ define "Abnormal Vascular Exam Finding of Lower Extremity":
     [ObservationClinicalResult: "Pedal Pulse Palpation Foot Test"] VascularExam
         where VascularExam.value is not null
             and (VascularExam.value as Concept) in "Pedal Pulse Test Abnormal Finding"
+
+define "Abnormal Visual Exam Finding of Lower Extremity":
+    [ObservationClinicalResult: "Lower Extremity Visual Exam"] VisualExam
+        where VisualExam.value is not null
+            and (
+                (VisualExam.value as Concept) in "Callus of Foot"
+                    or (VisualExam.value as Concept) in "Deformity of Foot"
+                    or (VisualExam.value as Concept) in "Ulcer of Foot"
+                    or (VisualExam.value as Concept) in "Fissure or Blister of Foot"
+            )    
 
 define "Has Follow-Up Plan of Care Within One Week of Eligible Encounter":
     exists (
