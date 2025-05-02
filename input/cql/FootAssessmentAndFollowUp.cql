@@ -263,28 +263,34 @@ define "Received Foot Care Education":
 
 define "Has Abnormal Exam Finding of Lower Extremity":
     exists (
-        (
-            "Abnormal Monofilament Foot Test Finding"
-                union "Abnormal Pinprick Sensation Foot Test Finding"
-                union "Abnormal Vibration Sensation Foot Test Finding"
-                union "Abnormal Ipswich Soft Touch Test Finding"
-                union "Abnormal Temperature Discrimination Foot Test Finding"
-                union "Abnormal Vascular Exam Finding of Lower Extremity"
-                union "Abnormal Visual Exam Finding of Lower Extremity"
-        ) AbnormalObservation
-                where AbnormalObservation.status in { 'final', 'amended', 'corrected' }
-                    and AbnormalObservation.effective.toInterval() during day of "Measurement Period"
+        "Abnormal Exam Finding of Lower Extremity"
     )
     or exists (
-        (
-            [ConditionEncounterDiagnosis: "Callus of Foot"]
-                union [ConditionEncounterDiagnosis: "Deformity of Foot"]
-                union [ConditionEncounterDiagnosis: "Ulcer of Foot"]
-                union [ConditionEncounterDiagnosis: "Fissure or Blister of Foot"]
-        ) AbnormalCondition
-            where AbnormalCondition.isActive()
-                and AbnormalCondition.onset.toInterval() overlaps day of "Measurement Period"   
+        "Abnormal Condition of Lower Extremity"
     )
+
+define "Abnormal Exam Finding of Lower Extremity":
+    (
+        "Abnormal Monofilament Foot Test Finding"
+            union "Abnormal Pinprick Sensation Foot Test Finding"
+            union "Abnormal Vibration Sensation Foot Test Finding"
+            union "Abnormal Ipswich Soft Touch Test Finding"
+            union "Abnormal Temperature Discrimination Foot Test Finding"
+            union "Abnormal Vascular Exam Finding of Lower Extremity"
+            union "Abnormal Visual Exam Finding of Lower Extremity"
+    ) AbnormalObservation
+        where AbnormalObservation.status in { 'final', 'amended', 'corrected' }
+            and AbnormalObservation.effective.toInterval() during day of "Measurement Period"
+
+define "Abnormal Condition of Lower Extremity":
+    (
+        [ConditionEncounterDiagnosis: "Callus of Foot"]
+            union [ConditionEncounterDiagnosis: "Deformity of Foot"]
+            union [ConditionEncounterDiagnosis: "Ulcer of Foot"]
+            union [ConditionEncounterDiagnosis: "Fissure or Blister of Foot"]
+    ) AbnormalCondition
+        where AbnormalCondition.isActive()
+            and AbnormalCondition.prevalenceInterval() overlaps day of "Measurement Period"   
 
 define "Abnormal Monofilament Foot Test Finding":
     [ObservationClinicalResult: "Monofilament Foot Test"] MonofilmanetFootTest
@@ -326,9 +332,22 @@ define "Abnormal Visual Exam Finding of Lower Extremity":
                     or (VisualExam.value as Concept) in "Fissure or Blister of Foot"
             )    
 
+define "Qualifying Encounters with Abnormal Exam Finding of Lower Extremity":
+    (
+        "Qualifying Encounters" QualifyingEncounter
+          with "Abnormal Exam Finding of Lower Extremity" LowerExtremityAbnormalClinicalResult
+            such that LowerExtremityAbnormalClinicalResult.effective.toInterval() overlaps QualifyingEncounter.period
+    ) 
+    union
+    (
+        "Qualifying Encounters" QualifyingEncounter
+          with "Abnormal Condition of Lower Extremity" LowerExtremityAbnormalCondition
+            such that LowerExtremityAbnormalCondition.prevalenceInterval() overlaps QualifyingEncounter.period
+    )
+
 define "Has Follow-Up Plan of Care Within One Week of Eligible Encounter":
     exists (
-        "Qualifying Encounters" QualifyingEncounter 
+        "Qualifying Encounters with Abnormal Exam Finding of Lower Extremity" QualifyingEncounter 
             let "Seven-Day Period Following Qualifying Encounter": Interval[start of QualifyingEncounter.period, end of QualifyingEncounter.period + 7 days]
             where exists ( 
                 (
