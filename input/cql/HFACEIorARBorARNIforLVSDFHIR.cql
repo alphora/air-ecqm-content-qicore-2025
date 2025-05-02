@@ -1,11 +1,11 @@
-library HFACEIorARBorARNIforLVSDFHIR version '0.2.000'
+library HFACEIorARBorARNIforLVSDFHIR version '0.4.000'
 
 using QICore version '6.0.0'
 
 include FHIRHelpers version '4.4.000' called FHIRHelpers
 include SupplementalDataElements version '5.1.000' called SDE
 include QICoreCommon version '4.0.000' called QICoreCommon
-include AHAOverallSTU6Prototype version '0.1.000' called AHA
+include AHAOverall version '3.0.000' called AHA
 
 codesystem "SNOMEDCT": 'http://snomed.info/sct'
 
@@ -45,16 +45,9 @@ define "Numerator":
   "Has ACEI or ARB or ARNI Ordered"
     or "Is Currently Taking ACEI or ARB or ARNI"
 
-/*
-@commentedOut: "Has Medical or Patient Reason for Not Ordering ACEI or ARB or ARNI"
-@commentedOutReason: Negation issue noted in https://github.com/cqframework/cql-execution/issues/296, which is tied to https://oncprojectracking.healthit.gov/support/browse/BONNIEMAT-1455
-*/
-
-
 define "Denominator Exceptions":
-    //"Has Medical or Patient Reason for Not Ordering ACEI or ARB or ARNI" or
-  
-  "Has Allergy or Intolerance to ACEI or ARB or ARNI Ingredient"
+ "Has Medical or Patient Reason for Not Ordering ACEI or ARB or ARNI" 
+    or "Has Allergy or Intolerance to ACEI or ARB or ARNI Ingredient"
     or "Has Diagnosis of Allergy or Intolerance to ACEI or ARB"
     or "Has Diagnosis of Pregnancy"
     or "Has Diagnosis of Renal Failure Due to ACEI"
@@ -84,18 +77,12 @@ define "Has Allergy or Intolerance to ACEI or ARB or ARNI Ingredient":
       where ACEIOrARBOrARNIAllergyIntolerance.overlapsAfterHeartFailureOutpatientEncounter ( )
   )
 
-/*
-@QICore6Uplift: Update Condition to ConditionProblemsHealthConcerns
-*/ 
 define "Has Diagnosis of Allergy or Intolerance to ACEI or ARB":
   exists ( ( ["ConditionProblemsHealthConcerns": "Allergy to ACE Inhibitor or ARB"]
       union ["ConditionProblemsHealthConcerns": "Intolerance to ACE Inhibitor or ARB"] ) ACEIOrARBAllergyOrIntoleranceDiagnosis
       where ACEIOrARBAllergyOrIntoleranceDiagnosis.overlapsAfterHeartFailureOutpatientEncounter ( )
   )
 
-/*
-@QICore6Uplift: Update Condition to ConditionProblemsHealthConcerns
-*/ 
 define "Has Diagnosis of Pregnancy":
   exists ( [ConditionProblemsHealthConcerns: "Pregnancy"] PregnancyDiagnosis
       with AHA."Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD" ModerateOrSevereLVSDHFOutpatientEncounter
@@ -107,12 +94,12 @@ define "Has Diagnosis of Renal Failure Due to ACEI":
       where RenalFailureDueToACEI.overlapsHeartFailureOutpatientEncounter ( )
   )
 
+// TODO: https://oncprojectracking.healthit.gov/support/projects/MADIE/issues/MADIE-2124
+// Expecting 1 failure per population until this translator issue is incorporated into MADiE
+
 define "Has Medical or Patient Reason for Not Ordering ACEI or ARB or ARNI":
   exists ( [MedicationNotRequested: medication in "ACE Inhibitor or ARB or ARNI"] NoACEIOrARBOrARNIOrdered
-      with AHA."Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD" ModerateOrSevereLVSDHFOutpatientEncounter
-        such that NoACEIOrARBOrARNIOrdered.authoredOn during day of ModerateOrSevereLVSDHFOutpatientEncounter.period
-      where NoACEIOrARBOrARNIOrdered.status = 'completed'
-        and NoACEIOrARBOrARNIOrdered.intent in { 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order' }
+      where NoACEIOrARBOrARNIOrdered.isOrderedDuringHeartFailureOutpatientEncounter()
         and ( NoACEIOrARBOrARNIOrdered.reasonCode in "Medical Reason"
             or NoACEIOrARBOrARNIOrdered.reasonCode in "Patient Reason"
             or NoACEIOrARBOrARNIOrdered.reasonCode in "Patient Reason for ACE Inhibitor or ARB Decline"

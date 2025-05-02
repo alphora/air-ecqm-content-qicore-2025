@@ -1,15 +1,12 @@
-library CADBetaBlockerTherapyPriorMIorLVSDFHIR version '0.2.000'
+library CADBetaBlockerTherapyPriorMIorLVSDFHIR version '0.4.000'
 
-/*
-@QICore6Uplift: Add 'using USCore version `6.1.0'`
-*/  
 using QICore version '6.0.0'
 using USCore version '6.1.0'
 
 include FHIRHelpers version '4.4.000' called FHIRHelpers
 include SupplementalDataElements version '5.1.000' called SDE
 include QICoreCommon version '4.0.000' called QICoreCommon
-include AHAOverallSTU6Prototype version '0.1.000' called AHA
+include AHAOverall version '3.0.000' called AHA
 
 codesystem "SNOMEDCT": 'http://snomed.info/sct'
 
@@ -44,7 +41,7 @@ valueset "System Reason": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.11388
 
 code "Substance with beta adrenergic receptor antagonist mechanism of action (substance)": '373254001' from "SNOMEDCT" display 'Substance with beta adrenergic receptor antagonist mechanism of action (substance)'
 
-parameter "Measurement Period" Interval<DateTime>
+parameter "Measurement Period" Interval<DateTime> default Interval[@2026-01-01, @2027-01-01)
 
 context Patient
 
@@ -59,26 +56,23 @@ define "Has Atrioventricular Block with Qualifying CAD Encounter and Prior MI wi
 
 /*
 * @code: Heart rate - 8867-4
-* @profile: http://hl7.org/fhir/StructureDefinition/heartrate 
+* @profile: http://hl7.org/fhir/us/core/StructureDefinition/us-core-heart-rate 
 */
 
-/*
-@QICore6Uplift: Update 'observation-heartrate' to 'USCoreHeartRateProfile'
-*/   
 define "Has Consecutive Heart Rates Less than 50 with Qualifying CAD Encounter and Prior MI":
   exists ( from
-      ["USCoreHeartRateProfile"] HeartRate,
+      ["USCoreHeartRateProfile"] HeartRateExam,
       "Qualifying CAD Encounter and Prior MI" CADEncounterMI
-      let PriorHeartRate: Last(["USCoreHeartRateProfile"] MostRecentPriorHeartRate
-          where MostRecentPriorHeartRate.effective.toInterval() during CADEncounterMI.period
-            and MostRecentPriorHeartRate.status in { 'final', 'amended', 'corrected' }
-            and MostRecentPriorHeartRate.effective.toInterval() before HeartRate.effective.toInterval()
+      let PriorHeartRateExam: Last(["USCoreHeartRateProfile"] MostRecentPriorHeartRateExam
+          where MostRecentPriorHeartRateExam.effective.toInterval() during CADEncounterMI.period
+            and MostRecentPriorHeartRateExam.status in { 'final', 'amended', 'corrected' }
+            and MostRecentPriorHeartRateExam.effective.toInterval() before HeartRateExam.effective.toInterval()
           sort by start of effective.toInterval()
       )
-      where HeartRate.effective.toInterval ( ) during CADEncounterMI.period
-        and HeartRate.status in { 'final', 'amended', 'corrected' }
-        and HeartRate.value < 50 '/min'
-        and PriorHeartRate.value < 50 '/min'
+      where HeartRateExam.effective.toInterval ( ) during CADEncounterMI.period
+        and HeartRateExam.status in { 'final', 'amended', 'corrected' }
+        and HeartRateExam.value < 50 '/min'
+        and PriorHeartRateExam.value < 50 '/min'
   )
 
 define "Numerator 1":
@@ -107,9 +101,6 @@ define "Has Cardiac Pacer Device Implanted with Qualifying CAD Encounter and Pri
         such that ImplantedCardiacPacer.performed.toInterval ( ) starts before end of CADEncounterMI.period
   )
 
-/*
-@QICore6Uplift: Update 'Condition' to 'ConditionProblemsHealthConcerns'
-*/  
 define "Qualifying CAD Encounter and Prior MI":
   "Qualifying CAD Encounter" EncounterWithCADProxy
     with [ConditionProblemsHealthConcerns: "Myocardial Infarction"] MyocardialInfarction
@@ -127,24 +118,21 @@ define "Has Atrioventricular Block with Qualifying CAD Encounter and History of 
 
 /*
 * @code: Heart rate - 8867-4
-* @profile: http://hl7.org/fhir/StructureDefinition/heartrate 
+* @profile: http://hl7.org/fhir/us/core/StructureDefinition/us-core-heart-rate
 */
 
-/*
-@QICore6Uplift: Update 'observation-heartrate' to 'USCoreHeartRateProfile'
-*/
 define "Has Consecutive Heart Rates Less than 50 with Qualifying CAD Encounter and History of Moderate or Severe LVSD":
   exists ( from
-      ["USCoreHeartRateProfile"] HeartRate,
+      ["USCoreHeartRateProfile"] HeartRateExam,
       "Qualifying CAD Encounter and History of Moderate or Severe LVSD" CADEncounterModerateOrSevereLVSD
-      let PriorHeartRate: Last(["USCoreHeartRateProfile"] MostRecentPriorHeartRate
-          where MostRecentPriorHeartRate.effective.toInterval() during CADEncounterModerateOrSevereLVSD.period
-            and MostRecentPriorHeartRate.effective.toInterval() before HeartRate.effective.toInterval()
+      let PriorHeartRateExam: Last(["USCoreHeartRateProfile"] MostRecentPriorHeartRateExam
+          where MostRecentPriorHeartRateExam.effective.toInterval() during CADEncounterModerateOrSevereLVSD.period
+            and MostRecentPriorHeartRateExam.effective.toInterval() before HeartRateExam.effective.toInterval()
           sort by start of effective.toInterval()
       )
-      where HeartRate.effective.toInterval ( ) during CADEncounterModerateOrSevereLVSD.period
-        and HeartRate.value < 50 '/min'
-        and PriorHeartRate.value < 50 '/min'
+      where HeartRateExam.effective.toInterval ( ) during CADEncounterModerateOrSevereLVSD.period
+        and HeartRateExam.value < 50 '/min'
+        and PriorHeartRateExam.value < 50 '/min'
   )
 
 define "Has Cardiac Pacer Device Implanted with Qualifying CAD Encounter and History of Moderate or Severe LVSD":
@@ -212,133 +200,84 @@ define "Qualifying Encounter During Measurement Period":
     where ValidEncounter.period during day of "Measurement Period"
       and ValidEncounter.status = 'finished'
 
-/*
-@QICore6Uplift: Update 'Condition' to 'ConditionProblemsHealthConcerns'
-*/
 define "Coronary Artery Disease Encounter":
   "Outpatient Encounter During Measurement Period" ValidQualifyingEncounter
     with [ConditionProblemsHealthConcerns: "Coronary Artery Disease No MI"] CoronaryArteryDisease
       such that CoronaryArteryDisease.overlapsDayOfEncounter ( ValidQualifyingEncounter )
 
-/*
-@QICore6Uplift: Update 'Condition' to 'ConditionProblemsHealthConcerns'
-*/
 define "Has Arrhythmia with Qualifying CAD Encounter and History of Moderate or Severe LVSD":
   exists ( [ConditionProblemsHealthConcerns: "Arrhythmia"] ArrhythmiaDiagnosis
       where ArrhythmiaDiagnosis.overlapsDayOfEncounter ( "Qualifying CAD Encounter and History of Moderate or Severe LVSD" )
   )
 
-/*
-@QICore6Uplift: Update 'Condition' to 'ConditionProblemsHealthConcerns'
-*/
 define "Has Arrhythmia with Qualifying CAD Encounter and Prior MI":
   exists ( [ConditionProblemsHealthConcerns: "Arrhythmia"] ArrhythmiaDiagnosis
       where ArrhythmiaDiagnosis.overlapsDayOfEncounter ( "Qualifying CAD Encounter and Prior MI" )
   )
 
-/*
-@QICore6Uplift: Update 'Condition' to 'ConditionProblemsHealthConcerns'
-*/
 define "Has Asthma with Qualifying CAD Encounter and History of Moderate or Severe LVSD":
   exists ( [ConditionProblemsHealthConcerns: "Asthma"] AsthmaDiagnosis
       where AsthmaDiagnosis.overlapsDayOfEncounter ( "Qualifying CAD Encounter and History of Moderate or Severe LVSD" )
   )
 
-/*
-@QICore6Uplift: Update 'Condition' to 'ConditionProblemsHealthConcerns'
-*/
 define "Has Asthma with Qualifying CAD Encounter and Prior MI":
   exists ( [ConditionProblemsHealthConcerns: "Asthma"] AsthmaDiagnosis
       where AsthmaDiagnosis.overlapsDayOfEncounter ( "Qualifying CAD Encounter and Prior MI" )
   )
 
-/*
-@QICore6Uplift: Update 'Condition' to 'ConditionProblemsHealthConcerns'
-*/
 define "Has Atrioventricular Block with Qualifying CAD Encounter and History of Moderate or Severe LVSD":
   exists ( [ConditionProblemsHealthConcerns: "Atrioventricular Block"] AtrioventricularBlock
       where AtrioventricularBlock.overlapsDayOfEncounter ( "Qualifying CAD Encounter and History of Moderate or Severe LVSD" )
   )
 
-/*
-@QICore6Uplift: Update 'Condition' to 'ConditionProblemsHealthConcerns'
-*/
 define "Has Atrioventricular Block with Qualifying CAD Encounter and Prior MI":
-  exists ( [ConditionProblemsHealthConcerns: "Atrioventricular Block"] AtrioventricularBlock
-      where AtrioventricularBlock.overlapsDayOfEncounter ( "Qualifying CAD Encounter and Prior MI" )
+  exists ( [ConditionProblemsHealthConcerns: "Atrioventricular Block"] AtrioventricularBlockDiagnosis
+      where AtrioventricularBlockDiagnosis.overlapsDayOfEncounter ( "Qualifying CAD Encounter and Prior MI" )
   )
 
-/*
-@QICore6Uplift: Update 'Condition' to 'ConditionProblemsHealthConcerns'
-*/
 define "Has Bradycardia with Qualifying CAD Encounter and History of Moderate or Severe LVSD":
   exists ( [ConditionProblemsHealthConcerns: "Bradycardia"] BradycardiaDiagnosis
       where BradycardiaDiagnosis.overlapsDayOfEncounter ( "Qualifying CAD Encounter and History of Moderate or Severe LVSD" )
   )
 
-/*
-@QICore6Uplift: Update 'Condition' to 'ConditionProblemsHealthConcerns'
-*/
 define "Has Bradycardia with Qualifying CAD Encounter and Prior MI":
   exists ( [ConditionProblemsHealthConcerns: "Bradycardia"] BradycardiaDiagnosis
       where BradycardiaDiagnosis.overlapsDayOfEncounter ( "Qualifying CAD Encounter and Prior MI" )
   )
 
-/*
-@QICore6Uplift: Update 'Condition' to 'ConditionProblemsHealthConcerns'
-*/
 define "Has Diagnosis of Allergy or Intolerance to Beta Blocker Therapy with Qualifying CAD Encounter and History of Moderate or Severe LVSD":
   exists ( ( [ConditionProblemsHealthConcerns: "Allergy to Beta Blocker Therapy"]
       union [ConditionProblemsHealthConcerns: "Intolerance to Beta Blocker Therapy"] ) BetaBlockerAllergyOrIntoleranceDiagnosis
       where BetaBlockerAllergyOrIntoleranceDiagnosis.overlapsAfterDayOfEncounter ( "Qualifying CAD Encounter and History of Moderate or Severe LVSD" )
   )
 
-/*
-@QICore6Uplift: Update 'Condition' to 'ConditionProblemsHealthConcerns'
-*/
 define "Has Diagnosis of Allergy or Intolerance to Beta Blocker Therapy with Qualifying CAD Encounter and Prior MI":
   exists ( ( [ConditionProblemsHealthConcerns: "Allergy to Beta Blocker Therapy"]
       union [ConditionProblemsHealthConcerns: "Intolerance to Beta Blocker Therapy"] ) BetaBlockerAllergyOrIntoleranceDiagnosis
       where BetaBlockerAllergyOrIntoleranceDiagnosis.overlapsAfterDayOfEncounter ( "Qualifying CAD Encounter and Prior MI" )
   )
 
-/*
-@QICore6Uplift: Update 'Condition' to 'ConditionProblemsHealthConcerns'
-*/
 define "Has Diagnosis of Cardiac Pacer in Situ with Qualifying CAD Encounter and History of Moderate or Severe LVSD":
   exists ( [ConditionProblemsHealthConcerns: "Cardiac Pacer in Situ"] CardiacPacerDiagnosis
       where CardiacPacerDiagnosis.overlapsDayOfEncounter ( "Qualifying CAD Encounter and History of Moderate or Severe LVSD" )
   )
 
-/*
-@QICore6Uplift: Update 'Condition' to 'ConditionProblemsHealthConcerns'
-*/
 define "Has Diagnosis of Cardiac Pacer in Situ with Qualifying CAD Encounter and Prior MI":
   exists ( [ConditionProblemsHealthConcerns: "Cardiac Pacer in Situ"] CardiacPacerDiagnosis
       where CardiacPacerDiagnosis.overlapsDayOfEncounter ( "Qualifying CAD Encounter and Prior MI" )
   )
 
-/*
-@QICore6Uplift: Update 'Condition' to 'ConditionProblemsHealthConcerns'
-*/
 define "Has Hypotension with Qualifying CAD Encounter and History of Moderate or Severe LVSD":
   exists ( [ConditionProblemsHealthConcerns: "Hypotension"] HypotensionDiagnosis
       where HypotensionDiagnosis.overlapsDayOfEncounter ( "Qualifying CAD Encounter and History of Moderate or Severe LVSD" )
   )
 
-/*
-@QICore6Uplift: Update 'Condition' to 'ConditionProblemsHealthConcerns'
-*/
+
+
 define "Has Hypotension with Qualifying CAD Encounter and Prior MI":
   exists ( [ConditionProblemsHealthConcerns: "Hypotension"] HypotensionDiagnosis
       where HypotensionDiagnosis.overlapsDayOfEncounter ( "Qualifying CAD Encounter and Prior MI" )
   )
-
-/*
-@commentedOut: "Has Medical or Patient Reason for Not Ordering Beta Blocker for LVSD"
-@commentedOutReason: Negation issue noted in https://github.com/cqframework/cql-execution/issues/296, which is tied to https://oncprojectracking.healthit.gov/support/browse/BONNIEMAT-1455
-*/
-
 
 define "Denominator Exceptions 1":
   "Has Arrhythmia with Qualifying CAD Encounter and History of Moderate or Severe LVSD"
@@ -348,15 +287,8 @@ define "Denominator Exceptions 1":
     or "Has Consecutive Heart Rates Less than 50 with Qualifying CAD Encounter and History of Moderate or Severe LVSD"
     or "Has Allergy or Intolerance to Beta Blocker Therapy Ingredient with Qualifying CAD Encounter and History of Moderate or Severe LVSD"
     or "Has Diagnosis of Allergy or Intolerance to Beta Blocker Therapy with Qualifying CAD Encounter and History of Moderate or Severe LVSD"
-      //or "Has Medical or Patient Reason for Not Ordering Beta Blocker for LVSD"
-    
+    or "Has Medical or Patient Reason for Not Ordering Beta Blocker for LVSD"
     or "Has Atrioventricular Block with Qualifying CAD Encounter and History of Moderate or Severe LVSD without Cardiac Pacer"
-
-/*
-@commentedOut: "Has Medical or Patient Reason for Not Ordering Beta Blocker Therapy" 
-@commentedOutReason: Negation issue noted in https://github.com/cqframework/cql-execution/issues/296, which is tied to https://oncprojectracking.healthit.gov/support/browse/BONNIEMAT-1455
-*/
-
 
 define "Denominator Exceptions 2":
   "Has Arrhythmia with Qualifying CAD Encounter and Prior MI"
@@ -366,8 +298,7 @@ define "Denominator Exceptions 2":
     or "Has Consecutive Heart Rates Less than 50 with Qualifying CAD Encounter and Prior MI"
     or "Has Allergy or Intolerance to Beta Blocker Therapy Ingredient with Qualifying CAD Encounter and Prior MI"
     or "Has Diagnosis of Allergy or Intolerance to Beta Blocker Therapy with Qualifying CAD Encounter and Prior MI"
-      //or "Has Medical or Patient Reason for Not Ordering Beta Blocker Therapy"
-    
+    or "Has Medical or Patient Reason for Not Ordering Beta Blocker Therapy"
     or "Has Atrioventricular Block with Qualifying CAD Encounter and Prior MI without Cardiac Pacer"
 
 define "Has Allergy or Intolerance to Beta Blocker Therapy Ingredient with Qualifying CAD Encounter and History of Moderate or Severe LVSD":
@@ -376,10 +307,8 @@ define "Has Allergy or Intolerance to Beta Blocker Therapy Ingredient with Quali
       where BetaBlockerAllergyIntolerance.overlapsAfterDayOfEncounter ( "Qualifying CAD Encounter and History of Moderate or Severe LVSD" )
   )
 
-/*
-@Issue: Negation issue noted in https://github.com/cqframework/cql-execution/issues/296, which is tied to https://oncprojectracking.healthit.gov/support/browse/BONNIEMAT-1455
-*/
-
+// TODO: https://oncprojectracking.healthit.gov/support/projects/MADIE/issues/MADIE-2124
+// Expecting 1 failures per population until this translator issue is incorporated into MADiE
 
 define "Has Medical or Patient Reason for Not Ordering Beta Blocker for LVSD":
   exists ( [MedicationNotRequested: medication in "Beta Blocker Therapy for LVSD"] NoBetaBlockerForLVSDOrdered
@@ -391,11 +320,9 @@ define "Has Medical or Patient Reason for Not Ordering Beta Blocker for LVSD":
             or NoBetaBlockerForLVSDOrdered.reasonCode in "Patient Reason"
         )
   )
-
-/*
-@Issue: Negation issue noted in https://github.com/cqframework/cql-execution/issues/296, which is tied to https://oncprojectracking.healthit.gov/support/browse/BONNIEMAT-1455
-*/
-
+ 
+// TODO: https://oncprojectracking.healthit.gov/support/projects/MADIE/issues/MADIE-2124
+// Expecting 1 failures per population until this translator issue is incorporated into MADiE
 
 define "Has Medical or Patient Reason for Not Ordering Beta Blocker Therapy":
   exists ( [MedicationNotRequested: medication in "Beta Blocker Therapy for LVSD"] NoBetaBlockerForLVSDOrdered
@@ -423,34 +350,25 @@ define "Qualifying CAD Encounter and History of Moderate or Severe LVSD":
 
 define "History of Cardiac Surgery Prior to Encounter":
   "Outpatient Encounter During Measurement Period" ValidQualifyingEncounter
-    with [Procedure: "Cardiac Surgery"] CardiacSurgery
-      such that CardiacSurgery.performed.toInterval ( ) starts before end of ValidQualifyingEncounter.period
-        and CardiacSurgery.status = 'completed'
+    with [Procedure: "Cardiac Surgery"] CardiacSurgeryProcedure
+      such that CardiacSurgeryProcedure.performed.toInterval ( ) starts before end of ValidQualifyingEncounter.period
+        and CardiacSurgeryProcedure.status = 'completed'
 
 define "Qualifying CAD Encounter":
   "Coronary Artery Disease Encounter"
     union "History of Cardiac Surgery Prior to Encounter"
 
-/*
-@QICore6Uplift: Update 'Condition' in function parameter to take in a choice of 'ConditionProblemsHealthConcerns' or 'ConditionEncounterDiagnosis'
-*/
 define fluent function overlapsDayOfEncounter(Diagnosis ConditionProblemsHealthConcerns, EncounterList List<Encounter>):
   AnyTrue(EncounterList Visit
       where Diagnosis.isActive()
       return Diagnosis.prevalenceInterval() overlaps day of Visit.period
   )
 
-/*
-@QICore6Uplift: Update 'Condition' in function parameter to take in a choice of 'ConditionProblemsHealthConcerns' or 'ConditionEncounterDiagnosis'
-*/
 define fluent function overlapsDayOfEncounter(Diagnosis ConditionProblemsHealthConcerns, TheEncounter Encounter):
   TheEncounter Visit
     where Diagnosis.isConfirmedActiveDiagnosis ( )
     return Diagnosis.prevalenceInterval ( ) overlaps day of Visit.period
 
-/*
-@QICore6Uplift: Update 'Condition' in function parameter to take in a choice of 'ConditionProblemsHealthConcerns' or 'ConditionEncounterDiagnosis'
-*/
 define fluent function overlapsAfterDayOfEncounter(Event Choice<AllergyIntolerance, ConditionProblemsHealthConcerns>, EncounterList List<Encounter>):
   AnyTrue(EncounterList Visit
       return case

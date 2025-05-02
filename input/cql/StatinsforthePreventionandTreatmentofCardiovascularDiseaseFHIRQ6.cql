@@ -1,21 +1,17 @@
-library StatinsforthePreventionandTreatmentofCardiovascularDiseaseFHIRQ6 version '0.2.000'
+library StatinsforthePreventionandTreatmentofCardiovascularDiseaseFHIR version '0.2.000'
 
 using QICore version '6.0.0'
 
 include FHIRHelpers version '4.4.000' called FHIRHelpers
-include Hospice version '6.14.000' called Hospice
-include PalliativeCare version '1.13.000' called PalliativeCare
+include Hospice version '6.15.000' called Hospice
+include PalliativeCare version '1.15.000' called PalliativeCare
 include QICoreCommon version '4.0.000' called QICoreCommon
 include SupplementalDataElements version '5.1.000' called SDE
-include CQMCommon version '4.1.000' called CQMCommon
-include CumulativeMedicationDuration version '5.0.000' called CMD
+include CQMCommon version '4.0.000' called CQMCommon
+include CumulativeMedicationDuration version '6.0.000' called CMD
 
-codesystem "CPT": 'http://www.ama-assn.org/go/cpt'
 codesystem "ICD10CM": 'http://hl7.org/fhir/sid/icd-10-cm'
 codesystem "LOINC": 'http://loinc.org'
-codesystem "ObservationCategoryCodes": 'http://terminology.hl7.org/CodeSystem/observation-category'
-codesystem "RxNorm": 'https://www.nlm.nih.gov/research/umls/rxnorm/index.html'
-codesystem "SNOMEDCT": 'http://snomed.info/sct'
 
 valueset "Annual Wellness Visit": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1240'
 valueset "Atherosclerosis and Peripheral Arterial Disease": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1047.21'
@@ -60,7 +56,7 @@ parameter "Measurement Period" Interval<DateTime> default Interval[@2026-01-01, 
 context Patient
 
 define "Initial Population 1":
-  exists ( "ASVCD Diagnosis or Procedure before End of Measurement Period"
+  exists ( "ASCVD Diagnosis or Procedure before End of Measurement Period"
       union "Myocardial Infarction before End of Measurement Period"
   )
     and exists "Qualifying Encounter during day of Measurement Period"
@@ -116,7 +112,7 @@ define "Numerator":
     or exists "Medication Active during the Measurement Period"
 
 
-define "ASVCD Diagnosis or Procedure before End of Measurement Period":
+define "ASCVD Diagnosis or Procedure before End of Measurement Period":
   ( ( [ConditionProblemsHealthConcerns: "Myocardial Infarction"]
       union [ConditionProblemsHealthConcerns: "Subsequent non-ST elevation (NSTEMI) myocardial infarction"]
       union [ConditionProblemsHealthConcerns: "Cerebrovascular Disease Stroke or TIA"]
@@ -180,6 +176,21 @@ define "Has Hepatitis or Liver Disease Diagnosis":
         and HepatitisLiverDisease.prevalenceInterval ( ) overlaps day of "Measurement Period"
   )
 
+// TODO: Remove these statements when https://oncprojectracking.healthit.gov/support/projects/MADIE/issues/MADIE-2124 is resolved
+/* 
+// NOTE: Debugging statement
+define "Medical Reason Codes":
+  [MedicationNotRequested: "High Intensity Statin Therapy"] MedicationsNotRequested
+    return MedicationsNotRequested.reasonCode
+
+// NOTE: Debugging statement
+define "Has Medical Reason for Not Ordering Statin Therapy":
+    exists(
+        "Medical Reason Codes" ReasonCode
+            where ReasonCode in "Medical Reason"
+    )
+*/
+        
 define "Has Medical Reason for Not Ordering Statin Therapy":
   exists ( ( [MedicationNotRequested: "Low Intensity Statin Therapy"]
       union [MedicationNotRequested: "Moderate Intensity Statin Therapy"]
@@ -226,7 +237,7 @@ define "Patients Aged 20 to 75 with LDL Cholesterol Result Greater than or Equal
     and exists ( "LDL Result Greater Than or Equal To 190"
         union "Hypercholesterolemia Diagnosis"
     )
-    and not exists ( "ASVCD Diagnosis or Procedure before End of Measurement Period" )
+    and not exists ( "ASCVD Diagnosis or Procedure before End of Measurement Period" )
 
 define "Patients Aged 20 to 75 at Start of Measurement Period":
   AgeInYearsAt(date from start of "Measurement Period") in Interval[20, 75]
@@ -235,7 +246,7 @@ define "Patients Aged 40 to 75 Years with Diabetes without ASCVD or LDL Greater 
   AgeInYearsAt(date from start of "Measurement Period") >= 40
     and AgeInYearsAt(date from start of "Measurement Period") <= 75
     and "Has Diabetes Diagnosis"
-    and ( not exists "ASVCD Diagnosis or Procedure before End of Measurement Period"
+    and ( not exists "ASCVD Diagnosis or Procedure before End of Measurement Period"
         and not exists "LDL Result Greater Than or Equal To 190"
         and not exists "Hypercholesterolemia Diagnosis"
     )
@@ -243,7 +254,7 @@ define "Patients Aged 40 to 75 Years with Diabetes without ASCVD or LDL Greater 
 define "Patients Age 40 to 75 Years and have a 10 Year CVD Risk of High without ASCVD and High LDL and Diabetes":
   AgeInYearsAt(date from start of "Measurement Period") in Interval[40, 75]
     and "Ten Year CVD Risk is High"
-    and not ( exists "ASVCD Diagnosis or Procedure before End of Measurement Period"
+    and not ( exists "ASCVD Diagnosis or Procedure before End of Measurement Period"
         or exists "Hypercholesterolemia Diagnosis"
         or exists "LDL Result Greater Than or Equal To 190"
         or "Has Diabetes Diagnosis"

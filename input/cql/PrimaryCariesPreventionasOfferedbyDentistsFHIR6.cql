@@ -5,8 +5,8 @@ using QICore version '6.0.0'
 include FHIRHelpers version '4.4.000' called FHIRHelpers
 include SupplementalDataElements version '5.1.000' called SDE
 include QICoreCommon version '4.0.000' called QICoreCommon
-include Hospice version '6.14.000' called Hospice
-include Status version '1.10.000' called Status
+include Hospice version '6.15.000' called Hospice
+include Status version '1.13.000' called Status
 
 valueset "Clinical Oral Evaluation": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.125.12.1003'
 valueset "Discharged to Health Care Facility for Hospice Care": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.117.1.7.1.207'
@@ -14,7 +14,7 @@ valueset "Discharged to Home for Hosice Care": 'http://cts.nlm.nih.gov/fhir/Valu
 valueset "Encounter Inpatient": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.666.5.307'
 valueset "Fluoride Varnish Application for Children": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.125.12.1002'
 
-parameter "Measurement Period" Interval<DateTime>
+parameter "Measurement Period" Interval<DateTime> default Interval[@2026-01-01, @2027-01-01)
 
 context Patient
 
@@ -23,7 +23,7 @@ define "Initial Population":
     and exists ( "Qualifying Encounters" )
 
 define "Qualifying Encounters":
-  ( ( [Encounter: "Clinical Oral Evaluation"] ).isEncounterPerformed ( ) ) ValidEncounter
+  ( ( [Encounter: "Clinical Oral Evaluation"] ).isEncounterPerformed() ) ValidEncounter
     where ValidEncounter.period during day of "Measurement Period"
 
 define "Denominator":
