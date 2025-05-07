@@ -190,7 +190,7 @@ define "Numerator":
     ) 
     or (
         "Has Abnormal Exam Finding of Lower Extremity"
-            and "Has Follow-Up Plan of Care Within One Week of Eligible Encounter"
+            and "Has Follow-Up Plan of Care Within One Week of Eligible Encounter with Abnormal Finding"
     )
 
 define "Has At Least Two Normal Neurological Exam Findings of Lower Extremity":
@@ -345,7 +345,7 @@ define "Qualifying Encounters with Abnormal Exam Finding of Lower Extremity":
             such that LowerExtremityAbnormalCondition.prevalenceInterval() overlaps QualifyingEncounter.period
     )
 
-define "Has Follow-Up Plan of Care Within One Week of Eligible Encounter":
+define "Has Follow-Up Plan of Care Within One Week of Eligible Encounter with Abnormal Finding":
     exists (
         "Qualifying Encounters with Abnormal Exam Finding of Lower Extremity" QualifyingEncounter 
             let "Seven-Day Period Following Qualifying Encounter": Interval[start of QualifyingEncounter.period, end of QualifyingEncounter.period + 7 days]
