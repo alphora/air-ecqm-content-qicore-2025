@@ -1,4 +1,4 @@
-library FunctionalStatusAssessmentforTotalHipReplacementFHIRQ6 version '1.0.000'
+library CMS56FHIRFunctionalStatusAssessmentforTotalHipReplacement version '1.1.000'
 
 using QICore version '6.0.0'
 
@@ -43,7 +43,7 @@ code "VR-12 Physical component summary (PCS) score - oblique method T-score": '7
 code "VR-12 Physical component summary (PCS) score - orthogonal method T-score": '72027-6' from "LOINC" display 'VR-12 Physical component summary (PCS) score - orthogonal method T-score'
 code "Yes (qualifier value)": '373066001' from "SNOMEDCT" display 'Yes (qualifier value)'
 
-parameter "Measurement Period" Interval<DateTime> default Interval[@2026-01-01, @2027-01-01)
+parameter "Measurement Period" Interval<DateTime>
 
 context Patient
 

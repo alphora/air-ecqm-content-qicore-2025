@@ -1,4 +1,4 @@
-library CRLReceiptofSpecialistReportFHIRQ6 version '0.3.000'
+library CMS50FHIRCRLReceiptofSpecialistReport version '0.4.000'
 
 using QICore version '6.0.0'
 
@@ -26,7 +26,7 @@ code "Psychological or neuropsychological test administration and scoring by phy
 code "Psychological or neuropsychological test administration and scoring by technician, two or more tests, any method; first 30 minutes": '96138' from "CPT" display 'Psychological or neuropsychological test administration and scoring by technician, two or more tests, any method; first 30 minutes'
 code "Psychotherapy for crisis; first 60 minutes": '90839' from "CPT" display 'Psychotherapy for crisis; first 60 minutes'
 
-parameter "Measurement Period" Interval<DateTime> default Interval[@2026-01-01, @2027-01-01)
+parameter "Measurement Period" Interval<DateTime>
 
 context Patient
 

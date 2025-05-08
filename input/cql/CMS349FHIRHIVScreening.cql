@@ -1,10 +1,10 @@
-library HIVScreeningFHIRQ6 version '0.2.000'
+library CMS349FHIRHIVScreening version '0.3.000'
 
 using QICore version '6.0.0'
 
 include FHIRHelpers version '4.4.000' called FHIRHelpers
 include SupplementalDataElements version '5.1.000' called SDE
-include CQMCommon version '4.1.000' called CQMCommon
+include CQMCommon version '4.0.000' called CQMCommon
 include QICoreCommon version '4.0.000' called QICoreCommon
 
 codesystem "LOINC": 'http://loinc.org'
@@ -28,7 +28,7 @@ code "active": 'active' from "ConditionClinicalStatusCodes"
 code "refuted": 'refuted' from "ConditionVerificationStatus"
 code "Dead (finding)": '419099009' from "SNOMEDCT" display 'Dead (finding)'
 
-parameter "Measurement Period" Interval<DateTime> default Interval[@2026-01-01, @2027-01-01)
+parameter "Measurement Period" Interval<DateTime>
 
 context Patient
 

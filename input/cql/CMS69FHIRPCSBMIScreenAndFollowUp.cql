@@ -1,4 +1,4 @@
-library PCSBMIScreenAndFollowUpFHIRQ6 version '0.2.000'
+library CMS69FHIRPCSBMIScreenAndFollowUp version '0.3.000'
 
 using QICore version '6.0.0'
 
@@ -30,7 +30,7 @@ code "Encounter for palliative care": 'Z51.5' from "ICD10CM" display 'Encounter 
 code "Functional Assessment of Chronic Illness Therapy - Palliative Care Questionnaire (FACIT-Pal)": '71007-9' from "LOINC" display 'Functional Assessment of Chronic Illness Therapy - Palliative Care Questionnaire (FACIT-Pal)'
 code "virtual": 'VR' from "ActCode" display 'virtual'
 
-parameter "Measurement Period" Interval<DateTime> default Interval[@2026-01-01, @2027-01-01)
+parameter "Measurement Period" Interval<DateTime>
 
 context Patient
 
