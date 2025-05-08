@@ -1,8 +1,4 @@
-/*
-Test impact for QICore6 uplift: HL7 FHIR profile urls and resource types should be changed to ConditionProblemsHealthConcerns, ConditionEncounterDiagnosis, LaboratoryResultObservation, and ObservationCancelled
-*/
-
-library BoneDensityProstateCancerAndrogenDeprivationTherapyFHIR6 version '1.4.000'
+library CMS645FHIRBoneDensityProstateCancerAndrogenDeprivationTherapy version '1.5.000'
 
 using QICore version '6.0.0'
 
@@ -12,8 +8,8 @@ include QICoreCommon version '4.0.000' called QICoreCommon
 
 codesystem "SNOMEDCT": 'http://snomed.info/sct'
 
-valueset "Androgen deprivation therapy for Urology Care": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1151.48'
-valueset "DEXA Dual Energy Xray Absorptiometry, Bone Density for Urology Care": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1151.38'
+valueset "Androgen Deprivation Therapy for Urology Care": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.352'
+valueset "DEXA Bone Density for Urology Care": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.359'
 valueset "Office Visit": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1001'
 valueset "Patient Declined": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1582'
 valueset "Prostate Cancer": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.319'
@@ -32,20 +28,15 @@ define "Denominator":
   "Initial Population"
 
 define "Numerator":
-  "Has Baseline DEXA Scan Two Years Prior to the Start of or Less than Three Months After the Start of ADT"
-
-
-/*
-@commentedOut: exists ( "No Bone Density Scan Ordered Due to Patient Refusal" ) 
-                 or exists ( "No Bone Density Scan Performed Due to Patient Refusal" )
-@commmentedOutReason: Negation issue related to https://github.com/cqframework/cql-execution/issues/296, which is tied to https://oncprojectracking.healthit.gov/support/browse/BONNIEMAT-1455. Due to this being the only logic in population, created a 'false' placeholder
-*/
-
+   "Has Baseline DEXA Scan Two Years Prior to the Start of or Less than Three Months After the Start of ADT"
 
 define "Denominator Exception":
-    //placeholder
-  
   false
+  // @commmentedOutReason: Negation issue related to https://github.com/cqframework/cql-execution/issues/296, 
+  //                       which is tied to https://oncprojectracking.healthit.gov/support/browse/BONNIEMAT-1455. 
+  //                       Due to this being the only logic in population, created a 'false' placeholder
+  // exists ( "No Bone Density Scan Ordered Due to Patient Refusal")
+  //   or exists ( "No Bone Density Scan Performed Due to Patient Refusal")
 
 define "SDE Ethnicity":
   SDE."SDE Ethnicity"
@@ -60,7 +51,7 @@ define "SDE Sex":
   SDE."SDE Sex"
 
 define "Has Baseline DEXA Scan Two Years Prior to the Start of or Less than Three Months After the Start of ADT":
-  exists ( ( [ServiceRequest: "DEXA Dual Energy Xray Absorptiometry, Bone Density for Urology Care"] DEXAOrdered
+  exists ( ( [ServiceRequest: "DEXA Bone Density for Urology Care"] DEXAOrdered
         with "Order for 12 Months of ADT in 3 Months Before to 9 Months After Start of Measurement Period" OrderTwelveMonthsADT
           such that DEXAOrdered.authoredOn 3 months or less on or after day of OrderTwelveMonthsADT.authoredOn
             or DEXAOrdered.authoredOn 2 years or less before day of OrderTwelveMonthsADT.authoredOn
@@ -68,29 +59,22 @@ define "Has Baseline DEXA Scan Two Years Prior to the Start of or Less than Thre
           and DEXAOrdered.intent = 'order'
           and DEXAOrdered.doNotPerform is not true
     )
-
-      /*
-      @QICore6Uplift: Update Observation to LaboratoryResultObservation (ObservationClinicalResult includes non-imaging tests)
-      */    
-      union ( [LaboratoryResultObservation: "DEXA Dual Energy Xray Absorptiometry, Bone Density for Urology Care"] DEXAPerformed
-          with "Order for 12 Months of ADT in 3 Months Before to 9 Months After Start of Measurement Period" OrderTwelveMonthsADT
-            such that DEXAPerformed.effective.toInterval ( ) 3 months or less on or after day of OrderTwelveMonthsADT.authoredOn
-              or DEXAPerformed.effective.toInterval ( ) 2 years or less before day of OrderTwelveMonthsADT.authoredOn
-          where DEXAPerformed.status in { 'final', 'amended', 'corrected' }
-      )
+    union ( [LaboratoryResultObservation: "DEXA Bone Density for Urology Care"] DEXAPerformed
+      with "Order for 12 Months of ADT in 3 Months Before to 9 Months After Start of Measurement Period" OrderTwelveMonthsADT
+        such that DEXAPerformed.effective.toInterval() 3 months or less on or after day of OrderTwelveMonthsADT.authoredOn
+          or DEXAPerformed.effective.toInterval() 2 years or less before day of OrderTwelveMonthsADT.authoredOn
+      where DEXAPerformed.status in { 'final', 'amended', 'corrected' }
+    )
   )
 
 define "No Bone Density Scan Ordered Due to Patient Refusal":
-  [ServiceNotRequested: "DEXA Dual Energy Xray Absorptiometry, Bone Density for Urology Care"] DEXANotOrdered
+  [ServiceNotRequested: "DEXA Bone Density for Urology Care"] DEXANotOrdered
     with "Order for 12 Months of ADT in 3 Months Before to 9 Months After Start of Measurement Period" OrderTwelveMonthsADT
       such that DEXANotOrdered.authoredOn 3 months or less on or after day of OrderTwelveMonthsADT.authoredOn
         and DEXANotOrdered.reasonRefused in "Patient Declined"
 
-/*
-@QICore6Uplift: Update ObservationNotDone to ObservationCancelled
-*/    
 define "No Bone Density Scan Performed Due to Patient Refusal":
-  [ObservationCancelled: "DEXA Dual Energy Xray Absorptiometry, Bone Density for Urology Care"] DEXANotPerformed
+  [ObservationCancelled: "DEXA Bone Density for Urology Care"] DEXANotPerformed
     with "Order for 12 Months of ADT in 3 Months Before to 9 Months After Start of Measurement Period" OrderTwelveMonthsADT
       such that DEXANotPerformed.issued 3 months or less on or after day of OrderTwelveMonthsADT.authoredOn
         and DEXANotPerformed.notDoneReason in "Patient Declined"
@@ -101,7 +85,7 @@ define "First ADT in 3 Months Before to 9 Months After Start of Measurement Peri
       with "Prostate Cancer Diagnosis" ProstateCancer
         such that ADTDateTime during day of ProstateCancer.prevalenceInterval()
           and ADTDateTime during day of Interval[start of "Measurement Period" - 3 months, start of "Measurement Period" + 9 months]
-      sort ascending
+    sort ascending
   )
 
 define "Order for 12 Months of ADT in 3 Months Before to 9 Months After Start of Measurement Period":
@@ -114,35 +98,33 @@ define "Order for 12 Months of ADT in 3 Months Before to 9 Months After Start of
         and OrderTwelveMonthADT.doNotPerform is not true
 
 define "Androgen Deprivation Therapy for Urology Care Medication Active Start Dates":
-  [MedicationRequest: "Androgen deprivation therapy for Urology Care"] ADTActive
+  [MedicationRequest: "Androgen Deprivation Therapy for Urology Care"] ADTActive
     let firstMedicationPeriod: First((collapse(ADTActive.dosageInstruction.timing.repeat.bounds DoseTime
           return DoseTime.toInterval()
       )) DrugPeriods
         sort by start of $this
     ),
-         //get the very first event
-    
+    //get the very first event
     firstMedicationEvent: First((ADTActive.dosageInstruction.timing dosageTiming
-                                      //returns first event for the specific dosageTiming
-        
+        //returns first event for the specific dosageTiming
         return First(dosageTiming.event dosageTimingEvents
             sort ascending
         )) firstEvents
         sort ascending
     ),
-    medicationDateTime: NormalizeInterval(firstMedicationEvent, firstMedicationPeriod).earliest ( )
+    medicationDateTime: NormalizeInterval(firstMedicationEvent, firstMedicationPeriod).earliest()
     where ADTActive.status in { 'active', 'completed' }
       and ADTActive.intent in { 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order' }
     return medicationDateTime
 
 define "Androgen Deprivation Therapy for Urology Care Medication Order Start Dates":
-  [MedicationRequest: "Androgen deprivation therapy for Urology Care"] ADTOrder
+  [MedicationRequest: "Androgen Deprivation Therapy for Urology Care"] ADTOrder
     let firstMedicationPeriod: First((collapse(ADTOrder.dosageInstruction.timing.repeat.bounds DoseTime
           return DoseTime.toInterval()
       )) DrugPeriods
         sort by start of $this
     ),
-    medicationDateTime: NormalizeInterval(ADTOrder.authoredOn, firstMedicationPeriod).earliest ( )
+    medicationDateTime: NormalizeInterval(ADTOrder.authoredOn, firstMedicationPeriod).earliest()
     where ADTOrder.status in { 'active', 'completed' }
       and ADTOrder.intent in { 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order' }
     return medicationDateTime
@@ -153,12 +135,10 @@ define "Has Qualifying Encounter":
         and OfficeVisit.status = 'finished'
   )
 
-/*
-@QICore6Uplift: Update Condition to be a union of ConditionProblemsHealthConcerns and ConditionEncounterDiagnosis
-*/    
 define "Prostate Cancer Diagnosis":
-  ([ConditionProblemsHealthConcerns: "Prostate Cancer"] union [ConditionEncounterDiagnosis: "Prostate Cancer"]) ProstateCancer
-    where ProstateCancer.prevalenceInterval ( ) overlaps "Measurement Period"
+  ([ConditionProblemsHealthConcerns: "Prostate Cancer"] 
+    union [ConditionEncounterDiagnosis: "Prostate Cancer"]) ProstateCancer
+    where ProstateCancer.prevalenceInterval() overlaps "Measurement Period"
       and ProstateCancer.clinicalStatus ~ QICoreCommon."active"
       and ProstateCancer.verificationStatus ~ QICoreCommon."confirmed"
 

@@ -1,14 +1,8 @@
-/*
-@update: JKR 2024-04-02 ->
-Incremented QICoreCommon and FHIRHelpers version
-Created Fluent functions for all relevant functions
-*/
-
-library CumulativeMedicationDuration version '5.0.000'
+library CumulativeMedicationDuration version '6.0.000'
 
 using QICore version '6.0.0'
 
-include FHIRHelpers version '4.4.000'
+include FHIRHelpers version '4.4.000' called FHIRHelpers
 include QICoreCommon version '4.0.000'
 
 // These code systems are not known to the MAT environment yet, request to have them added submitted

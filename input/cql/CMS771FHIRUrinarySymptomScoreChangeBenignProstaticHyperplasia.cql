@@ -1,12 +1,5 @@
-/*
-Test impact for QICore6 uplift: HL7 FHIR profile urls and resource types should be changed to USCoreBMIProfile, ConditionProblemsHealthConcerns, ConditionEncounterDiagnosis, and ObservationScreeningAssessment
-*/
+library CMS771FHIRUrinarySymptomScoreChangeBenignProstaticHyperplasia version '1.5.000'
 
-library UrinarySymptomScoreChangeAfterBenignProstaticHyperplasiaFHIR6 version '1.4.000'
-
-/*
-@QICore6Uplift: Add `using USCore version `6.1.0``
-*/ 
 using QICore version '6.0.0'
 using USCore version '6.1.0'
 
@@ -19,10 +12,10 @@ codesystem "ICD10CM": 'http://hl7.org/fhir/sid/icd-10-cm'
 codesystem "ObservationCategoryCodes": 'http://terminology.hl7.org/CodeSystem/observation-category'
 codesystem "ActCode": 'http://terminology.hl7.org/CodeSystem/v3-ActCode'
 
-valueset "Hospital Services for Urology": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1151.59'
-valueset "Morbid Obesity": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1164.67'
+valueset "Hospital Services for Urology Care": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.360'
+valueset "Morbid Obesity": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.368'
 valueset "Office Visit": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1001'
-valueset "Urinary retention": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1164.52'
+valueset "Urinary Retention": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.372'
 
 code "American Urological Association Symptom Index [AUASI]": '80883-2' from "LOINC" display 'American Urological Association Symptom Index [AUASI]'
 code "Benign prostatic hyperplasia with lower urinary tract symptoms": 'N40.1' from "ICD10CM" display 'Benign prostatic hyperplasia with lower urinary tract symptoms'
@@ -38,11 +31,11 @@ define "Initial Population":
   ( "Patient is Male" )
     and "Has Qualifying Encounter"
     and "Has Qualifying BPH Diagnosis"
-    and "Urinary Symptom Score Within 1 Month after Initial BPH Diagnosis" is not null
-    and "Urinary Symptom Score 6 to 12 Months After Initial BPH Diagnosis" is not null
 
 define "Denominator":
   "Initial Population"
+    and "Urinary Symptom Score Within 1 Month After Initial BPH Diagnosis" is not null
+    and "Urinary Symptom Score 6 to 12 Months After Initial BPH Diagnosis" is not null
 
 define "Denominator Exclusions":
   exists ( "Urinary Retention Diagnosis Starts Within 1 Year After Initial BPH Diagnosis" )
@@ -76,7 +69,7 @@ define "Urinary Symptom Score Assessment":
 
 define "Urinary Symptom Score Change":
   from
-    "Urinary Symptom Score Within 1 Month after Initial BPH Diagnosis" FirstUSSAssessment,
+    "Urinary Symptom Score Within 1 Month After Initial BPH Diagnosis" FirstUSSAssessment,
     "Urinary Symptom Score 6 to 12 Months After Initial BPH Diagnosis" FollowUpUSSAssessment
     let USSChange: ( FirstUSSAssessment.valueInteger ) - ( FollowUpUSSAssessment.valueInteger )
     return USSChange
@@ -86,21 +79,15 @@ define "Urinary Symptom Score Improvement Greater Than or Equal To 3":
       where USSImprovement >= 3
   ) is not null
 
-/*
-@QICore6Uplift: Update Observation to ObservationScreeningAssessment
-*/ 
 define "Documented IPSS Assessment Result":
   [ObservationScreeningAssessment: "International Prostate Symptom Score [IPSS]"] IPSSAssessment
     where IPSSAssessment.status in { 'final', 'amended', 'corrected' }
       and IPSSAssessment.value is not null
     return {
-      effectiveDatetime: IPSSAssessment.effective.earliest ( ),
+      effectiveDatetime: IPSSAssessment.effective.earliest(),
       valueInteger: IPSSAssessment.value as Integer
     }
 
-/*
-@QICore6Uplift: Update Observation to ObservationScreeningAssessment
-*/ 
 define "AUA Symptom Index and Quality of Life Assessment Result":
   [ObservationScreeningAssessment: "American Urological Association Symptom Index [AUASI]"] AUASIAssessment
     let LastQOLOnDate: Last([ObservationScreeningAssessment: "If you were to spend the rest of your life with your urinary condition just the way it is now, how would you feel about that [IPSS]"] QOLAssessment
@@ -112,7 +99,7 @@ define "AUA Symptom Index and Quality of Life Assessment Result":
     where AUASIAssessment.status in { 'final', 'amended', 'corrected' }
       and AUASIAssessment.value is not null
     return {
-      effectiveDatetime: AUASIAssessment.effective.earliest ( ),
+      effectiveDatetime: AUASIAssessment.effective.earliest(),
       valueInteger: ( AUASIAssessment.value as Integer ) + ( LastQOLOnDate.value as Integer )
     }
 
@@ -127,14 +114,12 @@ define "Morbid Obesity Diagnosis or BMI Exam Result Greater Than or Equal to 40 
   exists "Morbid Obesity Diagnosis On or Before Follow Up USS Assessment"
     or "BMI Exam Result Greater Than or Equal To 40 During Measurement Period and On or Before Follow Up USS Assessment"
 
-/*
-@QICore6Uplift: Update Condition to be a union of ConditionProblemsHealthConcerns and ConditionEncounterDiagnosis
-*/ 
 define "Urinary Retention Diagnosis Starts Within 1 Year After Initial BPH Diagnosis":
-  ([ConditionProblemsHealthConcerns: "Urinary retention"] union [ConditionEncounterDiagnosis: "Urinary retention"]) UrinaryRetention
+  ([ConditionProblemsHealthConcerns: "Urinary Retention"] 
+    union [ConditionEncounterDiagnosis: "Urinary Retention"]) UrinaryRetention
     with "Initial BPH Diagnosis Starts Within 6 Months Before the Measurement Period" InitialBPHDiagnosis
-      such that UrinaryRetention.prevalenceInterval ( ) starts 1 year or less on or after day of start of InitialBPHDiagnosis.prevalenceInterval ( )
-    where UrinaryRetention.isConfirmedActiveDiagnosis ( )
+      such that UrinaryRetention.prevalenceInterval() starts 1 year or less on or after day of start of InitialBPHDiagnosis.prevalenceInterval()
+    where UrinaryRetention.isConfirmedActiveDiagnosis()
 
 define "Urinary Symptom Score 6 to 12 Months After Initial BPH Diagnosis":
   Last("Urinary Symptom Score Assessment" USSAssessment
@@ -143,7 +128,7 @@ define "Urinary Symptom Score 6 to 12 Months After Initial BPH Diagnosis":
       sort by effectiveDatetime
   )
 
-define "Urinary Symptom Score Within 1 Month after Initial BPH Diagnosis":
+define "Urinary Symptom Score Within 1 Month After Initial BPH Diagnosis":
   First("Urinary Symptom Score Assessment" USSAssessment
       with "Initial BPH Diagnosis Starts Within 6 Months Before the Measurement Period" InitialBPHDiagnosis
         such that USSAssessment.effectiveDatetime 1 month or less on or after day of start of InitialBPHDiagnosis.prevalenceInterval()
@@ -152,51 +137,40 @@ define "Urinary Symptom Score Within 1 Month after Initial BPH Diagnosis":
 
 define "Has Initial BPH Diagnosis Starts During or Within 30 Days After End of Hospitalization":
   "Initial BPH Diagnosis Starts Within 6 Months Before the Measurement Period" InitialBPHDiagnosis
-    with [Encounter: "Hospital Services for Urology"] InHospitalServices
-      such that InitialBPHDiagnosis.prevalenceInterval ( ) starts during Interval[start of InHospitalServices.period, end of InHospitalServices.period + 31 days]
-        and InHospitalServices.status = 'finished'
+    with [Encounter: "Hospital Services for Urology Care"] UrologyHospitalServices
+      such that InitialBPHDiagnosis.prevalenceInterval() starts during Interval[start of UrologyHospitalServices.period, end of UrologyHospitalServices.period + 31 days]
+        and UrologyHospitalServices.status = 'finished'
 
-/*
-@QICore6Uplift: Update Condition to be a union of ConditionProblemsHealthConcerns and ConditionEncounterDiagnosis
-*/ 
 define "Initial BPH Diagnosis Starts Within 6 Months Before the Measurement Period":
-  First(([ConditionProblemsHealthConcerns: "Benign prostatic hyperplasia with lower urinary tract symptoms"] union [ConditionEncounterDiagnosis: "Benign prostatic hyperplasia with lower urinary tract symptoms"]) NewBPHDiagnosis
+  First(([ConditionProblemsHealthConcerns: "Benign prostatic hyperplasia with lower urinary tract symptoms"] 
+    union [ConditionEncounterDiagnosis: "Benign prostatic hyperplasia with lower urinary tract symptoms"]) NewBPHDiagnosis
       where NewBPHDiagnosis.prevalenceInterval() starts during Interval[start of "Measurement Period" - 6 months, start of "Measurement Period"]
         and NewBPHDiagnosis.isConfirmedActiveDiagnosis()
       sort by start of onset.toInterval()
   )
 
-/*
-@QICore6Uplift: Update Condition to be a union of ConditionProblemsHealthConcerns and ConditionEncounterDiagnosis
-*/ 
 define "Morbid Obesity Diagnosis On or Before Follow Up USS Assessment":
-  ([ConditionProblemsHealthConcerns: "Morbid Obesity"] union [ConditionEncounterDiagnosis: "Morbid Obesity"]) MorbidObesity
+  ([ConditionProblemsHealthConcerns: "Morbid Obesity"] 
+    union [ConditionEncounterDiagnosis: "Morbid Obesity"]) MorbidObesityDiagnosis
     with "Urinary Symptom Score 6 to 12 Months After Initial BPH Diagnosis" FollowUpUSSAssessment
-      such that MorbidObesity.prevalenceInterval ( ) overlaps "Measurement Period"
-        and MorbidObesity.prevalenceInterval ( ) starts on or before FollowUpUSSAssessment.effectiveDatetime
-    where MorbidObesity.isConfirmedActiveDiagnosis ( )  
+      such that MorbidObesityDiagnosis.prevalenceInterval() overlaps "Measurement Period"
+        and MorbidObesityDiagnosis.prevalenceInterval() starts on or before FollowUpUSSAssessment.effectiveDatetime
+    where MorbidObesityDiagnosis.isConfirmedActiveDiagnosis()  
   
 /*
 * @code: Body mass index (BMI) [Ratio] - 39156-5
 * @profile: http://hl7.org/fhir/StructureDefinition/bmi
 */
-
-/*
-@QICore6Uplift: Update 'observation-bmi' to 'USCoreBMIProfile'
-*/ 
 define "BMI Exam Result Greater Than or Equal To 40 During Measurement Period and On or Before Follow Up USS Assessment":
   exists ( ["USCoreBMIProfile"] BMIExam
       with "Urinary Symptom Score 6 to 12 Months After Initial BPH Diagnosis" FollowUpUSSAssessment
         such that BMIExam.value >= 40 'kg/m2'
           and BMIExam.status in { 'final', 'amended', 'corrected' }
-          and BMIExam.effective.earliest ( ) during day of "Measurement Period"
-          and BMIExam.effective.earliest ( ) on or before FollowUpUSSAssessment.effectiveDatetime
-      return BMIExam.effective.earliest ( )
+          and BMIExam.effective.earliest() during day of "Measurement Period"
+          and BMIExam.effective.earliest() on or before FollowUpUSSAssessment.effectiveDatetime
+      return BMIExam.effective.earliest()
   )
 
-/*
-@QICore6Uplift: Update function parameter to include a choice of ConditionProblemsHealthConcerns and ConditionEncounterDiagnosis
-*/ 
-define fluent function isConfirmedActiveDiagnosis(condition ConditionProblemsHealthConcerns):
-  condition.isActive ( )
+define fluent function isConfirmedActiveDiagnosis(condition Choice<ConditionProblemsHealthConcerns, ConditionEncounterDiagnosis>):
+  condition.isActive()
     and condition.verificationStatus ~ QICoreCommon."confirmed"

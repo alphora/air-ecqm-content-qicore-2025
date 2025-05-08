@@ -1,4 +1,4 @@
-library ProstateCaAvoidanceBoneScanOveruseFHIRQ6 version '1.0.000'
+library CMS129FHIRProstateCaAvoidanceBoneScanOveruse version '1.1.000'
 
 using QICore version '6.0.0'
 
@@ -6,28 +6,26 @@ include FHIRHelpers version '4.4.000' called FHIRHelpers
 include SupplementalDataElements version '5.1.000' called SDE
 include QICoreCommon version '4.0.000' called QICoreCommon
 
-
 codesystem "LOINC": 'http://loinc.org' 
 codesystem "SNOMEDCT": 'http://snomed.info/sct' 
 codesystem "UCUM": 'http://unitsofmeasure.org'
-
 
 valueset "Bone Scan": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.320' 
 valueset "Pain Warranting Further Investigation for Prostate Cancer": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.451' 
 valueset "Prostate Cancer": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.319' 
 valueset "Prostate Cancer Treatment": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.398' 
 valueset "Prostate Specific Antigen Test": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.401' 
-valueset "Salvage Therapy": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.399' 
+valueset "Salvage Therapy": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.399'
 
+code "American Joint Committee on Cancer cT1a (qualifier value)" : '1228892002' from "SNOMEDCT" display 'American Joint Committee on Cancer cT1a (qualifier value)'
+code "American Joint Committee on Cancer cT1b (qualifier value)" : '1228895000' from "SNOMEDCT" display 'American Joint Committee on Cancer cT1b (qualifier value)'
+code "American Joint Committee on Cancer cT1c (qualifier value)" : '1228899006' from "SNOMEDCT" display 'American Joint Committee on Cancer cT1c (qualifier value)'
+code "American Joint Committee on Cancer cT2a (qualifier value)" : '1228931008' from "SNOMEDCT" display 'American Joint Committee on Cancer cT2a (qualifier value)'
 code "Gleason score in Specimen Qualitative": '35266-6' from "LOINC" display 'Gleason score in Specimen Qualitative'
-code "Neoplasm of prostate primary tumor staging category T1c: Tumor identified by needle biopsy (finding)": '433351000124101' from "SNOMEDCT" display 'Neoplasm of prostate primary tumor staging category T1c: Tumor identified by needle biopsy (finding)'
-code "Neoplasm of prostate primary tumor staging category T2a: Involves one-half of one lobe or less (finding)": '433361000124104' from "SNOMEDCT" display 'Neoplasm of prostate primary tumor staging category T2a: Involves one-half of one lobe or less (finding)'
 code "Procedure reason record (record artifact)": '433611000124109' from "SNOMEDCT" display 'Procedure reason record (record artifact)'
-code "T1a: Prostate tumor incidental histologic finding in 5 percent or less of tissue resected (finding)": '369833007' from "SNOMEDCT" display 'T1a: Prostate tumor incidental histologic finding in 5 percent or less of tissue resected (finding)'
-code "T1b: Prostate tumor incidental histologic finding in greater than 5 percent of tissue resected (finding)": '369834001' from "SNOMEDCT" display 'T1b: Prostate tumor incidental histologic finding in greater than 5 percent of tissue resected (finding)'
 code "Tumor staging (tumor staging)": '254292007' from "SNOMEDCT" display 'Tumor staging (tumor staging)'
 
-parameter "Measurement Period" Interval<DateTime> default Interval[@2026-01-01, @2027-01-01)
+parameter "Measurement Period" Interval<DateTime>
 
 context Patient
 
@@ -95,7 +93,7 @@ define "First Prostate Cancer Treatment during day of Measurement Period":
       sort by start of effective.toInterval()
   ) ) LastPSATest
     return LastPSATest.value as Quantity < 10 'ng/mL'
-  
+    
 define "Has Salvage Therapy Performed after Prostate Cancer Diagnosis":
   exists ( [Procedure: "Salvage Therapy"] SalvageTherapy
       with "Prostate Cancer Diagnosis" ActiveProstateCancer
@@ -113,18 +111,21 @@ define "Most Recent Gleason Score is Low":
     return LastGleasonScore.value as Integer <= 6
 
 define "Most Recent Prostate Cancer Staging Tumor Size T1a to T2a":
-  ( Last([ObservationClinicalResult: "Tumor staging (tumor staging)"] ProstateCancerStaging
+  ( Last(([ObservationClinicalResult: "Tumor staging (tumor staging)"] TumorStaging
+    // TODO: determine feasibility of ObservationClinicalResult having basedOn reference to Condition
+    // where exists("Prostate Cancer Diagnosis" ActiveProstateCancer where TumorStaging.basedOn.references(ActiveProstateCancer))
+    ) ProstateCancerStaging
       with "First Prostate Cancer Treatment during day of Measurement Period" FirstProstateCancerTreatment
         such that ProstateCancerStaging.effective.toInterval() starts before start of FirstProstateCancerTreatment.performed.toInterval()
           and ProstateCancerStaging.status in { 'final', 'amended', 'corrected' }
       sort by start of effective.toInterval()
   ) ) LastProstateCancerStaging
-    where ( LastProstateCancerStaging.value ~ "T1a: Prostate tumor incidental histologic finding in 5 percent or less of tissue resected (finding)"
-        or LastProstateCancerStaging.value ~ "T1b: Prostate tumor incidental histologic finding in greater than 5 percent of tissue resected (finding)"
-        or LastProstateCancerStaging.value ~ "Neoplasm of prostate primary tumor staging category T1c: Tumor identified by needle biopsy (finding)"
-        or LastProstateCancerStaging.value ~ "Neoplasm of prostate primary tumor staging category T2a: Involves one-half of one lobe or less (finding)"
+    where ( LastProstateCancerStaging.value ~ "American Joint Committee on Cancer cT1a (qualifier value)"
+        or LastProstateCancerStaging.value ~ "American Joint Committee on Cancer cT1b (qualifier value)"
+        or LastProstateCancerStaging.value ~ "American Joint Committee on Cancer cT1c (qualifier value)"
+        or LastProstateCancerStaging.value ~ "American Joint Committee on Cancer cT2a (qualifier value)"
     )
-
+    
 define "Prostate Cancer Diagnosis":
   [ConditionProblemsHealthConcerns: "Prostate Cancer"] ProstateCancer
     where ProstateCancer.prevalenceInterval() overlaps day of "Measurement Period"

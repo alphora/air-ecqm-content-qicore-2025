@@ -1,10 +1,11 @@
-library CRLReceiptofSpecialistReportFHIR version '0.3.000'
+library CMS50FHIRCRLReceiptofSpecialistReport version '0.4.000'
 
 using QICore version '6.0.0'
 
 include FHIRHelpers version '4.4.000' called FHIRHelpers
 include SupplementalDataElements version '5.1.000' called SDE
 include QICoreCommon version '4.0.000' called QICoreCommon
+include Status version '1.13.000' called Status
 
 codesystem "CPT": 'http://www.ama-assn.org/go/cpt'
 
@@ -25,7 +26,7 @@ code "Psychological or neuropsychological test administration and scoring by phy
 code "Psychological or neuropsychological test administration and scoring by technician, two or more tests, any method; first 30 minutes": '96138' from "CPT" display 'Psychological or neuropsychological test administration and scoring by technician, two or more tests, any method; first 30 minutes'
 code "Psychotherapy for crisis; first 60 minutes": '90839' from "CPT" display 'Psychotherapy for crisis; first 60 minutes'
 
-parameter "Measurement Period" Interval<DateTime> default Interval[@2026-01-01, @2027-01-01)
+parameter "Measurement Period" Interval<DateTime>
 
 context Patient
 
@@ -45,7 +46,7 @@ define "SDE Sex":
   SDE."SDE Sex"
 
 define "Initial Population":
-  "Has Encounter during Measurement Period"
+  ("Has Encounter during Measurement Period" or "Has Intervention during Measurement Period")
     and "First Referral during First 10 Months of Measurement Period" is not null
 
 define "Has Encounter from Valuesets during Measurement Period":
@@ -81,10 +82,27 @@ define "Has Encounter from DRCs during Measurement Period":
       where Encounter.status = 'finished'
         and Encounter.period during day of "Measurement Period"
   )
-
+    
 define "Has Encounter during Measurement Period":
-  "Has Encounter from Valuesets during Measurement Period"
-    or "Has Encounter from DRCs during Measurement Period"
+    exists ( ( ["Encounter": type in "Office Visit"]
+        union ["Encounter": type in "Ophthalmological Services"]
+        union ["Encounter": type in "Preventive Care Services Established Office Visit, 18 and Up"]
+        union ["Encounter": type in "Preventive Care Services, Initial Office Visit, 0 to 17"]
+        union ["Encounter": type in "Preventive Care Services Initial Office Visit, 18 and Up"]
+        union ["Encounter": type in "Preventive Care, Established Office Visit, 0 to 17"] ) ValidEncounter
+    where ValidEncounter.status = 'finished' and ValidEncounter.period.toInterval() during day of "Measurement Period"
+)
+
+define "Has Intervention during Measurement Period":
+    exists (  ( ( ["Procedure": "Behavioral/Neuropsych Assessment"]
+        union ["Procedure": "Health behavior assessment, or re-assessment (ie, health-focused clinical interview, behavioral observations, clinical decision making)"]
+        union ["Procedure": "Psychological or neuropsychological test administration and scoring by physician or other qualified health care professional, two or more tests, any method; first 30 minutes"]
+        union ["Procedure": "Psychological or neuropsychological test administration and scoring by technician, two or more tests, any method; first 30 minutes"]
+        union ["Procedure": "Psychotherapy for crisis; first 60 minutes"]
+        union ["Procedure": "Psych Visit Diagnostic Evaluation"]
+        union ["Procedure": "Developmental test administration (including assessment of fine and/or gross motor, language, cognitive level, social, memory and/or executive functions by standardized developmental instruments when performed), by physician or other qualified health care professional, with interpretation and report; first hour"] ).isProcedurePerformed() ) ValidIntervention
+    where ValidIntervention.performed.toInterval() during day of "Measurement Period"
+)
 
 define "First Referral during First 10 Months of Measurement Period":
   First([ServiceRequest: "Referral"] ReferralOrder

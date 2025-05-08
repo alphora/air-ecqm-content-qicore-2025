@@ -1,12 +1,12 @@
-library ChildrenWhoHaveDentalDecayOrCavitiesFHIR6 version '1.0.000'
+library CMS75FHIRChildrenWhoHaveDentalDecayOrCavities version '1.1.000'
 
 using QICore version '6.0.0'
 
 include FHIRHelpers version '4.4.000' called FHIRHelpers
 include SupplementalDataElements version '5.1.000' called SDE
 include QICoreCommon version '4.0.000' called QICoreCommon
-include Hospice version '6.14.000' called Hospice
-include Status version '1.10.000' called Status
+include Hospice version '6.15.000' called Hospice
+include Status version '1.13.000' called Status
 
 
 codesystem "LOINC": 'http://loinc.org'
@@ -23,7 +23,7 @@ code "Discharge to home for hospice care (procedure)": '428361000124107' from "S
 code "Hospice care [Minimum Data Set]": '45755-6' from "LOINC" display 'Hospice care [Minimum Data Set]'
 code "Yes (qualifier value)": '373066001' from "SNOMEDCT" display 'Yes (qualifier value)'
 
-parameter "Measurement Period" Interval<DateTime>
+parameter "Measurement Period" Interval<DateTime> default Interval[@2026-01-01, @2027-01-01)
 
 context Patient
 
@@ -32,8 +32,8 @@ define "Initial Population":
     and exists ( "Qualifying Encounters" )
 
 define "Qualifying Encounters":
-  ( ( [Encounter: "Clinical Oral Evaluation"] ).isEncounterPerformed ( ) ) ValidEncounter
-    where ValidEncounter.period.toInterval ( ) during day of "Measurement Period"
+  ( ( [Encounter: "Clinical Oral Evaluation"] ).isEncounterPerformed() ) ValidEncounter
+    where ValidEncounter.period.toInterval() during day of "Measurement Period"
 
 define "Denominator":
   "Initial Population"
@@ -41,11 +41,10 @@ define "Denominator":
 define "Denominator Exclusions":
   Hospice."Has Hospice Services"
 
-//@QICore6Uplift: Update Condition to a union of ConditionProblemsHealthConcerns and ConditionEncounterDiagnosis
 define "Numerator":
   exists ([ConditionProblemsHealthConcerns: "Dental Caries"]
     union [ConditionEncounterDiagnosis: "Dental Caries"]) DentalCaries
-      where DentalCaries.prevalenceInterval ( ) overlaps "Measurement Period"
+      where DentalCaries.prevalenceInterval() overlaps "Measurement Period"
 
 define "SDE Ethnicity":
   SDE."SDE Ethnicity"

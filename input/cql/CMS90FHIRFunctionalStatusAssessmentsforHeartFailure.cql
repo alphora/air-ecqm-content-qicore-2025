@@ -1,12 +1,12 @@
-library FunctionalStatusAssessmentsforHeartFailureFHIR version '0.1.000'
+library CMS90FHIRFunctionalStatusAssessmentsforHeartFailure version '0.3.000'
 
 using QICore version '6.0.0'
 
 include FHIRHelpers version '4.4.000' called FHIRHelpers
-include QICoreCommon version '4.0.000' called QICoreCommon 
+include QICoreCommon version '4.0.000' called QICoreCommon
 include SupplementalDataElements version '5.1.000' called SDE
-include Hospice version '6.14.000' called Hospice
-include Status version '1.10.000' called Status
+include Hospice version '6.15.000' called Hospice
+include Status version '1.13.000' called Status
 
 codesystem "LOINC": 'http://loinc.org'
 codesystem "SNOMEDCT": 'http://snomed.info/sct'
@@ -47,7 +47,7 @@ code "VR-36 Mental component summary (MCS) score - orthogonal method T-score": '
 code "VR-36 Physical component summary (PCS) score - oblique method T-score": '71989-8' from "LOINC" display 'VR-36 Physical component summary (PCS) score - oblique method T-score'
 code "VR-36 Physical component summary (PCS) score - orthogonal method T-score": '72007-8' from "LOINC" display 'VR-36 Physical component summary (PCS) score - orthogonal method T-score'
 
-parameter "Measurement Period" Interval<DateTime> default Interval[@2026-01-01, @2027-01-01)
+parameter "Measurement Period" Interval<DateTime>
 
 context Patient
 

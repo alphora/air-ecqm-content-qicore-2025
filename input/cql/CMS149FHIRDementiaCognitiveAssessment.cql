@@ -1,4 +1,4 @@
-library DementiaCognitiveAssessmentFHIR version '0.1.000'
+library CMS149FHIRDementiaCognitiveAssessment version '0.2.000'
 
 using QICore version '6.0.0'
 
@@ -10,7 +10,7 @@ include QICoreCommon version '4.0.000' called QICoreCommon
 
 codesystem "ActCode": 'http://terminology.hl7.org/CodeSystem/v3-ActCode'  
 
-valueset "Behavioral/Neuropsych Assessment": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1023' 
+valueset "Behavioral or Neuropsych Assessment": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1023' 
 valueset "Care Services in Long Term Residential Facility": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1014' 
 valueset "Cognitive Assessment": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1332' 
 valueset "Dementia & Mental Degenerations": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1005' 
@@ -73,7 +73,7 @@ define "Encounter to Assess Cognition":
     union ["Encounter": "Care Services in Long Term Residential Facility"]
     union ["Encounter": "Home Healthcare Services"]
     union ["Encounter": "Psych Visit Psychotherapy"]
-    union ["Encounter": "Behavioral/Neuropsych Assessment"]
+    union ["Encounter": "Behavioral or Neuropsych Assessment"]
     union ["Encounter": "Occupational Therapy Evaluation"]
     union ["Encounter": "Office Visit"]
     union ["Encounter": "Outpatient Consultation"]
@@ -82,7 +82,7 @@ define "Patient Reason for Not Performing Assessment of Cognition Using Standard
 ([ObservationCancelled: code in "Standardized Tools for Assessment of Cognition"] 
     union [ObservationCancelled: code in "Cognitive Assessment"] )NoCognitiveAssessment
     with "Dementia Encounter During Measurement Period" EncounterDementia
-      such that NoCognitiveAssessment.issued during EncounterDementia.period
+      such that NoCognitiveAssessment.issued during day of EncounterDementia.period
     where NoCognitiveAssessment.notDoneReason in "Patient Reason"
 
 define "Qualifying Encounter During Measurement Period":

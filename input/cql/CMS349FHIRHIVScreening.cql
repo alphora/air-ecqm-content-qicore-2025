@@ -1,10 +1,10 @@
-library HIVScreeningFHIR version '0.2.000'
+library CMS349FHIRHIVScreening version '0.3.000'
 
 using QICore version '6.0.0'
 
 include FHIRHelpers version '4.4.000' called FHIRHelpers
 include SupplementalDataElements version '5.1.000' called SDE
-include CQMCommon version '4.1.000' called CQMCommon
+include CQMCommon version '4.0.000' called CQMCommon
 include QICoreCommon version '4.0.000' called QICoreCommon
 
 codesystem "LOINC": 'http://loinc.org'
@@ -28,7 +28,7 @@ code "active": 'active' from "ConditionClinicalStatusCodes"
 code "refuted": 'refuted' from "ConditionVerificationStatus"
 code "Dead (finding)": '419099009' from "SNOMEDCT" display 'Dead (finding)'
 
-parameter "Measurement Period" Interval<DateTime> default Interval[@2026-01-01, @2027-01-01)
+parameter "Measurement Period" Interval<DateTime>
 
 context Patient
 
@@ -44,11 +44,11 @@ define "Numerator":
 
 define "Denominator Exclusions":
   exists ( 
-  // [ConditionProblemsHealthConcerns: "HIV"] union 
-  [ConditionEncounterDiagnosis: "HIV"] ) HIVirus
-    where HIVirus.prevalenceInterval ( ) starts before day of start of "Measurement Period"
-      and HIVirus.verificationStatus !~ "refuted"
-
+  ([ConditionProblemsHealthConcerns: "HIV"] union 
+  [ConditionEncounterDiagnosis: "HIV"]) HIVDiagnosis
+    where HIVDiagnosis.prevalenceInterval() starts before day of start of "Measurement Period"
+      and HIVDiagnosis.verificationStatus !~ "refuted"
+)
 define "Denominator Exceptions":
   "Patient Expired"
 
@@ -69,7 +69,7 @@ define "Has HIV Test Performed":
     union ["LaboratoryResultObservation": "HIV 1 and 2 tests - Meaningful Use set"] ) HIVTest
     where HIVTest.value is not null
       and AgeInYearsAt(date from start of HIVTest.effective.toInterval()) in Interval[15, 65]
-      and HIVTest.effective.toInterval ( ) starts before end of "Measurement Period"
+      and HIVTest.effective.toInterval() starts before end of "Measurement Period"
       and ( HIVTest.status = 'final'
           or HIVTest.status = 'amended'
           or HIVTest.status = 'corrected'
