@@ -1,4 +1,4 @@
-library HFACEIorARBorARNIforLVSDFHIR version '0.4.000'
+library CMS135FHIRHFACEIorARBorARNIforLVSD version '0.4.000'
 
 using QICore version '6.0.0'
 
@@ -24,7 +24,7 @@ code "Substance with angiotensin II receptor antagonist mechanism of action (sub
 code "Substance with angiotensin-converting enzyme inhibitor mechanism of action (substance)": '372733002' from "SNOMEDCT" display 'Substance with angiotensin-converting enzyme inhibitor mechanism of action (substance)'
 code "Substance with neprilysin inhibitor mechanism of action (substance)": '786886009' from "SNOMEDCT" display 'Substance with neprilysin inhibitor mechanism of action (substance)'
 
-parameter "Measurement Period" Interval<DateTime> default Interval[@2026-01-01, @2027-01-01)
+parameter "Measurement Period" Interval<DateTime>
 
 context Patient
 

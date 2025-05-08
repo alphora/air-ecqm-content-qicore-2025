@@ -1,4 +1,4 @@
-library DRCommunicationWithPhysicianManagingDiabetesFHIR6 version '0.2.000'
+library CMS142FHIRDRCommunicationWithPhysicianManagingDiabetes version '0.2.000'
 
 using QICore version '6.0.0'
 
@@ -40,7 +40,7 @@ code "virtual": 'VR' from "ActCode" display 'virtual'
 
 code "AMB": 'AMB' from "ActCode" display 'Ambulatory'
 
-parameter "Measurement Period" Interval<DateTime> default Interval[@2026-01-01, @2027-01-01)
+parameter "Measurement Period" Interval<DateTime>
 
 context Patient
 

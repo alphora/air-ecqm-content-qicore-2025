@@ -1,4 +1,4 @@
-library PCSBPScreeningFollowUpFHIR6 version '0.3.000'
+library CMS22FHIRPCSBPScreeningFollowUp version '0.3.000'
 
 using QICore version '6.0.0'
 using USCore version '6.1.0'
@@ -35,7 +35,7 @@ code "EKG study": '11524-6' from "LOINC" display 'EKG study'
 code "Systolic blood pressure": '8480-6' from "LOINC" display 'Systolic blood pressure'
 code "virtual": 'VR' from "ActCode" display 'virtual'
 
-parameter "Measurement Period" Interval<DateTime> default Interval[@2026-01-01, @2027-01-01)
+parameter "Measurement Period" Interval<DateTime>
 
 context Patient
 

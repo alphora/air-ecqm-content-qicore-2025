@@ -1,4 +1,4 @@
-library DocumentationofCurrentMedicationsFHIRQ6 version '0.2.000'
+library CMS68FHIRDocumentationofCurrentMedications version '0.3.000'
 
 using QICore version '6.0.0'
 
@@ -13,7 +13,7 @@ valueset "Encounter to Document Medications": 'http://cts.nlm.nih.gov/fhir/Value
 code "Acute health crisis (finding)": '705016005' from "SNOMEDCT" display 'Acute health crisis (finding)'
 code "Documentation of current medications (procedure)": '428191000124101' from "SNOMEDCT" display 'Documentation of current medications (procedure)'
 
-parameter "Measurement Period" Interval<DateTime> default Interval[@2026-01-01, @2027-01-01)
+parameter "Measurement Period" Interval<DateTime>
 
 context Patient
 

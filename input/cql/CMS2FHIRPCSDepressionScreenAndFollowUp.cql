@@ -1,4 +1,4 @@
-library PCSDepressionScreenAndFollowUpFHIRQ6 version '0.4.000'
+library CMS2FHIRPCSDepressionScreenAndFollowUp version '0.4.000'
 
 using QICore version '6.0.0'
 
@@ -28,7 +28,7 @@ code "Depression screening declined (situation)": '720834000' from "SNOMEDCT" di
 code "Depression screening negative (finding)": '428171000124102' from "SNOMEDCT" display 'Depression screening negative (finding)'
 code "Depression screening positive (finding)": '428181000124104' from "SNOMEDCT" display 'Depression screening positive (finding)'
 
-parameter "Measurement Period" Interval<DateTime> default Interval[@2026-01-01, @2027-01-01) //default Interval[@2025-01-01T00:00:00Z, @2026-01-01T00:00:00Z)
+parameter "Measurement Period" Interval<DateTime>
 
 context Patient
 

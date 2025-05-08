@@ -1,4 +1,4 @@
-library POAGOpticNerveEvaluationFHIRQ6 version '0.1.000'
+library CMS143FHIRPOAGOpticNerveEvaluation version '0.2.000'
 
 using QICore version '6.0.0'
 
@@ -28,7 +28,7 @@ valueset "Primary Open-Angle Glaucoma": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.
 code "virtual": 'VR' from "ActCode" display 'virtual'
 code "AMB": 'AMB' from "ActCode" display 'Ambulatory'
 
-parameter "Measurement Period" Interval<DateTime> default Interval[@2026-01-01, @2027-01-01)
+parameter "Measurement Period" Interval<DateTime>
 
 context Patient
 

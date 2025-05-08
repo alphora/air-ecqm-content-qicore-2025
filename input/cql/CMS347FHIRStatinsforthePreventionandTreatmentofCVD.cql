@@ -1,10 +1,10 @@
-library StatinsforthePreventionandTreatmentofCardiovascularDiseaseFHIR version '0.2.000'
+library CMS347FHIRStatinsforthePreventionandTreatmentofCVD version '0.3.000'
 
 using QICore version '6.0.0'
 
 include FHIRHelpers version '4.4.000' called FHIRHelpers
-include Hospice version '6.15.000' called Hospice
-include PalliativeCare version '1.15.000' called PalliativeCare
+include Hospice version '6.14.000' called Hospice
+include PalliativeCare version '1.13.000' called PalliativeCare
 include QICoreCommon version '4.0.000' called QICoreCommon
 include SupplementalDataElements version '5.1.000' called SDE
 include CQMCommon version '4.0.000' called CQMCommon
@@ -51,7 +51,7 @@ code "Cardiovascular disease 10Y risk [Likelihood]": '99055-6' from "LOINC" disp
 code "Cardiovascular disease 10Y risk [Likelihood] ACC-AHA Pooled Cohort by Goff 2013": '79423-0' from "LOINC" display 'Cardiovascular disease 10Y risk [Likelihood] ACC-AHA Pooled Cohort by Goff 2013'
 code "Subsequent non-ST elevation (NSTEMI) myocardial infarction": 'I22.2' from "ICD10CM" display 'Subsequent non-ST elevation (NSTEMI) myocardial infarction'
 
-parameter "Measurement Period" Interval<DateTime> default Interval[@2026-01-01, @2027-01-01)
+parameter "Measurement Period" Interval<DateTime>
 
 context Patient
 

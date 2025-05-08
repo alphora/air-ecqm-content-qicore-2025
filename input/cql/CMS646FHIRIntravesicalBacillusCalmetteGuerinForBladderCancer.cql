@@ -1,4 +1,4 @@
-library IntravesicalBacillusCalmetteGuerinForBladderCancerFHIR version '1.4.000'
+library CMS646FHIRIntravesicalBacillusCalmetteGuerinForBladderCancer version '1.5.000'
 
 using QICore version '6.0.0'
 
@@ -30,7 +30,7 @@ code "Combined radiotherapy (procedure)": '169331000' from "SNOMEDCT" display 'C
 code "Tumor staging (tumor staging)": '254292007' from "SNOMEDCT" display 'Tumor staging (tumor staging)'
 code "virtual": 'VR' from "ActCode" display 'virtual'
 
-parameter "Measurement Period" Interval<DateTime> default Interval[@2026-01-01, @2027-01-01)
+parameter "Measurement Period" Interval<DateTime>
 
 context Patient
 
