@@ -189,12 +189,19 @@ define "Numerator":
             and "Received Foot Care Education"
     ) 
     or (
-        "Has Abnormal Exam Finding of Lower Extremity"
+        "Has At Least Two Neurological Exam Findings of Lower Extremity"
+            and exists("Vascular Exam Finding of Lower Extremity")
+            and exists("Visual Inspection of Lower Extremity")
+            and "Received Foot Care Education"
+            and "Has Abnormal Exam Finding of Lower Extremity"
             and "Has Follow-Up Plan of Care Within One Week of Eligible Encounter with Abnormal Finding"
     )
 
-define "Has At Least Two Normal Neurological Exam Findings of Lower Extremity":
+define "Has At Least Two Neurological Exam Findings of Lower Extremity":
     Count("Qualifying Normal Neurological Exam Findings") >= 2
+
+define "Has At Least Two Normal Neurological Exam Findings of Lower Extremity":
+    "Has At Least Two Neurological Exam Findings of Lower Extremity"
         and exists (
             "Qualifying Normal Neurological Exam Findings" NeurologicalExamType1
                 with "Qualifying Normal Neurological Exam Findings" NeurologicalExamType2
@@ -236,22 +243,28 @@ define "Normal Temperature Discrimination Foot Test Finding":
         where TemperatureTest.value is not null
             and (TemperatureTest.value as Concept) in "Temperature Discrimination Test Normal Finding"
 
+define "Vascular Exam Finding of Lower Extremity":
+    [ObservationClinicalResult: "Pedal Pulse Palpation Foot Test"] VascularExam
+        where VascularExam.value is not null
+            and VascularExam.status in { 'final', 'amended', 'corrected' }
+            and VascularExam.effective.toInterval() during day of "Measurement Period"
+
 define "Has a Normal Vascular Exam Finding of Lower Extremity":
     exists (
-        [ObservationClinicalResult: "Pedal Pulse Palpation Foot Test"] VascularExam
-            where VascularExam.value is not null
-                and (VascularExam.value as Concept) in "Pedal Pulse Test Normal Finding"
-                and VascularExam.status in { 'final', 'amended', 'corrected' }
-                and VascularExam.effective.toInterval() during day of "Measurement Period"
+        "Vascular Exam Finding of Lower Extremity" VascularExam
+            where (VascularExam.value as Concept) in "Pedal Pulse Test Normal Finding"
     )
+
+define "Visual Inspection of Lower Extremity":
+    [ObservationClinicalResult: "Lower Extremity Visual Exam"] VisualExam
+        where VisualExam.value is not null
+            and VisualExam.status in { 'final', 'amended', 'corrected' }
+            and VisualExam.effective.toInterval() during day of "Measurement Period" 
 
 define "Has a Normal Visual Inspection of Lower Extremity":
     exists (
-        [ObservationClinicalResult: "Lower Extremity Visual Exam"] VisualExam
-            where VisualExam.value is not null
-                and (VisualExam.value as Concept) in "Lower Extremity Visual Exam Normal Finding"
-                and VisualExam.status in { 'final', 'amended', 'corrected' }
-                and VisualExam.effective.toInterval() during day of "Measurement Period" 
+        "Visual Inspection of Lower Extremity" VisualExam
+            where (VisualExam.value as Concept) in "Lower Extremity Visual Exam Normal Finding"
     )
     
 define "Received Foot Care Education":
@@ -357,6 +370,7 @@ define "Has Follow-Up Plan of Care Within One Week of Eligible Encounter with Ab
                     ) FollowUpProcedure
                         where FollowUpProcedure.status ~ 'completed'
                             and FollowUpProcedure.performed.toInterval() during day of "Seven-Day Period Following Qualifying Encounter"
+                            and FollowUpProcedure.performed.toInterval() during day of "Measurement Period"
                 )
                 union (
                     (
@@ -366,6 +380,7 @@ define "Has Follow-Up Plan of Care Within One Week of Eligible Encounter with Ab
                         where FollowUpServiceRequest.status in { 'active', 'completed' }
                             and FollowUpServiceRequest.intent = 'order'
                             and FollowUpServiceRequest.authoredOn.toInterval() during day of "Seven-Day Period Following Qualifying Encounter"
+                            and FollowUpServiceRequest.authoredOn.toInterval() during day of "Measurement Period"
                 )
                 union (
                     (
@@ -375,6 +390,7 @@ define "Has Follow-Up Plan of Care Within One Week of Eligible Encounter with Ab
                         where FollowUpDeviceRequest.status in { 'active', 'completed' }
                             and FollowUpDeviceRequest.intent = 'order'
                             and FollowUpDeviceRequest.authoredOn.toInterval() during day of "Seven-Day Period Following Qualifying Encounter"
+                            and FollowUpDeviceRequest.authoredOn.toInterval() during day of "Measurement Period"
                 )
             )
     )
