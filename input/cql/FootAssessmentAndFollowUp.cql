@@ -74,7 +74,7 @@ code "Right (qualifier value)": '24028007' from "SNOMEDCT" display 'Right (quali
 code "Left (qualifier value)": '7771000' from "SNOMEDCT" display 'Left (qualifier value)'
 code "Right and left (qualifier value)": '51440002' from "SNOMEDCT" display 'Right and left (qualifier value)'
 
-parameter "Measurement Period" Interval<DateTime> default Interval[@2026-01-01T00:00:00.000, @2027-01-01T00:00:00.000)
+parameter "Measurement Period" Interval<DateTime>
 
 context Patient
 
@@ -198,15 +198,25 @@ define "Numerator":
     )
 
 define "Has At Least Two Neurological Exam Findings of Lower Extremity":
-    Count("Qualifying Normal Neurological Exam Findings") >= 2
+    Count("Qualifying Neurological Exam Findings") >= 2
 
 define "Has At Least Two Normal Neurological Exam Findings of Lower Extremity":
-    "Has At Least Two Neurological Exam Findings of Lower Extremity"
+    Count("Qualifying Normal Neurological Exam Findings") >= 2
         and exists (
             "Qualifying Normal Neurological Exam Findings" NeurologicalExamType1
                 with "Qualifying Normal Neurological Exam Findings" NeurologicalExamType2
                 such that NeurologicalExamType1.code !~ NeurologicalExamType2.code
         )
+
+define "Qualifying Neurological Exam Findings":
+    ("Monofilament Foot Test Finding"
+        union "Pinprick Sensation Foot Test Finding"
+        union "Vibration Sensation Foot Test Finding"
+        union "Ipswich Soft Touch Test Finding"
+        union "Temperature Discrimination Foot Test Finding"
+    ) NormalNeurologicalExam
+        where NormalNeurologicalExam.status in { 'final', 'amended', 'corrected' }
+            and NormalNeurologicalExam.effective.toInterval() during day of "Measurement Period"
 
 define "Qualifying Normal Neurological Exam Findings":
     ("Normal Monofilament Foot Test Finding"
@@ -218,30 +228,45 @@ define "Qualifying Normal Neurological Exam Findings":
         where NormalNeurologicalExam.status in { 'final', 'amended', 'corrected' }
             and NormalNeurologicalExam.effective.toInterval() during day of "Measurement Period"
 
-define "Normal Monofilament Foot Test Finding":
+define "Monofilament Foot Test Finding":
     [ObservationClinicalResult: "Monofilament Foot Test"] MonofilmanetFootTest
         where MonofilmanetFootTest.value is not null 
-            and (MonofilmanetFootTest.value as Concept) in "Monofilament Test Normal Finding"
                     
-define "Normal Pinprick Sensation Foot Test Finding":
+define "Pinprick Sensation Foot Test Finding":
     [ObservationClinicalResult: "Pinprick Sensation Test and Finding"] PinprickTest
         where PinprickTest.value is not null 
-            and (PinprickTest.value as Concept) in "Pinprick Sensation Test Normal Finding"
 
-define "Normal Vibration Sensation Foot Test Finding":
+define "Vibration Sensation Foot Test Finding":
     [ObservationClinicalResult: "Vibration Sensation Foot Test"] VibrationTest
         where VibrationTest.value is not null
-            and (VibrationTest.value as Concept) in "Vibration Test Normal Finding"
 
-define "Normal Ipswich Soft Touch Test Finding":
+define "Ipswich Soft Touch Test Finding":
     [ObservationClinicalResult: "Ipswich Soft Touch Test and Finding"] IpswichTest 
         where IpswichTest.value is not null
-            and (IpswichTest.value as Concept) in "Ipswich Soft Touch Test Normal Finding"
                 
-define "Normal Temperature Discrimination Foot Test Finding":
+define "Temperature Discrimination Foot Test Finding":
     [ObservationClinicalResult: "Temperature Discrimination Foot Test"] TemperatureTest
         where TemperatureTest.value is not null
-            and (TemperatureTest.value as Concept) in "Temperature Discrimination Test Normal Finding"
+
+define "Normal Monofilament Foot Test Finding":
+    "Monofilament Foot Test Finding" MonofilmanetFootTest
+        where (MonofilmanetFootTest.value as System.Concept) in "Monofilament Test Normal Finding"
+                    
+define "Normal Pinprick Sensation Foot Test Finding":
+    "Pinprick Sensation Foot Test Finding" PinprickTest
+        where (PinprickTest.value as System.Concept) in "Pinprick Sensation Test Normal Finding"
+
+define "Normal Vibration Sensation Foot Test Finding":
+    "Vibration Sensation Foot Test Finding" VibrationTest
+        where (VibrationTest.value as System.Concept) in "Vibration Test Normal Finding"
+
+define "Normal Ipswich Soft Touch Test Finding":
+    "Ipswich Soft Touch Test Finding" IpswichTest 
+        where (IpswichTest.value as System.Concept) in "Ipswich Soft Touch Test Normal Finding"
+                
+define "Normal Temperature Discrimination Foot Test Finding":
+    "Temperature Discrimination Foot Test Finding" TemperatureTest
+        where (TemperatureTest.value as System.Concept) in "Temperature Discrimination Test Normal Finding"
 
 define "Vascular Exam Finding of Lower Extremity":
     [ObservationClinicalResult: "Pedal Pulse Palpation Foot Test"] VascularExam
@@ -252,7 +277,7 @@ define "Vascular Exam Finding of Lower Extremity":
 define "Has a Normal Vascular Exam Finding of Lower Extremity":
     exists (
         "Vascular Exam Finding of Lower Extremity" VascularExam
-            where (VascularExam.value as Concept) in "Pedal Pulse Test Normal Finding"
+            where (VascularExam.value as System.Concept) in "Pedal Pulse Test Normal Finding"
     )
 
 define "Visual Inspection of Lower Extremity":
@@ -264,7 +289,7 @@ define "Visual Inspection of Lower Extremity":
 define "Has a Normal Visual Inspection of Lower Extremity":
     exists (
         "Visual Inspection of Lower Extremity" VisualExam
-            where (VisualExam.value as Concept) in "Lower Extremity Visual Exam Normal Finding"
+            where (VisualExam.value as System.Concept) in "Lower Extremity Visual Exam Normal Finding"
     )
     
 define "Received Foot Care Education":
@@ -306,43 +331,37 @@ define "Abnormal Condition of Lower Extremity":
             and AbnormalCondition.prevalenceInterval() overlaps day of "Measurement Period"   
 
 define "Abnormal Monofilament Foot Test Finding":
-    [ObservationClinicalResult: "Monofilament Foot Test"] MonofilmanetFootTest
-        where MonofilmanetFootTest.value is not null
-            and (MonofilmanetFootTest.value as Concept) in "Monofilament Test Abnormal Finding"
+    "Monofilament Foot Test Finding" MonofilmanetFootTest
+        where (MonofilmanetFootTest.value as System.Concept) in "Monofilament Test Abnormal Finding"
 
 define "Abnormal Pinprick Sensation Foot Test Finding":
-    [ObservationClinicalResult: "Pinprick Sensation Test and Finding"] PinprickTest
-        where PinprickTest.value is not null 
-            and (PinprickTest.value as Concept) in "Pinprick Sensation Test Abnormal Finding"
+    "Pinprick Sensation Foot Test Finding" PinprickTest
+        where (PinprickTest.value as System.Concept) in "Pinprick Sensation Test Abnormal Finding"
 
 define "Abnormal Vibration Sensation Foot Test Finding":
-    [ObservationClinicalResult: "Vibration Sensation Foot Test"] VibrationTest
-        where VibrationTest.value is not null
-            and (VibrationTest.value as Concept) in "Vibration Test Abnormal Finding"
+    "Vibration Sensation Foot Test Finding" VibrationTest
+        where (VibrationTest.value as System.Concept) in "Vibration Test Abnormal Finding"
 
 define "Abnormal Ipswich Soft Touch Test Finding":
-    [ObservationClinicalResult: "Ipswich Soft Touch Test and Finding"] IpswichTest 
-        where IpswichTest.value is not null
-            and (IpswichTest.value as Concept) in "Ipswich Soft Touch Test Abnormal Finding"
+    "Ipswich Soft Touch Test Finding" IpswichTest 
+        where (IpswichTest.value as System.Concept) in "Ipswich Soft Touch Test Abnormal Finding"
 
 define "Abnormal Temperature Discrimination Foot Test Finding":
-    [ObservationClinicalResult: "Temperature Discrimination Foot Test"] TemperatureTest
-        where TemperatureTest.value is not null
-            and (TemperatureTest.value as Concept) in "Temperature Discrimination Test Abnormal Finding"
+    "Temperature Discrimination Foot Test Finding" TemperatureTest
+        where (TemperatureTest.value as System.Concept) in "Temperature Discrimination Test Abnormal Finding"
 
 define "Abnormal Vascular Exam Finding of Lower Extremity":
-    [ObservationClinicalResult: "Pedal Pulse Palpation Foot Test"] VascularExam
-        where VascularExam.value is not null
-            and (VascularExam.value as Concept) in "Pedal Pulse Test Abnormal Finding"
+    "Vascular Exam Finding of Lower Extremity" VascularExam
+        where (VascularExam.value as System.Concept) in "Pedal Pulse Test Abnormal Finding"
 
 define "Abnormal Visual Exam Finding of Lower Extremity":
-    [ObservationClinicalResult: "Lower Extremity Visual Exam"] VisualExam
+    "Visual Inspection of Lower Extremity" VisualExam
         where VisualExam.value is not null
             and (
-                (VisualExam.value as Concept) in "Callus of Foot"
-                    or (VisualExam.value as Concept) in "Deformity of Foot"
-                    or (VisualExam.value as Concept) in "Ulcer of Foot"
-                    or (VisualExam.value as Concept) in "Fissure or Blister of Foot"
+                (VisualExam.value as System.Concept) in "Callus of Foot"
+                    or (VisualExam.value as System.Concept) in "Deformity of Foot"
+                    or (VisualExam.value as System.Concept) in "Ulcer of Foot"
+                    or (VisualExam.value as System.Concept) in "Fissure or Blister of Foot"
             )    
 
 define "Qualifying Encounters with Abnormal Exam Finding of Lower Extremity":
