@@ -90,7 +90,8 @@ define "Has Encounter during Measurement Period":
         union ["Encounter": type in "Preventive Care Services, Initial Office Visit, 0 to 17"]
         union ["Encounter": type in "Preventive Care Services Initial Office Visit, 18 and Up"]
         union ["Encounter": type in "Preventive Care, Established Office Visit, 0 to 17"] ) ValidEncounter
-    where ValidEncounter.status = 'finished' and ValidEncounter.period.toInterval() during day of "Measurement Period"
+    where ValidEncounter.status = 'finished' 
+    and ValidEncounter.period during day of "Measurement Period"
 )
 
 define "Has Intervention during Measurement Period":
