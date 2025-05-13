@@ -75,7 +75,7 @@ define "Has Qualifying Encounter":
         union [Encounter: type in "Telephone Visits"]
         union [Encounter: type in "Virtual Encounter"]
    ).isEncounterPerformed()) ValidEncounters
-      where ValidEncounters.period.toInterval() during day of Interval["August 1 Year Prior to the Measurement Period", end of "Measurement Period"]
+      where ValidEncounters.period during day of Interval["August 1 Year Prior to the Measurement Period", end of "Measurement Period"]
  )
 
 define "August 1 Year Prior to the Measurement Period":
