@@ -124,8 +124,8 @@ define "Referring Clinician Receives Consultant Report to Close Referral Loop":
       with "First Referral during First 10 Months of Measurement Period" FirstReferral
         such that FirstReferral.ID in "TaskGetRequestID"(ConsultantReportObtained)
           and ConsultantReportObtained.executionPeriod ends after FirstReferral.AuthorDate
-          and ConsultantReportObtained.status = 'completed'
           and ConsultantReportObtained.executionPeriod ends during day of "Measurement Period"
+          and ConsultantReportObtained.status = 'completed'
   )
 
 define function "TaskGetRequestID"(task Task):
