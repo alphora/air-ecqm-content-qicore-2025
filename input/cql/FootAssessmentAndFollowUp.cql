@@ -68,6 +68,7 @@ valueset "Foot Pressure Offloading Devices": 'http://cts.nlm.nih.gov/fhir/ValueS
 valueset "Therapeutic Footwear Interventions": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.323'
 valueset "Therapeutic Footwear": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.324'
 valueset "Follow Up Within 12 Months": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.326'
+valueset "Under Care of Foot Care Provider": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.394'
 
 code "virtual": 'VR' from "ActCode" display 'virtual'
 code "Right (qualifier value)": '24028007' from "SNOMEDCT" display 'Right (qualifier value)'
