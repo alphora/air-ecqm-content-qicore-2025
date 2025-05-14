@@ -70,11 +70,10 @@ define "Has Bone Scan Study Performed with Documented Reason":
     where BoneScanAfterDiagnosis.value ~ "Procedure reason record (record artifact)"
 
 define "Has Diagnosis of Pain related to Prostate Cancer":
-  exists ( ( [ConditionProblemsHealthConcerns: "Pain Warranting Further Investigation for Prostate Cancer"] 
-            union [ConditionEncounterDiagnosis: "Pain Warranting Further Investigation for Prostate Cancer"] )ProstateCancerPain
+  exists ( [ConditionProblemsHealthConcerns: "Pain Warranting Further Investigation for Prostate Cancer"] ProstateCancerPain
       with "Prostate Cancer Diagnosis" ActiveProstateCancer
         such that ProstateCancerPain.prevalenceInterval() starts after start of ActiveProstateCancer.prevalenceInterval()
-         )
+        )
          
 define "First Prostate Cancer Treatment during day of Measurement Period":
   First([Procedure: "Prostate Cancer Treatment"] ProstateCancerTreatment
@@ -127,8 +126,4 @@ define "Most Recent Prostate Cancer Staging Tumor Size T1a to T2a":
 define "Prostate Cancer Diagnosis":
   [ConditionProblemsHealthConcerns: "Prostate Cancer"] ProstateCancer
     where ProstateCancer.prevalenceInterval() overlaps day of "Measurement Period"
-      and ( ProstateCancer.isProblemListItem()
-          or ProstateCancer.isHealthConcern()
-      )
-    
 
