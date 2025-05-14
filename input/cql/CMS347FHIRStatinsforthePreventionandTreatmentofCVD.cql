@@ -224,8 +224,7 @@ define "Patients Aged 20 to 75 at Start of Measurement Period":
   AgeInYearsAt(date from start of "Measurement Period") in Interval[20, 75]
 
 define "Patients Aged 40 to 75 Years with Diabetes without ASCVD or LDL Greater than 190 or Hypercholesterolemia":
-  AgeInYearsAt(date from start of "Measurement Period") >= 40
-    and AgeInYearsAt(date from start of "Measurement Period") <= 75
+  AgeInYearsAt(date from start of "Measurement Period") in Interval[40, 75]
     and "Has Diabetes Diagnosis"
     and ( not exists "ASCVD Diagnosis or Procedure before End of Measurement Period"
         and not exists "LDL Result Greater Than or Equal To 190"
