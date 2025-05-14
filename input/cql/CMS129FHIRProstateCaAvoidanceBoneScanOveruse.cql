@@ -74,9 +74,6 @@ define "Has Diagnosis of Pain related to Prostate Cancer":
             union [ConditionEncounterDiagnosis: "Pain Warranting Further Investigation for Prostate Cancer"] )ProstateCancerPain
       with "Prostate Cancer Diagnosis" ActiveProstateCancer
         such that ProstateCancerPain.prevalenceInterval() starts after start of ActiveProstateCancer.prevalenceInterval()
-          and ( ProstateCancerPain.isProblemListItem() 
-              or ProstateCancerPain.isHealthConcern()
-          )
          )
          
 define "First Prostate Cancer Treatment during day of Measurement Period":
