@@ -31,12 +31,13 @@ define "Numerator":
    "Has Baseline DEXA Scan Two Years Prior to the Start of or Less than Three Months After the Start of ADT"
 
 define "Denominator Exception":
-  false
+  //false
   // @commmentedOutReason: Negation issue related to https://github.com/cqframework/cql-execution/issues/296, 
   //                       which is tied to https://oncprojectracking.healthit.gov/support/browse/BONNIEMAT-1455. 
   //                       Due to this being the only logic in population, created a 'false' placeholder
-  // exists ( "No Bone Density Scan Ordered Due to Patient Refusal")
-  //   or exists ( "No Bone Density Scan Performed Due to Patient Refusal")
+   exists ( "No Bone Density Scan Ordered Due to Patient Refusal")
+     or exists ( "No Bone Density Scan Performed Due to Patient Refusal")
+
 
 define "SDE Ethnicity":
   SDE."SDE Ethnicity"
