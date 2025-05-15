@@ -82,8 +82,8 @@ define "Initial Population":
 
 define "Cataract Surgery Between January and September of Measurement Period":
   [Procedure: "Cataract Surgery"] CataractSurgery
-    where CataractSurgery.performed.toInterval() during "Measurement Period"
-      and CataractSurgery.performed.toInterval() starts 92 days or more before end of "Measurement Period"
+    where CataractSurgery.performed.toInterval() during day of "Measurement Period"
+      and CataractSurgery.performed.toInterval() starts 92 days or more before day of end of "Measurement Period"
       and CataractSurgery.status = 'completed'
 
 define "Denominator Exclusions":
@@ -146,7 +146,7 @@ define "Cataract Surgeries in Patients with Significant Ocular Conditions Impact
       union (["ConditionProblemsHealthConcerns": "Uveitis"] union ["ConditionEncounterDiagnosis": "Uveitis"])
       union (["ConditionProblemsHealthConcerns": "Vascular Disorders of Iris and Ciliary Body"] union ["ConditionEncounterDiagnosis": "Vascular Disorders of Iris and Ciliary Body"])
       union (["ConditionProblemsHealthConcerns": "Visual Field Defects"] union ["ConditionEncounterDiagnosis": "Visual Field Defects"])) ComorbidDiagnosis
-      such that ComorbidDiagnosis.prevalenceInterval() overlaps before CataractSurgeryPerformed.performed.toInterval()
+      such that ComorbidDiagnosis.prevalenceInterval() overlaps before day of CataractSurgeryPerformed.performed.toInterval()
         and ComorbidDiagnosis.isActive()
 
 define "Numerator":
