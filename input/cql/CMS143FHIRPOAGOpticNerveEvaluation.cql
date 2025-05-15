@@ -16,7 +16,6 @@ codesystem "ActCode": 'http://terminology.hl7.org/CodeSystem/v3-ActCode'
 
 valueset "Care Services in Long-Term Residential Facility": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1014'
 valueset "Cup to Disc Ratio": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1333'
-valueset "Face-to-Face Interaction": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1048'
 valueset "Medical Reason": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1007'
 valueset "Nursing Facility Visit": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1012'
 valueset "Office Visit": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1001'
@@ -26,7 +25,6 @@ valueset "Outpatient Consultation": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.8
 valueset "Primary Open-Angle Glaucoma": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.326'
 
 code "virtual": 'VR' from "ActCode" display 'virtual'
-code "AMB": 'AMB' from "ActCode" display 'Ambulatory'
 
 parameter "Measurement Period" Interval<DateTime>
 
@@ -67,7 +65,8 @@ define "Initial Population":
 
 define "Primary Open Angle Glaucoma Encounter":
   "Qualifying Encounter During Measurement Period" ValidQualifyingEncounter
-    with ["ConditionProblemsHealthConcerns": "Primary Open-Angle Glaucoma"] PrimaryOpenAngleGlaucoma
+    with (["ConditionProblemsHealthConcerns": "Primary Open-Angle Glaucoma"]
+    union ["ConditionEncounterDiagnosis": "Primary Open-Angle Glaucoma"]) PrimaryOpenAngleGlaucoma
       such that PrimaryOpenAngleGlaucoma.prevalenceInterval() overlaps ValidQualifyingEncounter.period
         and PrimaryOpenAngleGlaucoma.isActive()
         and not ( PrimaryOpenAngleGlaucoma.verificationStatus ~ QICoreCommon."unconfirmed"
