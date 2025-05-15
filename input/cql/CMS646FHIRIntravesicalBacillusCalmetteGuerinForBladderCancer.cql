@@ -48,12 +48,8 @@ define "Denominator Exclusion":
     or "Has Excluding HIV, Immunocompromised Conditions or Mixed Histology Before Staging"
     or "Has Excluding Chemotherapy or Radiotherapy Procedure Before Staging"
 
-/*
-@commentedOut: exists "BCG Not Available Within 6 Months After Bladder Cancer Staging"
-@commentedOutReason: Negation issue related to https://github.com/cqframework/cql-execution/issues/296, which is tied to https://oncprojectracking.healthit.gov/support/browse/BONNIEMAT-1455. Due to this being the only logic in this population added 'false' as a placeholder.
-*/
 define "Denominator Exception":
-  false
+  exists "BCG Not Available Within 6 Months After Bladder Cancer Staging"
 
 define "Numerator":
   "First BCG Administered" is not null
