@@ -5,7 +5,7 @@ using QICore version '6.0.0'
 include FHIRHelpers version '4.4.000' called FHIRHelpers
 include SupplementalDataElements version '5.1.000' called SDE
 include QICoreCommon version '4.0.000' called QICoreCommon
-include AHAOverall version '3.0.000' called AHA
+include AHAOverall version '3.1.000' called AHA
 
 codesystem "SNOMEDCT": 'http://snomed.info/sct'
 
@@ -94,12 +94,9 @@ define "Has Diagnosis of Renal Failure Due to ACEI":
       where RenalFailureDueToACEI.overlapsHeartFailureOutpatientEncounter ( )
   )
 
-// TODO: https://oncprojectracking.healthit.gov/support/projects/MADIE/issues/MADIE-2124
-// Expecting 1 failure per population until this translator issue is incorporated into MADiE
-
 define "Has Medical or Patient Reason for Not Ordering ACEI or ARB or ARNI":
   exists ( [MedicationNotRequested: medication in "ACE Inhibitor or ARB or ARNI"] NoACEIOrARBOrARNIOrdered
-      where NoACEIOrARBOrARNIOrdered.isOrderedDuringHeartFailureOutpatientEncounter()
+      where NoACEIOrARBOrARNIOrdered.isMedicationNotRequestedOrderedDuringHeartFailureOutpatientEncounter()
         and ( NoACEIOrARBOrARNIOrdered.reasonCode in "Medical Reason"
             or NoACEIOrARBOrARNIOrdered.reasonCode in "Patient Reason"
             or NoACEIOrARBOrARNIOrdered.reasonCode in "Patient Reason for ACE Inhibitor or ARB Decline"
