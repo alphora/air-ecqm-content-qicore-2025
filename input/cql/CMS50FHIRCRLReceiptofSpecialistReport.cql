@@ -123,12 +123,12 @@ define "Numerator":
 define "Referring Clinician Receives Consultant Report to Close Referral Loop":
   exists ( [Task: "Consultant Report"] ConsultantReportObtained
       with "First Referral during First 10 Months of Measurement Period" FirstReferral
-        such that FirstReferral.ID in "TaskGetRequestID"(ConsultantReportObtained)
+        such that FirstReferral.ID in "GetTaskBasedOnIDs"(ConsultantReportObtained)
           and ConsultantReportObtained.executionPeriod ends after FirstReferral.AuthorDate
           and ConsultantReportObtained.executionPeriod ends during day of "Measurement Period"
           and ConsultantReportObtained.status = 'completed'
   )
 
-define function "TaskGetRequestID"(task Task):
+define function "GetTaskBasedOnIDs"(task Task):
   task.basedOn Task
     return QICoreCommon."GetId" ( Task.reference )
