@@ -1,4 +1,4 @@
-library AHAOverall version '3.0.000'
+library AHAOverall version '3.1.000'
 
 using QICore version '6.0.0'
 using USCore version '6.1.0'
@@ -198,7 +198,7 @@ define fluent function isOrderedDuringHeartFailureOutpatientEncounter(Medication
 @overloaded
 @description: Returns true if the given MedicationNotRequested overlaps after the day of the heart failure outpatient encounter with history of moderate or severe LVSD
 */                    
-define fluent function isOrderedDuringHeartFailureOutpatientEncounter(MedicationRequest MedicationNotRequested): 
+define fluent function isMedicationNotRequestedOrderedDuringHeartFailureOutpatientEncounter(MedicationRequest MedicationNotRequested): 
   exists ( "Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD" ModerateOrSevereLVSDHFOutpatientEncounter
              where MedicationRequest.authoredOn during day of ModerateOrSevereLVSDHFOutpatientEncounter.period 
                and MedicationRequest.status = 'completed'
