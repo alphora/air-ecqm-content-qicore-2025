@@ -25,9 +25,6 @@ valueset "Telephone Visits": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.11
 
 code "Activities of daily living score [HOOS]": '72095-3' from "LOINC" display 'Activities of daily living score [HOOS]'
 code "Dead (finding)": '419099009' from "SNOMEDCT" display 'Dead (finding)'
-code "Discharge to healthcare facility for hospice care (procedure)": '428371000124100' from "SNOMEDCT" display 'Discharge to healthcare facility for hospice care (procedure)'
-code "Discharge to home for hospice care (procedure)": '428371000124100' from "SNOMEDCT" display 'Discharge to home for hospice care (procedure)'
-code "Hospice care [Minimum Data Set]": '45755-6' from "LOINC" display 'Hospice care [Minimum Data Set]'
 code "Pain score [HOOS]": '72097-9' from "LOINC" display 'Pain score [HOOS]'
 code "Postoperative follow-up visit, normally included in the surgical package, to indicate that an evaluation and management service was performed during a postoperative period for a reason(s) related to the original procedure": '99024' from "CPT" display 'Postoperative follow-up visit, normally included in the surgical package, to indicate that an evaluation and management service was performed during a postoperative period for a reason(s) related to the original procedure'
 code "PROMIS-10 Global Mental Health (GMH) score T-score": '71969-0' from "LOINC" display 'PROMIS-10 Global Mental Health (GMH) score T-score'
@@ -41,7 +38,6 @@ code "VR-12 Mental component summary (MCS) score - oblique method T-score": '720
 code "VR-12 Mental component summary (MCS) score - orthogonal method T-score": '72028-4' from "LOINC" display 'VR-12 Mental component summary (MCS) score - orthogonal method T-score'
 code "VR-12 Physical component summary (PCS) score - oblique method T-score": '72025-0' from "LOINC" display 'VR-12 Physical component summary (PCS) score - oblique method T-score'
 code "VR-12 Physical component summary (PCS) score - orthogonal method T-score": '72027-6' from "LOINC" display 'VR-12 Physical component summary (PCS) score - orthogonal method T-score'
-code "Yes (qualifier value)": '373066001' from "SNOMEDCT" display 'Yes (qualifier value)'
 
 parameter "Measurement Period" Interval<DateTime>
 
@@ -50,7 +46,7 @@ context Patient
 define "SDE Ethnicity":
   SDE."SDE Ethnicity"
 
-define "SDE Payer Type":
+define "SDE Payer":
   SDE."SDE Payer"
 
 define "SDE Race":
@@ -65,15 +61,15 @@ define "Initial Population":
     and AgeInYearsAt(date from start of "Measurement Period") >= 19
 
 define "Has Qualifying Encounter":
-  exists ((([Encounter: type in "Outpatient Consultation"]
-        union [Encounter: type in "Office Visit"]
+  exists ((([Encounter: "Outpatient Consultation"]
+        union [Encounter: "Office Visit"]
         union ([Encounter] E
             where exists ((E.type) T
                 where T ~ "Postoperative follow-up visit, normally included in the surgical package, to indicate that an evaluation and management service was performed during a postoperative period for a reason(s) related to the original procedure"
            )
        )
-        union [Encounter: type in "Telephone Visits"]
-        union [Encounter: type in "Virtual Encounter"]
+        union [Encounter: "Telephone Visits"]
+        union [Encounter: "Virtual Encounter"]
    ).isEncounterPerformed()) ValidEncounters
       where ValidEncounters.period during day of Interval["August 1 Year Prior to the Measurement Period", end of "Measurement Period"]
  )
