@@ -49,40 +49,6 @@ define "Initial Population":
   ("Has Encounter during Measurement Period" or "Has Intervention during Measurement Period")
     and "First Referral during First 10 Months of Measurement Period" is not null
 
-define "Has Encounter from Valuesets during Measurement Period":
-  exists ( ( [Encounter: "Behavioral/Neuropsych Assessment"]
-      union [Encounter: "Office Visit"]
-      union [Encounter: "Ophthalmological Services"]
-      union [Encounter: "Preventive Care Services Established Office Visit, 18 and Up"]
-      union [Encounter: "Preventive Care Services, Initial Office Visit, 0 to 17"]
-      union [Encounter: "Preventive Care Services Initial Office Visit, 18 and Up"]
-      union [Encounter: "Preventive Care, Established Office Visit, 0 to 17"]
-      union [Encounter: "Psych Visit Diagnostic Evaluation"] ) Encounter
-      where Encounter.status = 'finished'
-        and Encounter.period during day of "Measurement Period"
-  )
-
-define "Has Encounter from DRCs during Measurement Period":
-  exists ( ( [Encounter] EncDRC
-      where exists ( ( EncDRC.type ) T
-          where T ~ "Psychological or neuropsychological test administration and scoring by physician or other qualified health care professional, two or more tests, any method; first 30 minutes"
-      )
-        or exists ( ( EncDRC.type ) T
-            where T ~ "Psychological or neuropsychological test administration and scoring by technician, two or more tests, any method; first 30 minutes"
-        )
-        or exists ( ( EncDRC.type ) T
-            where T ~ "Psychotherapy for crisis; first 60 minutes"
-        )
-        or exists ( ( EncDRC.type ) T
-            where T ~ "Developmental test administration (including assessment of fine and/or gross motor, language, cognitive level, social, memory and/or executive functions by standardized developmental instruments when performed), by physician or other qualified health care professional, with interpretation and report; first hour"
-        )
-        or exists ( ( EncDRC.type ) T
-            where T ~ "Health behavior assessment, or re-assessment (ie, health-focused clinical interview, behavioral observations, clinical decision making)"
-        ) ) Encounter
-      where Encounter.status = 'finished'
-        and Encounter.period during day of "Measurement Period"
-  )
-    
 define "Has Encounter during Measurement Period":
     exists ( ( ["Encounter": "Office Visit"]
         union ["Encounter": "Ophthalmological Services"]
