@@ -44,7 +44,7 @@ define "Denominator":
 define "Denominator Exclusions":
   Hospice."Has Hospice Services"
     or PalliativeCare."Has Palliative Care in the Measurement Period"
-    or exists "Is Pregnant During Day Of Measurement Period"
+    or exists "Is Pregnant During Measurement Period"
 
 define "Numerator":
   exists "High BMI And Follow Up Provided"
@@ -163,20 +163,17 @@ define "Medical Reason For Not Documenting A Follow Up Plan For Low Or High BMI"
         with "Qualifying Encounter During Day Of Measurement Period" QualifyingEncounter
           such that NoBMIFollowUp.authoredOn same day as start of QualifyingEncounter.period
         where NoBMIFollowUp.status ~ 'completed'
-          // TODO: https://oncprojectracking.healthit.gov/support/projects/MADIE/issues/MADIE-2124
-          // Expecting 4 failures until this translator issue is incorporated into MADiE
           and NoBMIFollowUp.reasonCode in "Medical Reason"
     )
 
-define "Is Pregnant During Day Of Measurement Period":
+define "Is Pregnant During Measurement Period":
   ([ConditionProblemsHealthConcerns: "Pregnancy or Other Related Diagnoses"]
     union [ConditionEncounterDiagnosis: "Pregnancy or Other Related Diagnoses"]) PregnancyDiagnosis
-    with "Qualifying Encounter During Day Of Measurement Period" QualifyingEncounter
-      such that PregnancyDiagnosis.clinicalStatus ~ QICoreCommon."active"
+    where PregnancyDiagnosis.clinicalStatus ~ QICoreCommon."active"
         and PregnancyDiagnosis.prevalenceInterval() overlaps day of "Measurement Period"
 
 define "Qualifying Encounter During Day Of Measurement Period":
-  [Encounter: type in "Encounter to Evaluate BMI"] BMIEncounter
+  [Encounter: "Encounter to Evaluate BMI"] BMIEncounter
     where BMIEncounter.period during day of "Measurement Period"
       and BMIEncounter.class !~ "virtual"
       and BMIEncounter.status = 'finished'
