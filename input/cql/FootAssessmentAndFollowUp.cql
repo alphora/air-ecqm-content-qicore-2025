@@ -378,6 +378,16 @@ define "Qualifying Encounters with Abnormal Exam Finding of Lower Extremity":
             such that LowerExtremityAbnormalCondition.prevalenceInterval() overlaps QualifyingEncounter.period
     )
 
+define "Podiatrist Specialty Roles":
+  [PractitionerRole] PR
+    where PR.specialty in "Initial Preventive and Annual Wellness Visits"
+
+define "Podiatrist Care Teams":
+  [CareTeam] CT
+    with "Podiatrist Specialty Roles" PodiatristSpecialtyRole
+      such that CT.participant.role in "Initial Preventive and Annual Wellness Visits"
+       or CT.participant.member.references(PodiatristSpecialtyRole)
+
 define "Has Follow-Up Plan of Care Within One Week of Eligible Encounter with Abnormal Finding":
     exists (
         "Qualifying Encounters with Abnormal Exam Finding of Lower Extremity" QualifyingEncounter 
