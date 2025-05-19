@@ -422,6 +422,24 @@ define "Has Follow-Up Plan of Care Within One Week of Eligible Encounter with Ab
                             and FollowUpDeviceRequest.authoredOn.toInterval() during day of "Seven-Day Period Following Qualifying Encounter"
                             and FollowUpDeviceRequest.authoredOn.toInterval() during day of "Measurement Period"
                 )
+                union (
+                    ( 
+                        [SimpleObservation: "Under Care of Foot Care Provider"]
+                    ) UnderCareObservation
+                        where UnderCareObservation.status in { 'final', 'amended', 'corrected' }
+                            and UnderCareObservation.effective.toInterval() during day of "Seven-Day Period Following Qualifying Encounter"
+                            and UnderCareObservation.effective.toInterval() during day of "Measurement Period"
+                )
+                union (
+                    [CareTeam] CT
+                        where CT.status = 'active'
+                            and exists (CT.participant.role PodiatricRole
+                                where PodiatricRole in "Podiatric Occupations"
+                            )
+                            and exists (CT.participant.member)
+                            and CT.period.toInterval() during day of "Seven-Day Period Following Qualifying Encounter"
+                            and CT.period.toInterval() during day of "Measurement Period"
+                )
             )
     )
 
