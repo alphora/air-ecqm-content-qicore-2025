@@ -68,7 +68,7 @@ define "Has Intervention during Measurement Period":
         union ["Procedure": "Psychotherapy for crisis; first 60 minutes"]
         union ["Procedure": "Psych Visit Diagnostic Evaluation"]
         union ["Procedure": "Developmental test administration (including assessment of fine and/or gross motor, language, cognitive level, social, memory and/or executive functions by standardized developmental instruments when performed), by physician or other qualified health care professional, with interpretation and report; first hour"] ).isProcedurePerformed() ) ValidIntervention
-    where ValidIntervention.performed.toInterval() during day of "Measurement Period"
+    where ValidIntervention.performed during day of "Measurement Period"
 )
 
 define "First Referral during First 10 Months of Measurement Period":
