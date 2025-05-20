@@ -69,6 +69,7 @@ valueset "Therapeutic Footwear Interventions": 'http://cts.nlm.nih.gov/fhir/Valu
 valueset "Therapeutic Footwear": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.324'
 valueset "Follow Up Within 12 Months": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.326'
 valueset "Under Care of Foot Care Provider": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.394'
+valueset "Podiatric Occupations": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.403'
 
 code "virtual": 'VR' from "ActCode" display 'virtual'
 code "Right (qualifier value)": '24028007' from "SNOMEDCT" display 'Right (qualifier value)'
@@ -378,15 +379,14 @@ define "Qualifying Encounters with Abnormal Exam Finding of Lower Extremity":
             such that LowerExtremityAbnormalCondition.prevalenceInterval() overlaps QualifyingEncounter.period
     )
 
-define "Podiatrist Specialty Roles":
-  [PractitionerRole] PR
-    where PR.specialty in "Initial Preventive and Annual Wellness Visits"
-
-define "Podiatrist Care Teams":
+define "Care Teams with Podiatrist Participant Role":
   [CareTeam] CT
-    with "Podiatrist Specialty Roles" PodiatristSpecialtyRole
-      such that CT.participant.role in "Initial Preventive and Annual Wellness Visits"
-       or CT.participant.member.references(PodiatristSpecialtyRole)
+    where CT.participant.role in "Podiatric Occupations"
+
+define "Care Teams with Podiatrist PractitionerRole":
+  [CareTeam] CT
+    with ([PractitionerRole: "Podiatric Occupations"]) PodiatristPractitionerRole
+      such that CT.participant.member.references(PodiatristPractitionerRole)
 
 define "Has Follow-Up Plan of Care Within One Week of Eligible Encounter with Abnormal Finding":
     exists (
@@ -431,14 +431,12 @@ define "Has Follow-Up Plan of Care Within One Week of Eligible Encounter with Ab
                             and UnderCareObservation.effective.toInterval() during day of "Measurement Period"
                 )
                 union (
-                    [CareTeam] CT
-                        where CT.status = 'active'
-                            and exists (CT.participant.role PodiatricRole
-                                where PodiatricRole in "Podiatric Occupations"
-                            )
-                            and exists (CT.participant.member)
-                            and CT.period.toInterval() during day of "Seven-Day Period Following Qualifying Encounter"
-                            and CT.period.toInterval() during day of "Measurement Period"
+                    (
+                        "Care Teams with Podiatrist Participant Role"
+                            union "Care Teams with Podiatrist PractitionerRole"
+                    ) PodiatryCareTeam
+                        where PodiatryCareTeam.period overlaps day of "Seven-Day Period Following Qualifying Encounter"
+                            and PodiatryCareTeam.period overlaps day of "Measurement Period"
                 )
             )
     )
