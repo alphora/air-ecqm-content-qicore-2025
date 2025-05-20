@@ -169,8 +169,7 @@ define "Medical Reason For Not Documenting A Follow Up Plan For Low Or High BMI"
 define "Is Pregnant During Measurement Period":
   ([ConditionProblemsHealthConcerns: "Pregnancy or Other Related Diagnoses"]
     union [ConditionEncounterDiagnosis: "Pregnancy or Other Related Diagnoses"]) PregnancyDiagnosis
-    where PregnancyDiagnosis.clinicalStatus ~ QICoreCommon."active"
-        and PregnancyDiagnosis.prevalenceInterval() overlaps day of "Measurement Period"
+    where PregnancyDiagnosis.prevalenceInterval() overlaps day of "Measurement Period"
 
 define "Qualifying Encounter During Day Of Measurement Period":
   [Encounter: "Encounter to Evaluate BMI"] BMIEncounter
