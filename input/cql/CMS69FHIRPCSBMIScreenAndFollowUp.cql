@@ -123,7 +123,6 @@ define "Low BMI Interventions Ordered":
       where LowInterventionsOrdered.reasonCode in "Underweight"
         or ( exists [ConditionProblemsHealthConcerns: "Underweight"] UnderweightDiagnosis
             where ( UnderweightDiagnosis.isHealthConcern() )
-              and UnderweightDiagnosis.isActive()
               and UnderweightDiagnosis.prevalenceInterval() starts before or on day of LowInterventionsOrdered.authoredOn
               and LowInterventionsOrdered.authoredOn during day of "Measurement Period"
         )
@@ -135,7 +134,6 @@ define "Low BMI Interventions Performed":
         and LowInterventionsPerformed.status = 'completed'
         or ( exists [ConditionProblemsHealthConcerns: "Underweight"] UnderweightDiagnosis
             where ( UnderweightDiagnosis.isHealthConcern() )
-              and UnderweightDiagnosis.isActive()
               and UnderweightDiagnosis.prevalenceInterval() starts before or on day of start of LowInterventionsPerformed.performed.toInterval()
               and LowInterventionsPerformed.performed.toInterval() during day of "Measurement Period"
               and not ( UnderweightDiagnosis.prevalenceInterval() ends before day of start of LowInterventionsPerformed.performed.toInterval() )
