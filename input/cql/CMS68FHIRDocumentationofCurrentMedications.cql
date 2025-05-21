@@ -43,7 +43,8 @@ define "Initial Population":
 define "Numerator":
   "Qualifying Encounter During Day of Measurement Period" QualifyingEncounter
     with [Procedure: "Documentation of current medications (procedure)"] MedicationsDocumented
-      such that MedicationsDocumented.performed.toInterval ( ) ends during QualifyingEncounter.period
+      such that MedicationsDocumented.performed.toInterval() starts during day of QualifyingEncounter.period
+        and MedicationsDocumented.performed.toInterval().hasEnd()    
         and MedicationsDocumented.status = 'completed'
 
 define "Denominator Exceptions":
