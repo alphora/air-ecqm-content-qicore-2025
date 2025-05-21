@@ -3,6 +3,7 @@ library CMS69FHIRPCSBMIScreenAndFollowUp version '0.3.000'
 using QICore version '6.0.0'
 
 include FHIRHelpers version '4.4.000' called FHIRHelpers
+include Status version '1.13.000' called Status
 include Hospice version '6.15.000' called Hospice
 include PalliativeCare version '1.15.000' called PalliativeCare
 include QICoreCommon version '4.0.000' called QICoreCommon
@@ -26,8 +27,6 @@ valueset "Referrals Where Weight Assessment May Occur": 'http://cts.nlm.nih.gov/
 valueset "Underweight": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1563'
 
 code "Body mass index (BMI) [Ratio]": '39156-5' from "LOINC" display 'Body mass index (BMI) [Ratio]'
-code "Encounter for palliative care": 'Z51.5' from "ICD10CM" display 'Encounter for palliative care'
-code "Functional Assessment of Chronic Illness Therapy - Palliative Care Questionnaire (FACIT-Pal)": '71007-9' from "LOINC" display 'Functional Assessment of Chronic Illness Therapy - Palliative Care Questionnaire (FACIT-Pal)'
 code "virtual": 'VR' from "ActCode" display 'virtual'
 
 parameter "Measurement Period" Interval<DateTime>
@@ -44,7 +43,7 @@ define "Denominator":
 define "Denominator Exclusions":
   Hospice."Has Hospice Services"
     or PalliativeCare."Has Palliative Care in the Measurement Period"
-    or exists "Is Pregnant During Measurement Period"
+    or "Is Pregnant During Measurement Period"
 
 define "Numerator":
   exists "High BMI And Follow Up Provided"
@@ -56,9 +55,8 @@ define "Denominator Exceptions":
     or exists "Medical Reason Or Patient Reason For Not Performing BMI Exam"
 
 define "BMI During Measurement Period":
-  [USCoreBMIProfile] BMI
+  (([USCoreBMIProfile]).isObservationBMI()) BMI
     where BMI.value > 0 'kg/m2'
-      and BMI.status in { 'final', 'amended', 'corrected' }
       and BMI.effective.toInterval() during day of "Measurement Period"
 
 define "Documented Low BMI During Measurement Period":
@@ -109,7 +107,7 @@ define "High BMI Interventions Performed":
   )
 
 define "Medical Reason Or Patient Reason For Not Performing BMI Exam":
-  [ObservationCancelled: code = "Body mass index (BMI) [Ratio]"] NoBMI
+  [ObservationCancelled: "Body mass index (BMI) [Ratio]"] NoBMI
     with "Qualifying Encounter During Day Of Measurement Period" QualifyingEncounter
       such that NoBMI.effective.toInterval() ends same day as start of QualifyingEncounter.period
     where (NoBMI.notDoneReason in "Patient Declined" or NoBMI.notDoneReason in "Medical Reason")
@@ -163,9 +161,9 @@ define "Medical Reason For Not Documenting A Follow Up Plan For Low Or High BMI"
     )
 
 define "Is Pregnant During Measurement Period":
-  ([ConditionProblemsHealthConcerns: "Pregnancy or Other Related Diagnoses"]
+  exists (([ConditionProblemsHealthConcerns: "Pregnancy or Other Related Diagnoses"]
     union [ConditionEncounterDiagnosis: "Pregnancy or Other Related Diagnoses"]) PregnancyDiagnosis
-    where PregnancyDiagnosis.prevalenceInterval() overlaps day of "Measurement Period"
+    where PregnancyDiagnosis.prevalenceInterval() overlaps day of "Measurement Period")
 
 define "Qualifying Encounter During Day Of Measurement Period":
   [Encounter: "Encounter to Evaluate BMI"] BMIEncounter
