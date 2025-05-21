@@ -95,7 +95,6 @@ define "High BMI Interventions Ordered":
             where ( OverweightObese.isProblemListItem()
                 or OverweightObese.isHealthConcern()
             )
-              and OverweightObese.isActive()
               and OverweightObese.prevalenceInterval() starts before or on day of HighInterventionsOrdered.authoredOn
         )
   )
@@ -113,8 +112,7 @@ define "Medical Reason Or Patient Reason For Not Performing BMI Exam":
   [ObservationCancelled: code = "Body mass index (BMI) [Ratio]"] NoBMI
     with "Qualifying Encounter During Day Of Measurement Period" QualifyingEncounter
       such that NoBMI.effective.toInterval() ends same day as start of QualifyingEncounter.period
-    where NoBMI.status = 'cancelled'
-      and (NoBMI.notDoneReason in "Patient Declined" or NoBMI.notDoneReason in "Medical Reason")
+    where (NoBMI.notDoneReason in "Patient Declined" or NoBMI.notDoneReason in "Medical Reason")
 
 define "Low BMI Interventions Ordered":
   ( ( [ServiceRequest: "Follow Up for Below Normal BMI"]
