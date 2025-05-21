@@ -7,10 +7,7 @@ include SupplementalDataElements version '5.1.000' called SDE
 include QICoreCommon version '4.0.000' called QICoreCommon
 
 codesystem "LOINC": 'http://loinc.org'
-codesystem "ActCode": 'http://terminology.hl7.org/CodeSystem/v3-ActCode'
-codesystem "ConditionClinicalStatusCodes": 'http://terminology.hl7.org/CodeSystem/condition-clinical'
 codesystem "ConditionVerificationStatus": 'http://terminology.hl7.org/CodeSystem/condition-ver-status'
-codesystem "SNOMEDCT": 'http://snomed.info/sct'
 
 valueset "HIV": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.120.12.1003'
 valueset "Human Immunodeficiency Virus (HIV) Laboratory Test Codes (Ab and Ag)": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1056.50'
@@ -20,12 +17,8 @@ valueset "Preventive Care Services, Initial Office Visit, 0 to 17": 'http://cts.
 valueset "Preventive Care Services-Initial Office Visit, 18 and Up": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1023'
 valueset "Preventive Care, Established Office Visit, 0 to 17": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1024'
 
-code "Birth date": '21112-8' from "LOINC" display 'Birth date'
 code "HIV 1 and 2 tests - Meaningful Use set": '75622-1' from "LOINC" display 'HIV 1 and 2 tests - Meaningful Use set'
-code "AMB": 'AMB' from "ActCode" display 'Ambulatory'
-code "active": 'active' from "ConditionClinicalStatusCodes"
 code "refuted": 'refuted' from "ConditionVerificationStatus"
-code "Dead (finding)": '419099009' from "SNOMEDCT" display 'Dead (finding)'
 
 parameter "Measurement Period" Interval<DateTime>
 
