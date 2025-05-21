@@ -19,6 +19,8 @@ valueset "Preventive Care, Established Office Visit, 0 to 17": 'http://cts.nlm.n
 
 code "HIV 1 and 2 tests - Meaningful Use set": '75622-1' from "LOINC" display 'HIV 1 and 2 tests - Meaningful Use set'
 code "refuted": 'refuted' from "ConditionVerificationStatus"
+code "unconfirmed": 'unconfirmed' from "ConditionVerificationStatus"
+code "entered-in-error": 'entered-in-error' from "ConditionVerificationStatus"
 
 parameter "Measurement Period" Interval<DateTime>
 
@@ -39,7 +41,7 @@ define "Denominator Exclusions":
   ([ConditionProblemsHealthConcerns: "HIV"] union 
   [ConditionEncounterDiagnosis: "HIV"]) HIVDiagnosis
     where HIVDiagnosis.prevalenceInterval() starts before day of start of "Measurement Period"
-      and HIVDiagnosis.verificationStatus !~ "refuted"
+      and not ( HIVDiagnosis.verificationStatus in { "refuted", "unconfirmed", "entered-in-error" } )
 )
 define "Denominator Exceptions":
   "Patient Expired"
