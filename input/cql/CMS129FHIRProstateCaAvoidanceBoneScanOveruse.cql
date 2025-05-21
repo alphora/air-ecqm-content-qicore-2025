@@ -128,5 +128,6 @@ define "Most Recent Prostate Cancer Staging Tumor Size T1a to T2a":
     )
 
 define "Prostate Cancer Diagnosis":
-  [ConditionProblemsHealthConcerns: "Prostate Cancer"] ProstateCancer
+  ( [ConditionProblemsHealthConcerns: "Prostate Cancer"]
+    union [ConditionEncounterDiagnosis: "Prostate Cancer"] ) ProstateCancer
     where ProstateCancer.prevalenceInterval ( ) overlaps day of "Measurement Period"
