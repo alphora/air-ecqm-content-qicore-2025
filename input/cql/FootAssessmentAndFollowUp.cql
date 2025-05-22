@@ -64,9 +64,9 @@ valueset "Fissure or Blister of Foot": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.1
 valueset "Foot Care Education": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.383'
 valueset "Foot Care Referral": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.313'
 valueset "Foot Pressure Offloading Interventions": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.321'
-valueset "Foot Pressure Offloading Devices": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.322'
-valueset "Therapeutic Footwear Interventions": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.323'
-valueset "Therapeutic Footwear": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.324'
+valueset "Foot Pressure Offloading Devices": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.398'
+valueset "Therapeutic Footwear Interventions": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.400'
+valueset "Therapeutic Footwear": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.402'
 valueset "Follow Up Within 12 Months": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.326'
 valueset "Under Care of Foot Care Provider": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.394'
 valueset "Podiatric Occupations": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.403'
@@ -379,6 +379,7 @@ define "Qualifying Encounters with Abnormal Exam Finding of Lower Extremity":
             such that LowerExtremityAbnormalCondition.prevalenceInterval() overlaps QualifyingEncounter.period
     )
 
+// NOTE: Issue with CareTeam.participant.role: https://github.com/cqframework/clinical_quality_language/issues/1558
 define "Care Teams with Podiatrist Participant Role":
   [CareTeam] CT
     where CT.participant.role in "Podiatric Occupations"
