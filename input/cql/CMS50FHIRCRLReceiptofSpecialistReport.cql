@@ -151,7 +151,7 @@ Bryn suggested discussion with Patient Care group for alignment and will conside
 */
 
 /*
-CMS50-20
+CMS50-22
 Peter Muir
 M: Clinically, I still have concerns re use of task profile to determine of there is a response to a referral in the EHR record. In the real world, where patient name and date of birth is still utilized as a common identifier across different facilities/EHRs, the real question should be how are Consultant Reports aligned to original referrals?
 Use case examples could include referrals to ophthalmology for diabetic retinal exam, or referrals to gastroenterology for screening colonoscopy per clinical guidelines. Incoming reports are added to the patient record but not necessarily linked back to the original referral. A retrieve of the patient's data should be able to link the Consultant Report and Diagnostic Report back to the original referral without requiring additional burden upon clinical staff workflows. PM 05/07
