@@ -112,7 +112,7 @@ define "Has Excluding Chemotherapy or Radiotherapy Procedure Before Staging":
       union ( [Procedure: "Combined radiotherapy (procedure)"] ExclusionProcedure
           with "First Bladder Cancer Staging Procedure" FirstBladderCancerStaging
             such that ExclusionProcedure.performed.toInterval() starts 6 months or less before FirstBladderCancerStaging.performed.toInterval()
-          where ExclusionProcedure.status = 'completed'
+          where ExclusionProcedure.status in {'completed', 'in-progress'}
       )
   )
 
