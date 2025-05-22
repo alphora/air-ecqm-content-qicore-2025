@@ -93,8 +93,11 @@ define "Has Excluding HIV, Immunocompromised Conditions or Mixed Histology Befor
       union ([ConditionProblemsHealthConcerns: "Mixed Histology Urothelial Cell Carcinoma for Urology Care"]
         union [ConditionEncounterDiagnosis: "Mixed Histology Urothelial Cell Carcinoma for Urology Care"])) ExclusionDiagnosis
       with "First Bladder Cancer Staging Procedure" FirstBladderCancerStaging
-        such that ExclusionDiagnosis.prevalenceInterval() starts on or before day of start of FirstBladderCancerStaging.performed.toInterval()
-      where ExclusionDiagnosis.isConfirmedActiveDiagnosis()
+        such that (
+            (ExclusionDiagnosis.prevalenceInterval() starts on or before day of start of FirstBladderCancerStaging.performed.toInterval())
+            or (ExclusionDiagnosis.onset.toInterval() starts on or before day of start of FirstBladderCancerStaging.performed.toInterval())
+        )
+      where ExclusionDiagnosis.isNotRefutedDiagnosis()
   )
 
 define "Has Excluding Chemotherapy or Radiotherapy Procedure Before Staging":
@@ -139,7 +142,7 @@ define "Bladder Cancer Diagnosis":
         BladderCancer.prevalenceInterval() starts before day of end of "Measurement Period"
         or BladderCancer.onset before day of end of "Measurement Period"
       )
-      and not (BladderCancer.verificationStatus in { 'refuted', 'unconfirmed', 'entered-in-error' })
+      and BladderCancer.isNotRefutedDiagnosis()
 
 define "BCG Not Available Within 6 Months After Bladder Cancer Staging":
   [MedicationAdministrationNotDone: "Bacillus Calmette Guerin for Urology Care"] BCGNotGiven
