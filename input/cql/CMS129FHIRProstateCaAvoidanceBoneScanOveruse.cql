@@ -84,8 +84,17 @@ define "First Prostate Cancer Treatment during day of Measurement Period":
         and ProstateCancerTreatment.status = 'completed'
       sort by start of performed.toInterval()
   )
-  
-  define "Most Recent PSA Test Result is Low":
+
+/*
+CMS129-8
+Peter Muir
+M: Although test cases work, "Most Recent PSA Test Result is Low" definitition use of [LaboratoryResultObservation: "Prostate Specific Antigen Test"]. How will Observation align with EHR data in future setting of bulk data? Byrn input?
+M: NUMERFail-BoneScanAfterPrCaDx test case json has PSA lab result has observation-category code as "procedure". Should this be laboratory?
+eg QICoreLaboratoryResultObservation?
+see https://hl7.org/fhir/us/qicore/Observation-laboratory-result-observation-example-blood-glucose.json.html PM 05/05
+*/
+
+define "Most Recent PSA Test Result is Low":
   ( Last([LaboratoryResultObservation: "Prostate Specific Antigen Test"] PSATest
       with "Most Recent Prostate Cancer Staging Tumor Size T1a to T2a" MostRecentProstateCancerStaging
         such that PSATest.effective.toInterval() starts before MostRecentProstateCancerStaging.effective.toInterval()
