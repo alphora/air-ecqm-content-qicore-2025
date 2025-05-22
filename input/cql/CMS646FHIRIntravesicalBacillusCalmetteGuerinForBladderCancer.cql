@@ -1,4 +1,4 @@
-library CMS646FHIRIntravesicalBacillusCalmetteGuerinForBladderCancer version '1.5.000'
+library CMS646FHIRIntravesicalBCGTherapy version '1.5.000'
 
 using QICore version '6.0.0'
 
