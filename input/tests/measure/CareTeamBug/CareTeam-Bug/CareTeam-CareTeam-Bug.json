@@ -1,0 +1,31 @@
+{
+  "resourceType": "CareTeam",
+  "id": "CareTeam-Bug",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/us/qicore/StructureDefinition/qicore-careteam"
+    ]
+  },
+  "status": "active",
+  "subject": {
+    "reference": "Patient/CareTeam-Bug"
+  },
+  "period": {
+    "start": "2026-04-07T10:00:00Z"
+  },
+  "participant": [
+    {
+      "role": [
+        {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "159034004",
+              "display": "Podiatrist"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

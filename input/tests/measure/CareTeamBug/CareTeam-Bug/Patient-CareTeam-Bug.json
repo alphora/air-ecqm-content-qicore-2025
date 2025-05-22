@@ -1,0 +1,10 @@
+{
+  "resourceType": "Patient",
+  "id": "CareTeam-Bug",
+  "name": [ {
+    "family": "CareTeam",
+    "given": [ "Bug" ]
+  } ],
+  "gender": "male",
+  "birthDate": "1961-12-15"
+}
