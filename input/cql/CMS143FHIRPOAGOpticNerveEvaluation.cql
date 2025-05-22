@@ -1,4 +1,4 @@
-library CMS143FHIRPOAGOpticNerveEvaluation version '0.2.000'
+library CMS143FHIRPOAGOpticNerveEval version '0.2.000'
 
 using QICore version '6.0.0'
 
@@ -55,7 +55,7 @@ define "Qualifying Encounter During Measurement Period":
     union ["Encounter": "Outpatient Consultation"]
     union ["Encounter": "Nursing Facility Visit"]
     union ["Encounter": "Care Services in Long-Term Residential Facility"] ) QualifyingEncounter
-    where QualifyingEncounter.period during "Measurement Period"
+    where QualifyingEncounter.period during day of "Measurement Period"
       and QualifyingEncounter.status = 'finished'
       and QualifyingEncounter.class !~ "virtual"
 
@@ -68,7 +68,6 @@ define "Primary Open Angle Glaucoma Encounter":
     with (["ConditionProblemsHealthConcerns": "Primary Open-Angle Glaucoma"]
     union ["ConditionEncounterDiagnosis": "Primary Open-Angle Glaucoma"]) PrimaryOpenAngleGlaucoma
       such that PrimaryOpenAngleGlaucoma.prevalenceInterval() overlaps ValidQualifyingEncounter.period
-        and PrimaryOpenAngleGlaucoma.isActive()
         and not ( PrimaryOpenAngleGlaucoma.verificationStatus ~ QICoreCommon."unconfirmed"
             or PrimaryOpenAngleGlaucoma.verificationStatus ~ QICoreCommon."refuted"
             or PrimaryOpenAngleGlaucoma.verificationStatus ~ QICoreCommon."entered-in-error"
