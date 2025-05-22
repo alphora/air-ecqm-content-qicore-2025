@@ -149,6 +149,14 @@ Peter Muir
 Agree with Mitre that lack of QICore must support could impact data availability and that Task should be a topic for discussion.
 Bryn suggested discussion with Patient Care group for alignment and will consider adding topic to Authoring Patterns.
 */
+
+/*
+CMS50-20
+Peter Muir
+M: Clinically, I still have concerns re use of task profile to determine of there is a response to a referral in the EHR record. In the real world, where patient name and date of birth is still utilized as a common identifier across different facilities/EHRs, the real question should be how are Consultant Reports aligned to original referrals?
+Use case examples could include referrals to ophthalmology for diabetic retinal exam, or referrals to gastroenterology for screening colonoscopy per clinical guidelines. Incoming reports are added to the patient record but not necessarily linked back to the original referral. A retrieve of the patient's data should be able to link the Consultant Report and Diagnostic Report back to the original referral without requiring additional burden upon clinical staff workflows. PM 05/07
+*/
+
 define "Referring Clinician Receives Consultant Report to Close Referral Loop":
   exists ( [Task: "Consultant Report"] ConsultantReportObtained
       with "First Referral during First 10 Months of Measurement Period" FirstReferral
@@ -158,6 +166,12 @@ define "Referring Clinician Receives Consultant Report to Close Referral Loop":
           and ConsultantReportObtained.executionPeriod ends during day of "Measurement Period"
   )
 
+/*
+CMS50-20
+Peter Muir
+On CQM call, BRYN input agreed with "The ServiceRequest should probably be referenced by 'focus' rather than 'basedOn' (which matches the approach described in QICore Authoring Patterns for ServiceRequest rejected)."
+From the Task resource in QICore 6, Task 'basedOn' references the "Request fulfilled by this task" and 'focus' references "What task is acting on".
+*/
 define function "TaskGetRequestID"(task Task):
   task.basedOn Task
     return QICoreCommon."GetId" ( Task.reference )
