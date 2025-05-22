@@ -65,6 +65,15 @@ define "Initial Population":
   AgeInYearsAt(date from start of "Measurement Period") >= 18
     and exists "Primary Open Angle Glaucoma Encounter"
 
+/*
+CMS143-7
+Peter Muir
+M: There may be potential for a choice type issue where two QICore profiles are union with a common query (noted in Connectathon Zulip).
+Authoring patterns 6.0 example illustrated separate queries but for differing constraints. Will need Bryn input post Working Group.
+In the interim, recommend Developer check for test case gaps in Coverage, may require additional test cases.
+If needed, solution would be to apply where clause separately to each profile and then union together. PM 05/12
+*/
+
 define "Primary Open Angle Glaucoma Encounter":
   "Qualifying Encounter During Measurement Period" ValidQualifyingEncounter
     with ["ConditionProblemsHealthConcerns": "Primary Open-Angle Glaucoma"] PrimaryOpenAngleGlaucoma
