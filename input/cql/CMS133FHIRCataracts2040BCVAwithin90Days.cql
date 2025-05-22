@@ -89,6 +89,15 @@ define "Cataract Surgery Between January and September of Measurement Period":
 define "Denominator Exclusions":
 "Cataract Surgeries in Patients with Significant Ocular Conditions Impacting the Visual Outcome of Surgery"
         
+/*
+CMS133-14
+Peter Muir
+M: There may be potential for a choice type issue where two QICore profiles are union with a common query (noted in Connectathon Zulip).
+Authoring patterns 6.0 example illustrated separate queries but for differing constraints. Will need Bryn input post Working Group.
+In the interim, recommend Developer check for test case gaps in Coverage, may require additional test cases.
+If needed, solution would be to apply where clause separately to each profile and then union together. PM 05/12
+*/
+
 define "Cataract Surgeries in Patients with Significant Ocular Conditions Impacting the Visual Outcome of Surgery":
   "Cataract Surgery Between January and September of Measurement Period" CataractSurgeryPerformed
     with ( (["ConditionProblemsHealthConcerns": "Acute and Subacute Iridocyclitis"] union ["ConditionEncounterDiagnosis": "Acute and Subacute Iridocyclitis"])
