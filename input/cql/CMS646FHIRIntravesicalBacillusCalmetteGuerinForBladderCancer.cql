@@ -134,8 +134,12 @@ define "Has Qualifying Encounter":
 define "Bladder Cancer Diagnosis":
   ([ConditionProblemsHealthConcerns: "Bladder Cancer for Urology Care"] 
     union [ConditionEncounterDiagnosis: "Bladder Cancer for Urology Care"]) BladderCancer
-    where BladderCancer.prevalenceInterval() starts before day of end of "Measurement Period"
-      and BladderCancer.isConfirmedActiveDiagnosis()
+    where 
+      (
+        BladderCancer.prevalenceInterval() starts before day of end of "Measurement Period"
+        or BladderCancer.onset before day of end of "Measurement Period"
+      )
+      and not (BladderCancer.verificationStatus in { 'refuted', 'unconfirmed', 'entered-in-error' })
 
 define "BCG Not Available Within 6 Months After Bladder Cancer Staging":
   [MedicationAdministrationNotDone: "Bacillus Calmette Guerin for Urology Care"] BCGNotGiven
@@ -194,6 +198,5 @@ define "Immunosuppressive Drugs":
     where ImmunosuppressiveDrugs.status in { 'active', 'completed' }
       and ImmunosuppressiveDrugs.intent = 'order'
 
-define fluent function isConfirmedActiveDiagnosis(Condition Choice<ConditionProblemsHealthConcerns, ConditionEncounterDiagnosis>):
-  Condition.isActive()
-    and Condition.verificationStatus ~ QICoreCommon."confirmed"
+define fluent function isNotRefutedDiagnosis(Condition Choice<ConditionProblemsHealthConcerns, ConditionEncounterDiagnosis>):
+    not (Condition.verificationStatus in { "refuted", "unconfirmed", "entered-in-error" })
