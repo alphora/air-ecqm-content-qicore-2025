@@ -76,8 +76,11 @@ define "Acute Tuberculosis Diagnosis":
   ([ConditionProblemsHealthConcerns: "Tuberculosis for Urology Care"] 
     union [ConditionEncounterDiagnosis: "Tuberculosis for Urology Care"]) ActiveTuberculosis
     with "First Bladder Cancer Staging Procedure" FirstBladderCancerStaging
-      such that ActiveTuberculosis.prevalenceInterval() overlaps after day of FirstBladderCancerStaging.performed.toInterval()
-    where ActiveTuberculosis.isConfirmedActiveDiagnosis()
+      such that (
+          (ActiveTuberculosis.prevalenceInterval() overlaps after day of FirstBladderCancerStaging.performed.toInterval())
+          or (ActiveTuberculosis.onset.toInterval() overlaps after day of FirstBladderCancerStaging.performed.toInterval())
+      )
+    where ActiveTuberculosis.isNotRefutedDiagnosis()
 
 define "Cystectomy Done":
   [Procedure: "Cystectomy for Urology Care"] Cystectomy
