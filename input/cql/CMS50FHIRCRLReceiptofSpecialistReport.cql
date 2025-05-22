@@ -119,6 +119,16 @@ define "First Referral during First 10 Months of Measurement Period":
 define "Numerator":
   "Referring Clinician Receives Consultant Report to Close Referral Loop"
 
+/*
+CMS50-4
+Chris Moesel
+H: Confirming that FHIR does recommend Task for specialist referral workflows. Assuming this then pertains to QICore as well, I have a few comments on the specific implementation here:
+Since QICore 6 Authoring Patterns uses Task for rejecting requests, I'm assuming it's valid to use it to represent accepted requests too (as is done here)
+code should probably be fulfill based on TaskCode (preferred)
+The ServiceRequest should probably be referenced by focus rather than basedOn (which matches the approach described in QICore Authoring Patterns for ServiceRequest rejected). That said, neither focus nor basedOn are flagged (QI-Core) in QICore 6, so there is a question of whether or not we can expect them to be implemented.
+Based on the specialist workflow (linked above) the consultant report should be found in output[n].value[x] - so if you need to specifically check for a report based on a value set, then you likely need to find a Composition referenced in the output and check the value set against that. It may be worth considering allowing any Composition referenced in the outputs to satisfy the measure though. Note, however, that output is not flagged (QI-Core) in QICore 6, so we don't know if it will be implemented by vendors.
+This is indeed a tricky one, though, and it isn't explicitly covered in the QICore documentation or Authoring Patterns, so it's probably worth further discussion.
+*/
 define "Referring Clinician Receives Consultant Report to Close Referral Loop":
   exists ( [Task: "Consultant Report"] ConsultantReportObtained
       with "First Referral during First 10 Months of Measurement Period" FirstReferral
