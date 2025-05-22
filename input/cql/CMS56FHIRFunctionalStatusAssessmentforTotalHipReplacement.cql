@@ -110,6 +110,14 @@ define "Has Severe Cognitive Impairment":
     union [ConditionEncounterDiagnosis: "Severe cognitive impairment (finding)"]) Dementia
     where Dementia.prevalenceInterval() overlaps day of "Measurement Period"
 
+/*
+CMS56-18
+Peter Muir
+M: Condition (also in Hospice library): There may be potential for a choice type issue where two QICore profiles are union with a common query (noted in Connectathon Zulip).
+Authoring patterns 6.0 example illustrated separate queries but for differing constraints. Will need Bryn input post Working Group.
+In the interim, recommend Developer check for test case gaps in Coverage, may require additional test cases (also libraries?).
+If needed, solution would be to apply where clause separately to each profile and then union together. PM 05/13
+*/
 define "Has Total Hip Arthroplasty with 1 or More Lower Body Fractures":
   exists ("Total Hip Arthroplasty Procedure" THAProcedure
       with ([ConditionEncounterDiagnosis: "Lower Body Fractures Excluding Ankle and Foot"]
