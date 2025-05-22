@@ -129,6 +129,26 @@ The ServiceRequest should probably be referenced by focus rather than basedOn (w
 Based on the specialist workflow (linked above) the consultant report should be found in output[n].value[x] - so if you need to specifically check for a report based on a value set, then you likely need to find a Composition referenced in the output and check the value set against that. It may be worth considering allowing any Composition referenced in the outputs to satisfy the measure though. Note, however, that output is not flagged (QI-Core) in QICore 6, so we don't know if it will be implemented by vendors.
 This is indeed a tricky one, though, and it isn't explicitly covered in the QICore documentation or Authoring Patterns, so it's probably worth further discussion.
 */
+
+/*
+CMS50-16
+Peter Muir
+Re comments on Task.output 0..* "Information produced as part of task", consider Task.output.valueReference 1..1 to contain the link to pertinent ConsultantReport, but output.type 1..1 is unbound.
+FHIR defines as "Label for output", so perhaps "Final Report" but "Consultant Report" would be more accurate since if ongoing Consultant care, there could be more than one.
+*/
+
+/*
+CMS50-16
+Peter Muir
+FHIR defines as "Label for output", so perhaps "Final Report" but "Consultant Report" would be more accurate since if ongoing Consultant care, there could be more than one.
+*/
+
+/*
+CMS50-16
+Peter Muir
+Agree with Mitre that lack of QICore must support could impact data availability and that Task should be a topic for discussion.
+Bryn suggested discussion with Patient Care group for alignment and will consider adding topic to Authoring Patterns.
+*/
 define "Referring Clinician Receives Consultant Report to Close Referral Loop":
   exists ( [Task: "Consultant Report"] ConsultantReportObtained
       with "First Referral during First 10 Months of Measurement Period" FirstReferral
