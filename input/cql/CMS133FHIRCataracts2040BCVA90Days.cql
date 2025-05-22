@@ -1,4 +1,4 @@
-library CMS133FHIRCataracts2040BCVAwithin90Days version '0.2.000'
+library CMS133FHIRCataracts2040BCVA90Days version '0.2.000'
 
 using QICore version '6.0.0'
 
