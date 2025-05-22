@@ -41,6 +41,16 @@ define "Denominator":
 define "Denominator Exclusions":
   Hospice."Has Hospice Services"
 
+
+/*
+CMS75-11
+Peter Muir
+M: Caution. There may be potential for a choice type issue where two QICore profiles are union with a common query (noted in Connectathon Zulip).
+Authoring patterns 6.0 example illustrated separate queries but for differing constraints. Will need Bryn input post Working Group.
+In the interim, recommend Developer check for test case gaps in Coverage, may need additional test cases.
+If needed, solution would be to apply where clause separately to each profile and then union together. PM 05/12
+*/
+
 define "Numerator":
   exists ([ConditionProblemsHealthConcerns: "Dental Caries"]
     union [ConditionEncounterDiagnosis: "Dental Caries"]) DentalCaries
