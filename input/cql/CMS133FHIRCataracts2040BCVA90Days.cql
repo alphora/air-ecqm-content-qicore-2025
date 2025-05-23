@@ -147,7 +147,6 @@ define "Cataract Surgeries in Patients with Significant Ocular Conditions Impact
       union (["ConditionProblemsHealthConcerns": "Vascular Disorders of Iris and Ciliary Body"] union ["ConditionEncounterDiagnosis": "Vascular Disorders of Iris and Ciliary Body"])
       union (["ConditionProblemsHealthConcerns": "Visual Field Defects"] union ["ConditionEncounterDiagnosis": "Visual Field Defects"])) ComorbidDiagnosis
       such that ComorbidDiagnosis.prevalenceInterval() overlaps before day of CataractSurgeryPerformed.performed.toInterval()
-        and ComorbidDiagnosis.isActive()
 
 define "Numerator":
   "Cataract Surgery Between January and September of Measurement Period" CataractSurgeryPerformed
