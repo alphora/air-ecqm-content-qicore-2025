@@ -55,9 +55,7 @@ parameter "Measurement Period" Interval<DateTime>
 context Patient
 
 define "Initial Population 1":
-  exists ( "ASCVD Diagnosis or Procedure before End of Measurement Period"
-      union "Myocardial Infarction before End of Measurement Period"
-  )
+  exists "ASCVD Diagnosis or Procedure before End of Measurement Period"
     and exists "Qualifying Encounter during day of Measurement Period"
 
 define "Initial Population 2":
