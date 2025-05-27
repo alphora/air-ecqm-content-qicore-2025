@@ -107,9 +107,8 @@ define "Denominator Exceptions":
     or "Has Medical Reason for Not Ordering Statin Therapy"
 
 define "Numerator":
-    exists "Statin Therapy Ordered during Measurement Period"
+  exists "Statin Therapy Ordered during Measurement Period"
     or exists "Medication Active during the Measurement Period"
-
 
 define "ASCVD Diagnosis or Procedure before End of Measurement Period":
   ( ( [ConditionProblemsHealthConcerns: "Myocardial Infarction"]
@@ -127,7 +126,7 @@ define "ASCVD Diagnosis or Procedure before End of Measurement Period":
         union [Procedure: "CABG Surgeries"]
         union [Procedure: "Carotid Intervention"]
         union [Procedure: "CABG or PCI Procedure"] ) ASCVDProcedure
-        where QICoreCommon.ToInterval(ASCVDProcedure.performed) starts on or before day of end of "Measurement Period"
+        where QICoreCommon.ToInterval ( ASCVDProcedure.performed ) starts on or before day of end of "Measurement Period"
           and ASCVDProcedure.status = 'completed'
     )
 
@@ -145,7 +144,7 @@ define "Has Adverse Reaction to Statin":
 
 define "Has Allergy to Statin":
   exists ( [AllergyIntolerance: "Statin Allergen"] StatinAllergy
-      where QICoreCommon.ToInterval(StatinAllergy.onset) overlaps day of "Measurement Period"
+      where QICoreCommon.ToInterval ( StatinAllergy.onset ) overlaps day of "Measurement Period"
         and StatinAllergy.clinicalStatus ~ QICoreCommon."allergy-active"
   )
 
@@ -174,11 +173,11 @@ define "Has Hepatitis or Liver Disease Diagnosis":
       )
         and HepatitisLiverDisease.prevalenceInterval ( ) overlaps day of "Measurement Period"
   )
-        
+
 define "Has Medical Reason for Not Ordering Statin Therapy":
   exists ( ( [MedicationNotRequested: "Low Intensity Statin Therapy"]
       union [MedicationNotRequested: "Moderate Intensity Statin Therapy"]
-      union [MedicationNotRequested: "High Intensity Statin Therapy"]) NoStatinTherapyOrdered
+      union [MedicationNotRequested: "High Intensity Statin Therapy"] ) NoStatinTherapyOrdered
       with "Qualifying Encounter during day of Measurement Period" QualifyingEncounter
         such that NoStatinTherapyOrdered.authoredOn during day of QualifyingEncounter.period
           and NoStatinTherapyOrdered.status = 'completed'
@@ -204,14 +203,15 @@ define "Hypercholesterolemia Diagnosis":
 define "LDL Result Greater Than or Equal To 190":
   [LaboratoryResultObservation: "LDL Cholesterol"] LDL190
     where LDL190.value as Quantity >= 190 'mg/dL'
-      and QICoreCommon.ToInterval(LDL190.effective) starts on or before day of end of "Measurement Period"
+      and QICoreCommon.ToInterval ( LDL190.effective ) starts on or before day of end of "Measurement Period"
       and LDL190.status in { 'final', 'amended', 'corrected', 'appended' }
-      
+
 define "Medication Active during the Measurement Period":
-    ( [MedicationRequest: "Low Intensity Statin Therapy"]
-        union [MedicationRequest: "Moderate Intensity Statin Therapy"]
-        union [MedicationRequest: "High Intensity Statin Therapy"] ) ActiveStatin
-        where ActiveStatin.medicationRequestPeriod().toInterval() overlaps day of "Measurement Period"
+  ( [MedicationRequest: "Low Intensity Statin Therapy"]
+    union [MedicationRequest: "Moderate Intensity Statin Therapy"]
+    union [MedicationRequest: "High Intensity Statin Therapy"] ) ActiveStatin
+    where ActiveStatin.medicationRequestPeriod ( ).toInterval ( ) overlaps day of "Measurement Period"
+      and ActiveStatin.status in { 'active', 'completed' }
 
 define "Patients Aged 20 to 75 with LDL Cholesterol Result Greater than or Equal to 190 or Hypercholesterolemia without ASCVD":
   "Patients Aged 20 to 75 at Start of Measurement Period"
@@ -249,21 +249,21 @@ define "Qualifying Encounter during day of Measurement Period":
     union [Encounter: "Preventive Care Services Individual Counseling"]
     union [Encounter: "Preventive Care Services Initial Office Visit, 18 and Up"]
     union [Encounter: "Preventive Care Services Other"]
-    union [Encounter: "Telemedicine Services"]) QualifyingEncounter
+    union [Encounter: "Telemedicine Services"] ) QualifyingEncounter
     where QualifyingEncounter.period during day of "Measurement Period"
       and QualifyingEncounter.status = 'finished'
 
 define "Statin Therapy Ordered during Measurement Period":
-    ( [MedicationRequest: "Low Intensity Statin Therapy"]
-        union [MedicationRequest: "Moderate Intensity Statin Therapy"]
-        union [MedicationRequest: "High Intensity Statin Therapy"] ) StatinOrdered
-        where StatinOrdered.authoredOn during day of "Measurement Period"
+  ( [MedicationRequest: "Low Intensity Statin Therapy"]
+    union [MedicationRequest: "Moderate Intensity Statin Therapy"]
+    union [MedicationRequest: "High Intensity Statin Therapy"] ) StatinOrdered
+    where StatinOrdered.authoredOn during day of "Measurement Period"
 
 define "Ten Year CVD Risk is High":
-  exists ( ([ObservationClinicalResult: "Cardiovascular disease 10Y risk [Likelihood]"]
-      union [ObservationClinicalResult: "Cardiovascular disease 10Y risk [Likelihood] ACC-AHA Pooled Cohort by Goff 2013"]) AtRiskCVD
+  exists ( ( [ObservationClinicalResult: "Cardiovascular disease 10Y risk [Likelihood]"]
+      union [ObservationClinicalResult: "Cardiovascular disease 10Y risk [Likelihood] ACC-AHA Pooled Cohort by Goff 2013"] ) AtRiskCVD
       where AtRiskCVD.value as Quantity >= 20 '%'
-        and QICoreCommon.ToInterval(AtRiskCVD.effective) during day of "Measurement Period"
+        and QICoreCommon.ToInterval ( AtRiskCVD.effective ) during day of "Measurement Period"
   )
 
 define "SDE Ethnicity":
