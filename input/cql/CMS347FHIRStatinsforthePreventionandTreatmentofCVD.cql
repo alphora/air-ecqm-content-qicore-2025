@@ -127,7 +127,7 @@ define "Myocardial Infarction before End of Measurement Period":
       and SubsequentMI.prevalenceInterval ( ) starts on or before day of end of "Measurement Period"
 
 define "Has Adverse Reaction to Statin":
-  exists ( [AdverseEvent: event in "Statin Allergen"] StatinReaction
+  exists ( [AdverseEvent: "Statin Allergen"] StatinReaction
       where StatinReaction.recordedDate during day of "Measurement Period"
   )
 
