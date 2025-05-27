@@ -109,10 +109,7 @@ define "ASCVD Diagnosis or Procedure before End of Measurement Period":
       union [ConditionProblemsHealthConcerns: "Atherosclerosis and Peripheral Arterial Disease"]
       union [ConditionProblemsHealthConcerns: "Ischemic Heart Disease or Other Related Diagnoses"]
       union [ConditionProblemsHealthConcerns: "Stable and Unstable Angina"] ) ASCVDDiagnosis
-      where ( ASCVDDiagnosis.isProblemListItem ( )
-          or ASCVDDiagnosis.isHealthConcern ( )
-      )
-        and ASCVDDiagnosis.prevalenceInterval ( ) starts on or before day of end of "Measurement Period"
+      where ASCVDDiagnosis.prevalenceInterval ( ) starts on or before day of end of "Measurement Period"
   )
     union ( ( [Procedure: "PCI"]
         union [Procedure: "CABG Surgeries"]
