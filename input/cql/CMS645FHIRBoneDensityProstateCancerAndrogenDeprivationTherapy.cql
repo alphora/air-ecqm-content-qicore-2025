@@ -128,14 +128,14 @@ define "Androgen Deprivation Therapy for Urology Care Medication Order Start Dat
 
 define "Has Qualifying Encounter":
   exists ( ["Encounter": "Office Visit"] OfficeVisit
-      where OfficeVisit.period during "Measurement Period"
+      where OfficeVisit.period during day of "Measurement Period"
         and OfficeVisit.status = 'finished'
   )
 
 define "Prostate Cancer Diagnosis":
   ([ConditionProblemsHealthConcerns: "Prostate Cancer"] 
     union [ConditionEncounterDiagnosis: "Prostate Cancer"]) ProstateCancer
-    where ProstateCancer.prevalenceInterval() overlaps "Measurement Period"
+    where ProstateCancer.prevalenceInterval() overlaps day of "Measurement Period"
       and ProstateCancer.clinicalStatus ~ QICoreCommon."active"
       and ProstateCancer.verificationStatus ~ QICoreCommon."confirmed"
 
