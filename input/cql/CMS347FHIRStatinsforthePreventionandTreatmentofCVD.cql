@@ -133,7 +133,7 @@ define "Has Adverse Reaction to Statin":
 
 define "Has Allergy to Statin":
   exists ( [AllergyIntolerance: "Statin Allergen"] StatinAllergy
-      where QICoreCommon.ToInterval ( StatinAllergy.onset ) overlaps day of "Measurement Period"
+      where StatinAllergy.onset.toInterval ( ) overlaps day of "Measurement Period"
         and StatinAllergy.clinicalStatus ~ QICoreCommon."allergy-active"
   )
 
