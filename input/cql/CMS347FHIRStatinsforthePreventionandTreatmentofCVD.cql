@@ -85,10 +85,7 @@ define "Denominator 4":
 define "Denominator Exclusions":
   exists ( ( [ConditionProblemsHealthConcerns: "Breastfeeding"]
       union [ConditionProblemsHealthConcerns: "Rhabdomyolysis"] ) ExclusionDiagnosis
-      where ( ExclusionDiagnosis.isProblemListItem ( )
-          or ExclusionDiagnosis.isHealthConcern ( )
-      )
-        and ExclusionDiagnosis.prevalenceInterval ( ) overlaps day of "Measurement Period"
+      where ExclusionDiagnosis.prevalenceInterval ( ) overlaps day of "Measurement Period"
   )
 
 define "Has Palliative Care in the Measurement Period":
