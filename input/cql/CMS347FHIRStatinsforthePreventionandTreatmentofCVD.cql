@@ -121,10 +121,7 @@ define "ASCVD Diagnosis or Procedure before End of Measurement Period":
 
 define "Myocardial Infarction before End of Measurement Period":
   [ConditionProblemsHealthConcerns: "Subsequent non-ST elevation (NSTEMI) myocardial infarction"] SubsequentMI
-    where ( SubsequentMI.isProblemListItem ( )
-        or SubsequentMI.isHealthConcern ( )
-    )
-      and SubsequentMI.prevalenceInterval ( ) starts on or before day of end of "Measurement Period"
+    where SubsequentMI.prevalenceInterval ( ) starts on or before day of end of "Measurement Period"
 
 define "Has Adverse Reaction to Statin":
   exists ( [AdverseEvent: "Statin Allergen"] StatinReaction
@@ -139,28 +136,19 @@ define "Has Allergy to Statin":
 
 define "Has Diabetes Diagnosis":
   exists ( [ConditionProblemsHealthConcerns: "Diabetes"] DiabetesDiagnosis
-      where ( DiabetesDiagnosis.isProblemListItem ( )
-          or DiabetesDiagnosis.isHealthConcern ( )
-      )
-        and DiabetesDiagnosis.prevalenceInterval ( ) overlaps day of "Measurement Period"
+      where DiabetesDiagnosis.prevalenceInterval ( ) overlaps day of "Measurement Period"
   )
 
 define "Has ESRD Diagnosis":
   exists ( [ConditionProblemsHealthConcerns: "End Stage Renal Disease"] ESRD
-      where ( ESRD.isProblemListItem ( )
-          or ESRD.isHealthConcern ( )
-      )
-        and ESRD.prevalenceInterval ( ) overlaps day of "Measurement Period"
+      where ESRD.prevalenceInterval ( ) overlaps day of "Measurement Period"
   )
 
 define "Has Hepatitis or Liver Disease Diagnosis":
   exists ( ( [ConditionProblemsHealthConcerns: "Hepatitis A"]
       union [ConditionProblemsHealthConcerns: "Hepatitis B"]
       union [ConditionProblemsHealthConcerns: "Liver Disease"] ) HepatitisLiverDisease
-      where ( HepatitisLiverDisease.isProblemListItem ( )
-          or HepatitisLiverDisease.isHealthConcern ( )
-      )
-        and HepatitisLiverDisease.prevalenceInterval ( ) overlaps day of "Measurement Period"
+      where HepatitisLiverDisease.prevalenceInterval ( ) overlaps day of "Measurement Period"
   )
 
 define "Has Medical Reason for Not Ordering Statin Therapy":
@@ -175,18 +163,12 @@ define "Has Medical Reason for Not Ordering Statin Therapy":
 
 define "Has Statin Associated Muscle Symptoms":
   exists ( [ConditionProblemsHealthConcerns: "Statin Associated Muscle Symptoms"] StatinMuscleSymptom
-      where ( StatinMuscleSymptom.isProblemListItem ( )
-          or StatinMuscleSymptom.isHealthConcern ( )
-      )
-        and StatinMuscleSymptom.prevalenceInterval ( ) overlaps day of "Measurement Period"
+      where StatinMuscleSymptom.prevalenceInterval ( ) overlaps day of "Measurement Period"
   )
 
 define "Hypercholesterolemia Diagnosis":
   ( [ConditionProblemsHealthConcerns: "Familial Hypercholesterolemia"] Hypercholesterolemia
-      where ( Hypercholesterolemia.isProblemListItem ( )
-          or Hypercholesterolemia.isHealthConcern ( )
-      )
-        and Hypercholesterolemia.prevalenceInterval ( ) starts on or before day of end of "Measurement Period"
+      where Hypercholesterolemia.prevalenceInterval ( ) starts on or before day of end of "Measurement Period"
   )
 
 define "LDL Result Greater Than or Equal To 190":
