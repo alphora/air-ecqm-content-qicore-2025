@@ -88,9 +88,6 @@ define "Denominator Exclusions":
       where ExclusionDiagnosis.prevalenceInterval ( ) overlaps day of "Measurement Period"
   )
 
-define "Has Palliative Care in the Measurement Period":
-  PalliativeCare."Has Palliative Care in the Measurement Period"
-
 define "Denominator Exceptions":
   "Has Allergy to Statin"
     or Hospice."Has Hospice Services"
