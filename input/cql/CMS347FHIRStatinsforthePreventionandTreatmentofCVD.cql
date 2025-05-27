@@ -115,7 +115,7 @@ define "ASCVD Diagnosis or Procedure before End of Measurement Period":
         union [Procedure: "CABG Surgeries"]
         union [Procedure: "Carotid Intervention"]
         union [Procedure: "CABG or PCI Procedure"] ) ASCVDProcedure
-        where QICoreCommon.ToInterval ( ASCVDProcedure.performed ) starts on or before day of end of "Measurement Period"
+        where ASCVDProcedure.performed.toInterval ( ) starts on or before day of end of "Measurement Period"
           and ASCVDProcedure.status = 'completed'
     )
 
@@ -192,7 +192,7 @@ define "Hypercholesterolemia Diagnosis":
 define "LDL Result Greater Than or Equal To 190":
   [LaboratoryResultObservation: "LDL Cholesterol"] LDL190
     where LDL190.value as Quantity >= 190 'mg/dL'
-      and QICoreCommon.ToInterval ( LDL190.effective ) starts on or before day of end of "Measurement Period"
+      and LDL190.effective.toInterval ( ) starts on or before day of end of "Measurement Period"
       and LDL190.status in { 'final', 'amended', 'corrected', 'appended' }
 
 define "Medication Active during the Measurement Period":
@@ -252,7 +252,7 @@ define "Ten Year CVD Risk is High":
   exists ( ( [ObservationClinicalResult: "Cardiovascular disease 10Y risk [Likelihood]"]
       union [ObservationClinicalResult: "Cardiovascular disease 10Y risk [Likelihood] ACC-AHA Pooled Cohort by Goff 2013"] ) AtRiskCVD
       where AtRiskCVD.value as Quantity >= 20 '%'
-        and QICoreCommon.ToInterval ( AtRiskCVD.effective ) during day of "Measurement Period"
+        and AtRiskCVD.effective.toInterval ( ) during day of "Measurement Period"
   )
 
 define "SDE Ethnicity":
