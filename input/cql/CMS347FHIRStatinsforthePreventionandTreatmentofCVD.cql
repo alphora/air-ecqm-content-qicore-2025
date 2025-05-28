@@ -125,7 +125,7 @@ define "Myocardial Infarction before End of Measurement Period":
 
 define "Has Adverse Reaction to Statin":
   exists ( [AdverseEvent: "Statin Allergen"] StatinReaction
-      where StatinReaction.recordedDate during day of "Measurement Period"
+      where Coalesce(StatinReaction.date, StatinReaction.recordedDate) during day of "Measurement Period"
   )
 
 define "Has Allergy to Statin":
