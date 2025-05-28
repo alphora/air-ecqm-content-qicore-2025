@@ -181,7 +181,7 @@ define "Medication Active during the Measurement Period":
   ( [MedicationRequest: "Low Intensity Statin Therapy"]
     union [MedicationRequest: "Moderate Intensity Statin Therapy"]
     union [MedicationRequest: "High Intensity Statin Therapy"] ) ActiveStatin
-    where ActiveStatin.medicationRequestPeriod ( ).toInterval ( ) overlaps day of "Measurement Period"
+    where ActiveStatin.medicationRequestPeriod ( ) overlaps day of "Measurement Period"
       and ActiveStatin.status in { 'active', 'completed' }
 
 define "Patients Aged 20 to 75 with LDL Cholesterol Result Greater than or Equal to 190 or Hypercholesterolemia without ASCVD":
