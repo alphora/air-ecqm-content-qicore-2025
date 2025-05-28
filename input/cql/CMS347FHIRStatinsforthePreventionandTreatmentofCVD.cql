@@ -231,10 +231,11 @@ define "Statin Therapy Ordered during Measurement Period":
     where StatinOrdered.authoredOn during day of "Measurement Period"
 
 define "Ten Year CVD Risk is High":
-  exists ( ( [ObservationClinicalResult: "Cardiovascular disease 10Y risk [Likelihood]"]
-      union [ObservationClinicalResult: "Cardiovascular disease 10Y risk [Likelihood] ACC-AHA Pooled Cohort by Goff 2013"] ) AtRiskCVD
+  exists ( ( [ObservationScreeningAssessment: "Cardiovascular disease 10Y risk [Likelihood]"]
+      union [ObservationScreeningAssessment: "Cardiovascular disease 10Y risk [Likelihood] ACC-AHA Pooled Cohort by Goff 2013"] ) AtRiskCVD
       where AtRiskCVD.value as Quantity >= 20 '%'
         and AtRiskCVD.effective.toInterval ( ) during day of "Measurement Period"
+        and AtRiskCVD.status in { 'final', 'amended', 'corrected' }
   )
 
 define "SDE Ethnicity":
