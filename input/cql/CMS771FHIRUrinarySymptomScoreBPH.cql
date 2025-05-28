@@ -1,7 +1,6 @@
-library CMS771FHIRUrinarySymptomScoreChangeBenignProstaticHyperplasia version '1.5.000'
+library CMS771FHIRUrinarySymptomScoreBPH version '1.5.000'
 
 using QICore version '6.0.0'
-using USCore version '6.1.0'
 
 include FHIRHelpers version '4.4.000' called FHIRHelpers
 include SupplementalDataElements version '5.1.000' called SDE
@@ -9,7 +8,6 @@ include QICoreCommon version '4.0.000' called QICoreCommon
 
 codesystem "LOINC": 'http://loinc.org'
 codesystem "ICD10CM": 'http://hl7.org/fhir/sid/icd-10-cm'
-codesystem "ObservationCategoryCodes": 'http://terminology.hl7.org/CodeSystem/observation-category'
 codesystem "ActCode": 'http://terminology.hl7.org/CodeSystem/v3-ActCode'
 
 valueset "Hospital Services for Urology Care": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.360'
@@ -61,7 +59,7 @@ define "Has Qualifying BPH Diagnosis":
   "Initial BPH Diagnosis Starts Within 6 Months Before the Measurement Period" is not null
 
 define "Patient is Male":
-  Patient.gender = 'male'
+  SDE."SDE Sex" ~ SDE."Male (finding)"
 
 define "Urinary Symptom Score Assessment":
   "Documented IPSS Assessment Result"
@@ -172,5 +170,4 @@ define "BMI Exam Result Greater Than or Equal To 40 During Measurement Period an
   )
 
 define fluent function isConfirmedActiveDiagnosis(condition Choice<ConditionProblemsHealthConcerns, ConditionEncounterDiagnosis>):
-  condition.isActive()
-    and condition.verificationStatus ~ QICoreCommon."confirmed"
+  condition.verificationStatus ~ QICoreCommon."confirmed"
