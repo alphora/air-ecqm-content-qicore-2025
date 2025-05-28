@@ -119,10 +119,6 @@ define "ASCVD Diagnosis or Procedure before End of Measurement Period":
           and ASCVDProcedure.status = 'completed'
     )
 
-define "Myocardial Infarction before End of Measurement Period":
-  [ConditionProblemsHealthConcerns: "Subsequent non-ST elevation (NSTEMI) myocardial infarction"] SubsequentMI
-    where SubsequentMI.prevalenceInterval ( ) starts on or before day of end of "Measurement Period"
-
 define "Has Adverse Reaction to Statin":
   exists ( [AdverseEvent: "Statin Allergen"] StatinReaction
       where Coalesce(StatinReaction.date, StatinReaction.recordedDate) during day of "Measurement Period"
