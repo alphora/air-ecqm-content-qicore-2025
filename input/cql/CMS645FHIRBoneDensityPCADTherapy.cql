@@ -1,4 +1,4 @@
-library CMS645FHIRBoneDensityProstateCancerAndrogenDeprivationTherapy version '1.5.000'
+library CMS645FHIRBoneDensityPCADTherapy version '1.5.000'
 
 using QICore version '6.0.0'
 
@@ -56,7 +56,7 @@ define "Has Baseline DEXA Scan Two Years Prior to the Start of or Less than Thre
           and DEXAOrdered.intent = 'order'
           and DEXAOrdered.doNotPerform is not true
     )
-    union ( [LaboratoryResultObservation: "DEXA Bone Density for Urology Care"] DEXAPerformed
+    union ( [ObservationClinicalResult: "DEXA Bone Density for Urology Care"] DEXAPerformed
       with "Order for 12 Months of ADT in 3 Months Before to 9 Months After Start of Measurement Period" OrderTwelveMonthsADT
         such that DEXAPerformed.effective.toInterval() 3 months or less on or after day of OrderTwelveMonthsADT.authoredOn
           or DEXAPerformed.effective.toInterval() 2 years or less before day of OrderTwelveMonthsADT.authoredOn
@@ -136,7 +136,6 @@ define "Prostate Cancer Diagnosis":
   ([ConditionProblemsHealthConcerns: "Prostate Cancer"] 
     union [ConditionEncounterDiagnosis: "Prostate Cancer"]) ProstateCancer
     where ProstateCancer.prevalenceInterval() overlaps day of "Measurement Period"
-      and ProstateCancer.clinicalStatus ~ QICoreCommon."active"
       and ProstateCancer.verificationStatus ~ QICoreCommon."confirmed"
 
 define function NormalizeInterval(pointInTime DateTime, dateTimeInterval Interval<DateTime>):
