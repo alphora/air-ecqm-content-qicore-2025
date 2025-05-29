@@ -78,7 +78,7 @@ define "Denominator Exclusions":
   Hospice."Has Hospice Services"
     or exists (([ConditionProblemsHealthConcerns: "Severe cognitive impairment (finding)"] 
       union [ConditionEncounterDiagnosis: "Severe cognitive impairment (finding)"]) SevereCognitiveImpairment
-        where SevereCognitiveImpairment.prevalenceInterval() overlaps "Measurement Period"
+        where SevereCognitiveImpairment.prevalenceInterval() overlaps day of "Measurement Period"
    )
 
 define "Numerator":
