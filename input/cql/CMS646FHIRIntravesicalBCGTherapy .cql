@@ -132,7 +132,7 @@ define "First Bladder Cancer Staging Procedure":
 
 define "Has Qualifying Encounter":
   exists ( [Encounter: "Office Visit"] ValidEncounter
-      where ValidEncounter.period during "Measurement Period"
+      where ValidEncounter.period during day of "Measurement Period"
         and ValidEncounter.class !~ "virtual"
         and ValidEncounter.status = 'finished'
   )
