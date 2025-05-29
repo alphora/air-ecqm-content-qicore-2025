@@ -183,7 +183,7 @@ define "Encounter with Elevated Blood Pressure Reading SBP 120 to 129 AND DBP le
 define "Encounter with Second Hypertensive Reading SBP Greater than or Equal to 140 OR DBP Greater than or Equal to 90":
   ( "Qualifying Encounter during Measurement Period" QualifyingEncounter
       let EncounterLastBP: Last([USCoreBloodPressureProfile] BloodPressure
-          where BloodPressure.effective.toInterval() ends during QualifyingEncounter.period
+          where BloodPressure.effective.toInterval() ends during day of QualifyingEncounter.period
             and BloodPressure.status in { 'final', 'amended', 'corrected' }
           sort by start of effective.toInterval()
       )
