@@ -67,7 +67,7 @@ define "Initial Population":
   AgeInYearsAt(date from start of "Measurement Period") >= 18
     and exists (([ConditionProblemsHealthConcerns: "Heart Failure"] 
       union [ConditionEncounterDiagnosis: "Heart Failure"]) HeartFailure
-        where HeartFailure.prevalenceInterval() overlaps before "Measurement Period"
+        where HeartFailure.prevalenceInterval() overlaps before day of "Measurement Period"
    )
     and exists ("Two Outpatient Encounters during Measurement Period")
 
