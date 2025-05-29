@@ -217,6 +217,7 @@ define "Encounter with First Hypertensive Reading SBP Greater than or Equal to 1
   ( "Qualifying Encounter during Measurement Period" QualifyingEncounter
       let EncounterLastBP: Last([USCoreBloodPressureProfile] BloodPressure
           where BloodPressure.effective.toInterval() ends during day of QualifyingEncounter.period
+          and BloodPressure.status in { 'final', 'amended', 'corrected' }
           sort by start of effective.toInterval()
       )
       where ( ( (singleton from (EncounterLastBP.component C where C.code ~ "Systolic blood pressure")).value > 0 'mm[Hg]'
