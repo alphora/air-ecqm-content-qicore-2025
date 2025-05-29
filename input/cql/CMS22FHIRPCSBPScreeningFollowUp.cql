@@ -143,7 +143,7 @@ define "Second Hypertensive Reading SBP 130 to 139 OR DBP 80 to 89 and Intervent
 
 define "Qualifying Encounter during Measurement Period":
   [Encounter: "Encounter to Screen for Blood Pressure"] ValidEncounter
-    where ValidEncounter.period during day of "Measurement Period"
+    where ValidEncounter.period ends during day of "Measurement Period"
       and ValidEncounter.status ~ 'finished'
       and ValidEncounter.class !~ "virtual"
 
