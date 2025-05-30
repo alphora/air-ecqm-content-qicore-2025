@@ -122,7 +122,7 @@ define "Urinary Retention Diagnosis Starts Within 1 Year After Initial BPH Diagn
 define "Urinary Symptom Score 6 to 12 Months After Initial BPH Diagnosis":
   Last("Urinary Symptom Score Assessment" USSAssessment
       with "Initial BPH Diagnosis Starts Within 6 Months Before the Measurement Period" InitialBPHDiagnosis
-        such that months between start of InitialBPHDiagnosis.prevalenceInterval() and USSAssessment.effectiveDatetime in Interval[6, 12]
+        such that difference in months between start of InitialBPHDiagnosis.prevalenceInterval() and USSAssessment.effectiveDatetime in Interval[6, 12]
       sort by effectiveDatetime
   )
 
