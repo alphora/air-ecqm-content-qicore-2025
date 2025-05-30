@@ -47,7 +47,8 @@ define "Initial Population":
     
 define "Most Recent Viral Load Test During Measurement Period":
     Last ( ["LaboratoryResultObservation": "HIV Viral Load Tests"] ViralLoad
-    where ViralLoad.effective.latest() during day of "Measurement Period"
+    where ViralLoad.status in { 'final', 'amended', 'corrected' }
+    and ViralLoad.effective.latest() during day of "Measurement Period"
         sort by start of effective.toInterval()) 
         
 
