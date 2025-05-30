@@ -6,7 +6,6 @@ include FHIRHelpers version '4.4.000' called FHIRHelpers
 include SupplementalDataElements version '5.1.000' called SDE
 include QICoreCommon version '4.0.000' called QICoreCommon
 include Hospice version '6.15.000' called Hospice
-include Status version '1.13.000' called Status
 
 valueset "Clinical Oral Evaluation": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.125.12.1003'
 valueset "Dental Caries": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.125.12.1004'
@@ -20,7 +19,7 @@ define "Initial Population":
     and exists ( "Qualifying Encounters" )
 
 define "Qualifying Encounters":
-  ( ( [Encounter: "Clinical Oral Evaluation"] ).isEncounterPerformed ( ) ) ValidEncounter
+  ( ( [Encounter: "Clinical Oral Evaluation"] ).isEncounterPerformedLocal ( ) ) ValidEncounter
     where ValidEncounter.period during day of "Measurement Period"
 
 define "Denominator":
@@ -45,3 +44,7 @@ define "SDE Race":
 
 define "SDE Sex":
   SDE."SDE Sex"
+
+define fluent function isEncounterPerformedLocal(Enc List<Encounter>):
+  Enc E
+    where E.status in { 'finished', 'in-progress' }
