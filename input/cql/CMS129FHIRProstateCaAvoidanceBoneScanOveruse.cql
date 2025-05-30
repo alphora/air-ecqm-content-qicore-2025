@@ -1,4 +1,4 @@
-library CMS129FHIRProstateCaAvoidanceBoneScanOveruse version '1.1.000'
+library CMS129FHIRProstateCaBoneScanOveruse version '1.1.000'
 
 using QICore version '6.0.0'
 
@@ -127,3 +127,15 @@ define "Most Recent Prostate Cancer Staging Tumor Size T1a to T2a":
 define "Prostate Cancer Diagnosis":
   [ConditionProblemsHealthConcerns: "Prostate Cancer"] ProstateCancer
     where ProstateCancer.prevalenceInterval ( ) overlaps day of "Measurement Period"
+      and ProstateCancer.isVerificationStatusNotInvalid ( )
+
+/*
+@description: Returns true if the given condition's verification status has been invalidated.
+*/
+
+
+define fluent function isVerificationStatusNotInvalid(condition Choice<"ConditionEncounterDiagnosis", "ConditionProblemsHealthConcerns">):
+  not ( condition.verificationStatus ~ QICoreCommon."unconfirmed"
+      or condition.verificationStatus ~ QICoreCommon."refuted"
+      or condition.verificationStatus ~ QICoreCommon."entered-in-error"
+  )
