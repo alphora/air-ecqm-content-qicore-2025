@@ -226,8 +226,8 @@ define "Patient Age 18 Years or Older at Start of Measurement Period":
 
 define "Qualifying Encounter During Measurement Period":
   ( [Encounter: type in "Encounter to Screen for Depression"]
-    union [Encounter: type in "Physical Therapy Evaluation"]
-    union [Encounter: type in "Telephone Visits"] ) QualifyingEncounter
+    union [Encounter: "Physical Therapy Evaluation"]
+    union [Encounter: "Telephone Visits"] ) QualifyingEncounter
     where QualifyingEncounter.period during day of "Measurement Period"
       and QualifyingEncounter.status = 'finished'
 
