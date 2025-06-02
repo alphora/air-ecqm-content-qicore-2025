@@ -76,7 +76,7 @@ define "Denominator Exceptions":
 define "Follow Up Intervention for Positive Adolescent Depression Screening":
   ( ( [MedicationRequest: "Adolescent Depression Medications"] AdolescentMed
         where AdolescentMed.status in { 'active', 'completed' }
-          and AdolescentMed.intent = 'order'
+          and AdolescentMed.intent in { 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order' }
     )
       union ( [ServiceRequest: "Referral for Adolescent Depression"] AdolescentReferral
           where AdolescentReferral.status in { 'active', 'completed' }
@@ -89,7 +89,7 @@ define "Follow Up Intervention for Positive Adolescent Depression Screening":
 define "Follow Up Intervention for Positive Adult Depression Screening":
   ( ( [MedicationRequest: "Adult Depression Medications"] AdultMed
         where AdultMed.status in { 'active', 'completed' }
-          and AdultMed.intent = 'order'
+          and AdultMed.intent in { 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order' }
     )
       union ( [ServiceRequest: "Referral for Adult Depression"] AdultReferral
           where AdultReferral.status in { 'active', 'completed' }
