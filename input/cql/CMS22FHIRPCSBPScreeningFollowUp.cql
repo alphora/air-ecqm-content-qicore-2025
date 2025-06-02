@@ -48,9 +48,7 @@ define "Denominator":
 define "Denominator Exclusions":
   "Qualifying Encounter during Measurement Period" QualifyingEncounter
     with [ConditionProblemsHealthConcerns: "Diagnosis of Hypertension"] Hypertension
-      such that ( Hypertension.isProblemListItem ( )
-          or Hypertension.isHealthConcern ( ))
-        and Hypertension.prevalenceInterval ( ) starts before or on day of QualifyingEncounter.period
+      such that Hypertension.prevalenceInterval ( ) starts before or on day of QualifyingEncounter.period
 
 define "Numerator":
   "Encounter with Normal Blood Pressure Reading"
