@@ -85,7 +85,7 @@ define "November 1 Two Years Prior to the Measurement Period":
   DateTime((year from start of "Measurement Period" - 2), 11, 1, 0, 0, 0, 0, 0)
 
 define "October 31 Year Prior to the Measurement Period":
-  DateTime((year from start of "Measurement Period" - 1), 10, 31, 23, 59, 59, 0, 0)
+  DateTime((year from start of "Measurement Period" - 1), 10, 31, 23, 59, 59, 999, 0)
 
 define "Denominator":
   "Initial Population"
