@@ -104,7 +104,7 @@ define "Has Adolescent Depression Screening":
       with "Qualifying Encounter During Measurement Period" QualifyingEncounter
         such that AdolescentScreening.effective.toInterval ( ) 14 days or less on or before day of start of QualifyingEncounter.period
           and AdolescentScreening.value is not null
-          and AdolescentScreening.status = 'final'
+          and AdolescentScreening.status in {'final', 'corrected'}
   )
 
 define "Has Adult Depression Screening":
@@ -112,7 +112,7 @@ define "Has Adult Depression Screening":
       with "Qualifying Encounter During Measurement Period" QualifyingEncounter
         such that AdultScreening.effective.toInterval ( ) 14 days or less on or before day of start of QualifyingEncounter.period
           and AdultScreening.value is not null
-          and AdultScreening.status = 'final'
+          and AdultScreening.status in {'final', 'corrected'}
   )
 
 define "Has Most Recent Adolescent Screening Negative":
@@ -153,7 +153,7 @@ define "Most Recent Adolescent Depression Screening":
       with "Qualifying Encounter During Measurement Period" QualifyingEncounter
         such that AdolescentDepressionScreening.effective.toInterval() 14 days or less on or before day of start of QualifyingEncounter.period
           and AdolescentDepressionScreening.value is not null
-          and AdolescentDepressionScreening.status = 'final'
+          and AdolescentDepressionScreening.status in {'final', 'corrected'}
       sort by start of effective.toInterval()
   )
 
@@ -185,7 +185,7 @@ define "Most Recent Adult Depression Screening":
       with "Qualifying Encounter During Measurement Period" QualifyingEncounter
         such that AdultDepressionScreening.effective.toInterval() 14 days or less on or before day of start of QualifyingEncounter.period
           and AdultDepressionScreening.value is not null
-          and AdultDepressionScreening.status = 'final'
+          and AdultDepressionScreening.status in {'final', 'corrected'}
       sort by start of effective.toInterval()
   )
 
