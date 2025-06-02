@@ -223,8 +223,10 @@ define "Qualifying Encounter during day of Measurement Period":
 define "Statin Therapy Ordered during Measurement Period":
   ( [MedicationRequest: "Low Intensity Statin Therapy"]
     union [MedicationRequest: "Moderate Intensity Statin Therapy"]
-    union [MedicationRequest: "High Intensity Statin Therapy"] ) StatinOrdered
-    where StatinOrdered.authoredOn during day of "Measurement Period"
+    union [MedicationRequest: "High Intensity Statin Therapy"] ) StatinRequest
+    where StatinRequest.authoredOn during day of "Measurement Period"
+      and StatinRequest.status in { 'active', 'completed' }
+      and StatinRequest.intent in { 'order', 'original-order', 'reflex-order', 'filter-order', 'instance-order' }
 
 define "Ten Year CVD Risk is High":
   exists ( ( [ObservationScreeningAssessment: "Cardiovascular disease 10Y risk [Likelihood]"]
