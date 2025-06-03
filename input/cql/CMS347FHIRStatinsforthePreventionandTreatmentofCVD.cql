@@ -1,4 +1,4 @@
-library CMS347FHIRStatinsforthePreventionandTreatmentofCVD version '0.3.000'
+library CMS347FHIRStatinPreventionTreatmentCVD version '0.3.000'
 
 using QICore version '6.0.0'
 
@@ -86,6 +86,7 @@ define "Denominator Exclusions":
   exists ( ( [ConditionProblemsHealthConcerns: "Breastfeeding"]
       union [ConditionProblemsHealthConcerns: "Rhabdomyolysis"] ) ExclusionDiagnosis
       where ExclusionDiagnosis.prevalenceInterval ( ) overlaps day of "Measurement Period"
+        and ExclusionDiagnosis.verificationStatusIsNotInvalid ( )
   )
 
 define "Denominator Exceptions":
@@ -110,6 +111,7 @@ define "ASCVD Diagnosis or Procedure before End of Measurement Period":
       union [ConditionProblemsHealthConcerns: "Ischemic Heart Disease or Other Related Diagnoses"]
       union [ConditionProblemsHealthConcerns: "Stable and Unstable Angina"] ) ASCVDDiagnosis
       where ASCVDDiagnosis.prevalenceInterval ( ) starts on or before day of end of "Measurement Period"
+        and ASCVDDiagnosis.verificationStatusIsNotInvalid ( )
   )
     union ( ( [Procedure: "PCI"]
         union [Procedure: "CABG Surgeries"]
@@ -133,11 +135,13 @@ define "Has Allergy to Statin":
 define "Has Diabetes Diagnosis":
   exists ( [ConditionProblemsHealthConcerns: "Diabetes"] DiabetesDiagnosis
       where DiabetesDiagnosis.prevalenceInterval ( ) overlaps day of "Measurement Period"
+        and DiabetesDiagnosis.verificationStatusIsNotInvalid ( )
   )
 
 define "Has ESRD Diagnosis":
   exists ( [ConditionProblemsHealthConcerns: "End Stage Renal Disease"] ESRD
       where ESRD.prevalenceInterval ( ) overlaps day of "Measurement Period"
+        and ESRD.verificationStatusIsNotInvalid ( )
   )
 
 define "Has Hepatitis or Liver Disease Diagnosis":
@@ -145,6 +149,7 @@ define "Has Hepatitis or Liver Disease Diagnosis":
       union [ConditionProblemsHealthConcerns: "Hepatitis B"]
       union [ConditionProblemsHealthConcerns: "Liver Disease"] ) HepatitisLiverDisease
       where HepatitisLiverDisease.prevalenceInterval ( ) overlaps day of "Measurement Period"
+        and HepatitisLiverDisease.verificationStatusIsNotInvalid ( )
   )
 
 define "Has Medical Reason for Not Ordering Statin Therapy":
@@ -153,18 +158,20 @@ define "Has Medical Reason for Not Ordering Statin Therapy":
       union [MedicationNotRequested: "High Intensity Statin Therapy"] ) NoStatinTherapyOrdered
       with "Qualifying Encounter during day of Measurement Period" QualifyingEncounter
         such that NoStatinTherapyOrdered.authoredOn during day of QualifyingEncounter.period
-          and NoStatinTherapyOrdered.status = 'completed'
+          and NoStatinTherapyOrdered.status in { 'active', 'completed' }
           and NoStatinTherapyOrdered.reasonCode in "Medical Reason"
   )
 
 define "Has Statin Associated Muscle Symptoms":
   exists ( [ConditionProblemsHealthConcerns: "Statin Associated Muscle Symptoms"] StatinMuscleSymptom
       where StatinMuscleSymptom.prevalenceInterval ( ) overlaps day of "Measurement Period"
+        and StatinMuscleSymptom.verificationStatusIsNotInvalid ( )
   )
 
 define "Hypercholesterolemia Diagnosis":
   ( [ConditionProblemsHealthConcerns: "Familial Hypercholesterolemia"] Hypercholesterolemia
       where Hypercholesterolemia.prevalenceInterval ( ) starts on or before day of end of "Measurement Period"
+        and Hypercholesterolemia.verificationStatusIsNotInvalid ( )
   )
 
 define "LDL Result Greater Than or Equal To 190":
@@ -235,6 +242,13 @@ define "Ten Year CVD Risk is High":
         and AtRiskCVD.effective.toInterval ( ) during day of "Measurement Period"
         and AtRiskCVD.status in { 'final', 'amended', 'corrected' }
   )
+
+define fluent function verificationStatusIsNotInvalid(condition Choice<"ConditionEncounterDiagnosis", "ConditionProblemsHealthConcerns">):
+  condition.verificationStatus is null
+    or not ( condition.verificationStatus ~ QICoreCommon."unconfirmed"
+        or condition.verificationStatus ~ QICoreCommon."refuted"
+        or condition.verificationStatus ~ QICoreCommon."entered-in-error"
+    )
 
 define "SDE Ethnicity":
   SDE."SDE Ethnicity"
