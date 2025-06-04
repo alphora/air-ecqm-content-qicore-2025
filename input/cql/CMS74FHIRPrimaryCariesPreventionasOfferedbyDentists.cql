@@ -39,6 +39,10 @@ define "Numerator":
       end of FluorideApplication.performed.toInterval()
   ) >= 2
 
+define fluent function isEncounterPerformedLocal(Enc List<Encounter>):
+  Enc E
+    where E.status in {'finished', 'in-progress'}
+
 define "Stratification 1":
   AgeInYearsAt(date from start of "Measurement Period") in Interval[1, 5]
 
