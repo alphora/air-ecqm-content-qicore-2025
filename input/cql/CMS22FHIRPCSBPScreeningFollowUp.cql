@@ -257,7 +257,6 @@ define "Encounter with Medical Reason for Not Obtaining or Patient Declined Bloo
         union [ObservationCancelled:code ~ "Systolic blood pressure"]
         union [ObservationCancelled:code ~ "Diastolic blood pressure"] ) NoBPScreen
          such that NoBPScreen.issued during day of QualifyingEncounter.period
-         and NoBPScreen.status = 'cancelled'
          and ( NoBPScreen.notDoneReason in "Patient Declined"
           or NoBPScreen.notDoneReason in "Medical Reason"
         )
