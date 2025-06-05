@@ -28,7 +28,7 @@ valueset "Office Visit": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883
 valueset "Ophthalmological Services": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1285'
 valueset "Outpatient Consultation": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1008'
 valueset "Patient Reason": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1008'
-valueset "Macular edema absent (situation)": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.2.1391'
+valueset "Macular Edema Findings Absent": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.2.1391'
 
 code "Healthcare professional (occupation)": '223366009' from "SNOMEDCT" display 'Healthcare professional (occupation)'
 code "Medical practitioner (occupation)": '158965000' from "SNOMEDCT" display 'Medical practitioner (occupation)'
@@ -117,7 +117,7 @@ define "Level of Severity of Retinopathy Findings Communicated":
     where LevelOfSeverityCommunicated.status = 'completed'
 
 define "Macular Edema Absence Communicated":
-  ["Communication": category in "Macular edema absent (situation)"] MacularEdemaAbsentCommunicated
+  ["Communication": category in "Macular Edema Findings Absent"] MacularEdemaAbsentCommunicated
     with "Diabetic Retinopathy Encounter" EncounterDiabeticRetinopathy
       such that MacularEdemaAbsentCommunicated.sent after start of EncounterDiabeticRetinopathy.period
         and MacularEdemaAbsentCommunicated.sent during day of "Measurement Period"
@@ -152,7 +152,7 @@ https://oncprojectracking.healthit.gov/support/browse/CQLIT-371. Using value set
 but when QI Core STU 5 gets in the tool, it may be reverted back to a DRC */
 
 define "Medical or Patient Reason for Not Communicating Absence of Macular Edema":
-  [CommunicationNotDone: category in "Macular edema absent (situation)"] MacularEdemaAbsentNotCommunicated
+  [CommunicationNotDone: category in "Macular Edema Findings Absent"] MacularEdemaAbsentNotCommunicated
     with "Diabetic Retinopathy Encounter" EncounterDiabeticRetinopathy
       such that MacularEdemaAbsentNotCommunicated.sent during EncounterDiabeticRetinopathy.period
     where ( MacularEdemaAbsentNotCommunicated.statusReason in "Medical Reason"
