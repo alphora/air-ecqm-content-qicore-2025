@@ -101,9 +101,9 @@ define "Two Outpatient Encounters during Measurement Period":
     return OfficeVisit1
 
 define "Qualifying Encounters":
-  (([Encounter: type in "Office Visit"]
-      union [Encounter: type in "Telephone Visits"]
-      union [Encounter: type in "Virtual Encounter"]
+  (([Encounter: "Office Visit"]
+      union [Encounter: "Telephone Visits"]
+      union [Encounter: "Virtual Encounter"]
  ).isEncounterPerformed()) ValidEncounter
     where ValidEncounter.period.toInterval() during day of "Measurement Period"
 
