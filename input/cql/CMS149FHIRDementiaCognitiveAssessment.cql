@@ -61,8 +61,9 @@ define "Dementia Encounter During Measurement Period":
     with ([ConditionProblemsHealthConcerns: "Dementia & Mental Degenerations"]
           union [ConditionEncounterDiagnosis: "Dementia & Mental Degenerations"]) Dementia
    such that EncounterAssessCognition.period during "Measurement Period"
-           and Dementia.prevalenceInterval() overlaps EncounterAssessCognition.period 
-        and Dementia.isActive() 
+        and Dementia.prevalenceInterval() overlaps EncounterAssessCognition.period 
+        and (Dementia.abatement is null 
+            or end of Dementia.abatement.toInterval() after end of "Measurement Period")
         and not ( Dementia.verificationStatus ~ QICoreCommon."unconfirmed"
                      or Dementia.verificationStatus ~ QICoreCommon."refuted"
                      or Dementia.verificationStatus ~ QICoreCommon."entered-in-error" )
