@@ -30,11 +30,6 @@ valueset "Outpatient Consultation": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.8
 valueset "Patient Reason": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1008'
 valueset "Macular Edema Findings Absent": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.2.1391'
 
-code "Healthcare professional (occupation)": '223366009' from "SNOMEDCT" display 'Healthcare professional (occupation)'
-code "Medical practitioner (occupation)": '158965000' from "SNOMEDCT" display 'Medical practitioner (occupation)'
-code "Ophthalmologist (occupation)": '422234006' from "SNOMEDCT" display 'Ophthalmologist (occupation)'
-code "Optometrist (occupation)": '28229004' from "SNOMEDCT" display 'Optometrist (occupation)'
-code "Physician (occupation)": '309343006' from "SNOMEDCT" display 'Physician (occupation)'
 code "virtual": 'VR' from "ActCode" display 'virtual'
 // code "Macular edema absent (situation)": '428341000124108' from "SNOMEDCT" display 'Macular edema absent (situation)'
 
