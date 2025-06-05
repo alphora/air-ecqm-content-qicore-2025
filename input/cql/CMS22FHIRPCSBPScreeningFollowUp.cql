@@ -179,7 +179,7 @@ define "Encounter with Elevated Blood Pressure Reading SBP 120 to 129 AND DBP le
     )
 
 define "Encounter with Second Hypertensive Reading SBP Greater than or Equal to 140 OR DBP Greater than or Equal to 90":
-  ( "Qualifying Encounter during Measurement Period" QualifyingEncounter
+  ( ( "Qualifying Encounter during Measurement Period" QualifyingEncounter
       let EncounterLastBP: Last([USCoreBloodPressureProfile] BloodPressure
           where BloodPressure.effective.toInterval() ends during day of QualifyingEncounter.period
             and BloodPressure.status in { 'final', 'amended', 'corrected' }
@@ -191,11 +191,12 @@ define "Encounter with Second Hypertensive Reading SBP Greater than or Equal to 
               or (singleton from (EncounterLastBP.component C where C.code ~ "Diastolic blood pressure")).value >= 90 'mm[Hg]'
           )
       )
-        and ( exists "Encounter with Hypertensive Reading Within Year Prior" )
+    )
+    intersect "Encounter with Hypertensive Reading Within Year Prior"
   )
 
 define "Encounter with Second Hypertensive Reading SBP 130 to 139 OR DBP 80 to 89":
-  ( "Qualifying Encounter during Measurement Period" QualifyingEncounter
+  ( ( "Qualifying Encounter during Measurement Period" QualifyingEncounter
       let EncounterLastBP: Last([USCoreBloodPressureProfile] BloodPressure
           where BloodPressure.effective.toInterval() ends during day of QualifyingEncounter.period
             and BloodPressure.status in { 'final', 'amended', 'corrected' }
@@ -208,7 +209,8 @@ define "Encounter with Second Hypertensive Reading SBP 130 to 139 OR DBP 80 to 8
               or (singleton from (EncounterLastBP.component C where C.code ~ "Diastolic blood pressure")).value >= 90 'mm[Hg]'
           )
       )
-        and ( exists "Encounter with Hypertensive Reading Within Year Prior" )
+    )
+    intersect "Encounter with Hypertensive Reading Within Year Prior"
   )
 
 define "Encounter with First Hypertensive Reading SBP Greater than or Equal to 130 OR DBP Greater than or Equal to 80":
