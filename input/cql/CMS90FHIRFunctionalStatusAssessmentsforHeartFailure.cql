@@ -36,7 +36,6 @@ code "Self-efficacy score [KCCQ]": '72190-2' from "LOINC" display 'Self-efficacy
 code "Severe cognitive impairment (finding)": '702956004' from "SNOMEDCT" display 'Severe cognitive impairment (finding)'
 code "Social limitation score [KCCQ]": '72196-9' from "LOINC" display 'Social limitation score [KCCQ]'
 code "Symptom stability score [KCCQ]": '72194-4' from "LOINC" display 'Symptom stability score [KCCQ]'
-code "Total score [MLHFQ]": '71938-5' from "LOINC" display 'Total score [MLHFQ]'
 code "Total symptom score [KCCQ]": '72191-0' from "LOINC" display 'Total symptom score [KCCQ]'
 code "VR-12 Mental component summary (MCS) score - oblique method T-score": '72026-8' from "LOINC" display 'VR-12 Mental component summary (MCS) score - oblique method T-score'
 code "VR-12 Mental component summary (MCS) score - orthogonal method T-score": '72028-4' from "LOINC" display 'VR-12 Mental component summary (MCS) score - orthogonal method T-score'
