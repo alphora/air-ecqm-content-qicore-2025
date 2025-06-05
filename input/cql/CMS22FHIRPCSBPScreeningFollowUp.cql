@@ -249,8 +249,7 @@ define "NonPharmacological Intervention Not Ordered":
     union [ServiceNotRequested: "Dietary Recommendations"]
     union [ServiceNotRequested: "Recommendation to Increase Physical Activity"]
     union [ServiceNotRequested: "Referral or Counseling for Alcohol Consumption"] ) NonPharmIntervention
-      where NonPharmIntervention.status = 'completed'
-        and NonPharmIntervention.reasonRefused in "Patient Declined"
+      where NonPharmIntervention.reasonRefused in "Patient Declined"
 
 define "Encounter with Medical Reason for Not Obtaining or Patient Declined Blood Pressure Measurement":
   "Qualifying Encounter during Measurement Period" QualifyingEncounter
@@ -268,7 +267,6 @@ define "Encounter with Order for Hypertension Follow Up Declined by Patient":
         with ( [ServiceNotRequested: "Referral to Primary Care or Alternate Provider"]
            union [ServiceNotRequested: "Follow Up Within 6 Months"] ) ElevatedBPDeclinedInterventions
           such that ElevatedBPDeclinedInterventions.authoredOn during day of ElevatedBPEncounter.period
-            and ElevatedBPDeclinedInterventions.status = 'completed'
             and ElevatedBPDeclinedInterventions.reasonRefused in "Patient Declined"
     )
       union ( "Encounter with Elevated Blood Pressure Reading SBP 120 to 129 AND DBP less than 80" ElevatedBPEncounter
@@ -279,7 +277,6 @@ define "Encounter with Order for Hypertension Follow Up Declined by Patient":
           with ( [ServiceNotRequested: "Follow Up Within 4 Weeks"]
             union [ServiceNotRequested: "Referral to Primary Care or Alternate Provider"] ) FirstHTNDeclinedInterventions
             such that FirstHTNDeclinedInterventions.authoredOn during day of FirstHTNEncounter.period
-              and FirstHTNDeclinedInterventions.status = 'completed'
               and FirstHTNDeclinedInterventions.reasonRefused in "Patient Declined"
       )
       union ( "Encounter with First Hypertensive Reading SBP Greater than or Equal to 130 OR DBP Greater than or Equal to 80" FirstHTNEncounter
@@ -299,8 +296,7 @@ define "Encounter with Order for Hypertension Follow Up Declined by Patient":
 define "Second Hypertensive Reading SBP 130 to 139 OR DBP 80 to 89 Interventions Declined":
   ( ( [ServiceNotRequested: "Referral to Primary Care or Alternate Provider"]
         union [ServiceNotRequested: "Follow Up Within 6 Months"] ) SecondHTNDeclinedReferralAndFollowUp
-        where SecondHTNDeclinedReferralAndFollowUp.status = 'completed'
-          and SecondHTNDeclinedReferralAndFollowUp.reasonRefused in "Patient Declined"
+        where SecondHTNDeclinedReferralAndFollowUp.reasonRefused in "Patient Declined"
     )
       union "Laboratory Test or ECG for Hypertension Not Ordered"
       union "NonPharmacological Intervention Not Ordered"
@@ -308,8 +304,7 @@ define "Second Hypertensive Reading SBP 130 to 139 OR DBP 80 to 89 Interventions
 define "Second Hypertensive Reading SBP Greater than or Equal to 140 OR DBP Greater than or Equal to 90 Interventions Declined":
   ( ( ( [ServiceNotRequested: "Referral to Primary Care or Alternate Provider"]
         union [ServiceNotRequested: "Follow Up Within 4 Weeks"] ) SecondHTN140Over90ReferralFollowUpNotDone
-        where SecondHTN140Over90ReferralFollowUpNotDone.status = 'completed'
-          and SecondHTN140Over90ReferralFollowUpNotDone.reasonRefused in "Patient Declined"
+        where SecondHTN140Over90ReferralFollowUpNotDone.reasonRefused in "Patient Declined"
     )
       union ( [MedicationNotRequested: "Pharmacologic Therapy for Hypertension"] MedicationRequestNotOrdered
           where MedicationRequestNotOrdered.status = 'completed'
