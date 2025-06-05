@@ -320,6 +320,7 @@ define "Laboratory Test or ECG for Hypertension Not Ordered":
       where E.url = 'http://hl7.org/fhir/us/qicore/StructureDefinition/qicore-doNotPerformReason' 
       and E.value as Concept in "Patient Declined"
     )
+      and LabECGNotDone.reasonRefused in "Patient Declined"
 
 define "SDE Ethnicity":
   SDE."SDE Ethnicity"
