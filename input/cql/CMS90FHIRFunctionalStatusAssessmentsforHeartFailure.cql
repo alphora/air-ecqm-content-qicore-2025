@@ -96,7 +96,7 @@ define "Two Outpatient Encounters during Measurement Period":
   from
     "Qualifying Encounters" OfficeVisit1,
     "Qualifying Encounters" OfficeVisit2
-    where OfficeVisit2.period.toInterval() starts 1 day or more after day of end of OfficeVisit1.period.toInterval()
+    where OfficeVisit2.period starts 1 day or more after day of end of OfficeVisit1.period
     return OfficeVisit1
 
 define "Qualifying Encounters":
@@ -104,15 +104,15 @@ define "Qualifying Encounters":
       union [Encounter: "Telephone Visits"]
       union [Encounter: "Virtual Encounter"]
  ).isEncounterPerformed()) ValidEncounter
-    where ValidEncounter.period.toInterval() during day of "Measurement Period"
+    where ValidEncounter.period during day of "Measurement Period"
 
 define "Has Encounter with Initial and Follow Up PROMIS10 Assessments":
   exists (from
       "Qualifying Encounters" ValidEncounters,
       "Date PROMIS10 Total Assessment Completed" InitialPROMIS10Date,
       "Date PROMIS10 Total Assessment Completed" FollowupPROMIS10Date
-      where ValidEncounters.period.toInterval() ends 180 days or more before day of end of "Measurement Period"
-        and InitialPROMIS10Date 14 days or less on or before day of end of ValidEncounters.period.toInterval()
+      where ValidEncounters.period ends 180 days or more before day of end of "Measurement Period"
+        and InitialPROMIS10Date 14 days or less on or before day of end of ValidEncounters.period
         and date from FollowupPROMIS10Date during day of Interval[date from InitialPROMIS10Date + 30 days, date from InitialPROMIS10Date + 180 days]
       return ValidEncounters
  )
@@ -133,8 +133,8 @@ define "Has Encounter with Initial and Follow Up PROMIS29 Assessments":
       "Qualifying Encounters" ValidEncounters,
       "Date PROMIS29 Total Assessment Completed" InitialPROMIS29Date,
       "Date PROMIS29 Total Assessment Completed" FollowupPROMIS29Date
-      where ValidEncounters.period.toInterval() ends 180 days or more before day of end of "Measurement Period"
-        and InitialPROMIS29Date 14 days or less on or before day of end of ValidEncounters.period.toInterval()
+      where ValidEncounters.period ends 180 days or more before day of end of "Measurement Period"
+        and InitialPROMIS29Date 14 days or less on or before day of end of ValidEncounters.period
         and date from FollowupPROMIS29Date during day of Interval[date from InitialPROMIS29Date + 30 days, date from InitialPROMIS29Date + 180 days]
       return ValidEncounters
  )
@@ -175,8 +175,8 @@ define "Has Encounter with Initial and Follow Up VR12 Oblique Assessments":
       "Qualifying Encounters" ValidEncounters,
       "Date VR12 Oblique Total Assessment Completed" InitialVR12ObliqueDate,
       "Date VR12 Oblique Total Assessment Completed" FollowupVR12ObliqueDate
-      where ValidEncounters.period.toInterval() ends 180 days or more before day of end of "Measurement Period"
-        and InitialVR12ObliqueDate 14 days or less on or before day of end of ValidEncounters.period.toInterval()
+      where ValidEncounters.period ends 180 days or more before day of end of "Measurement Period"
+        and InitialVR12ObliqueDate 14 days or less on or before day of end of ValidEncounters.period
         and date from FollowupVR12ObliqueDate during day of Interval[date from InitialVR12ObliqueDate + 30 days, date from InitialVR12ObliqueDate + 180 days]
       return ValidEncounters
  )
@@ -197,8 +197,8 @@ define "Has Encounter with Initial and Follow Up VR12 Orthogonal Assessments":
       "Qualifying Encounters" ValidEncounters,
       "Date VR12 Orthogonal Total Assessment Completed" InitialVR12OrthogonalDate,
       "Date VR12 Orthogonal Total Assessment Completed" FollowupVR12OrthogonalDate
-      where ValidEncounters.period.toInterval() ends 180 days or more before day of end of "Measurement Period"
-        and InitialVR12OrthogonalDate 14 days or less on or before day of end of ValidEncounters.period.toInterval()
+      where ValidEncounters.period ends 180 days or more before day of end of "Measurement Period"
+        and InitialVR12OrthogonalDate 14 days or less on or before day of end of ValidEncounters.period
         and date from FollowupVR12OrthogonalDate during day of Interval[date from InitialVR12OrthogonalDate + 30 days, date from InitialVR12OrthogonalDate + 180 days]
       return ValidEncounters
  )
@@ -219,8 +219,8 @@ define "Has Encounter with Initial and Follow Up VR36 Oblique Assessments":
       "Qualifying Encounters" ValidEncounters,
       "Date VR36 Oblique Total Assessment Completed" InitialVR36ObliqueDate,
       "Date VR36 Oblique Total Assessment Completed" FollowupVR36ObliqueDate
-      where ValidEncounters.period.toInterval() ends 180 days or more before day of end of "Measurement Period"
-        and InitialVR36ObliqueDate 14 days or less on or before day of end of ValidEncounters.period.toInterval()
+      where ValidEncounters.period ends 180 days or more before day of end of "Measurement Period"
+        and InitialVR36ObliqueDate 14 days or less on or before day of end of ValidEncounters.period
         and date from FollowupVR36ObliqueDate during day of Interval[date from InitialVR36ObliqueDate + 30 days, date from InitialVR36ObliqueDate + 180 days]
       return ValidEncounters
  )
@@ -241,8 +241,8 @@ define "Has Encounter with Initial and Follow Up VR36 Orthogonal Assessments":
       "Qualifying Encounters" ValidEncounters,
       "Date VR36 Orthogonal Total Assessment Completed" InitialVR36OrthogonalDate,
       "Date VR36 Orthogonal Total Assessment Completed" FollowupVR36OrthogonalDate
-      where ValidEncounters.period.toInterval() ends 180 days or more before day of end of "Measurement Period"
-        and InitialVR36OrthogonalDate 14 days or less on or before day of end of ValidEncounters.period.toInterval()
+      where ValidEncounters.period ends 180 days or more before day of end of "Measurement Period"
+        and InitialVR36OrthogonalDate 14 days or less on or before day of end of ValidEncounters.period
         and date from FollowupVR36OrthogonalDate during day of Interval[date from InitialVR36OrthogonalDate + 30 days, date from InitialVR36OrthogonalDate + 180 days]
       return ValidEncounters
  )
@@ -263,8 +263,8 @@ define "Has Encounter with Initial and Follow Up MLHFQ Assessments":
       "Qualifying Encounters" ValidEncounters,
       "Date MLHFQ Total Assessment Completed" InitialMLHFQDate,
       "Date MLHFQ Total Assessment Completed" FollowupMLHFQDate
-      where ValidEncounters.period.toInterval() ends 180 days or more before day of end of "Measurement Period"
-        and InitialMLHFQDate 14 days or less on or before day of end of ValidEncounters.period.toInterval()
+      where ValidEncounters.period ends 180 days or more before day of end of "Measurement Period"
+        and InitialMLHFQDate 14 days or less on or before day of end of ValidEncounters.period
         and date from FollowupMLHFQDate during day of Interval[date from InitialMLHFQDate + 30 days, date from InitialMLHFQDate + 180 days]
       return ValidEncounters
  )
@@ -285,8 +285,8 @@ define "Has Encounter with Initial and Follow Up KCCQ12 Assessments":
       "Qualifying Encounters" ValidEncounters,
       "Date KCCQ12 Total Assessment Completed" InitialKCCQ12Date,
       "Date KCCQ12 Total Assessment Completed" FollowupKCCQ12Date
-      where ValidEncounters.period.toInterval() ends 180 days or more before day of end of "Measurement Period"
-        and InitialKCCQ12Date 14 days or less on or before day of end of ValidEncounters.period.toInterval()
+      where ValidEncounters.period ends 180 days or more before day of end of "Measurement Period"
+        and InitialKCCQ12Date 14 days or less on or before day of end of ValidEncounters.period
         and date from FollowupKCCQ12Date during day of Interval[date from InitialKCCQ12Date + 30 days, date from InitialKCCQ12Date + 180 days]
       return ValidEncounters
  )
@@ -307,8 +307,8 @@ define "Has Encounter with Initial and Follow Up KCCQ Domain Score Assessments":
       "Qualifying Encounters" ValidEncounters,
       "Date KCCQ Domain Assessment Completed" InitialKCCQAssessmentDate,
       "Date KCCQ Domain Assessment Completed" FollowupKCCQAssessmentDate
-      where ValidEncounters.period.toInterval() ends 180 days or more before day of end of "Measurement Period"
-        and InitialKCCQAssessmentDate 14 days or less on or before day of end of ValidEncounters.period.toInterval()
+      where ValidEncounters.period ends 180 days or more before day of end of "Measurement Period"
+        and InitialKCCQAssessmentDate 14 days or less on or before day of end of ValidEncounters.period
         and date from FollowupKCCQAssessmentDate during day of Interval[date from InitialKCCQAssessmentDate + 30 days, date from InitialKCCQAssessmentDate + 180 days]
       return ValidEncounters
  )
@@ -351,8 +351,8 @@ define "Has Encounter with Initial and Follow Up KCCQ Total Score Assessments":
       "Qualifying Encounters" ValidEncounters,
       "Date KCCQ Total Assessment Completed" InitialKCCQTotalScore,
       "Date KCCQ Total Assessment Completed" FollowupKCCQTotalScore
-      where ValidEncounters.period.toInterval() ends 180 days or more before day of end of "Measurement Period"
-        and InitialKCCQTotalScore 14 days or less on or before day of end of ValidEncounters.period.toInterval()
+      where ValidEncounters.period ends 180 days or more before day of end of "Measurement Period"
+        and InitialKCCQTotalScore 14 days or less on or before day of end of ValidEncounters.period
         and date from FollowupKCCQTotalScore during day of Interval[date from InitialKCCQTotalScore + 30 days, date from InitialKCCQTotalScore + 180 days]
       return ValidEncounters
  )
