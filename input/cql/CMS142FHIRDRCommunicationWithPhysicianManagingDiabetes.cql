@@ -85,7 +85,6 @@ define "Diabetic Retinopathy Encounter":
     with (["ConditionProblemsHealthConcerns": "Diabetic Retinopathy"]
      union ["ConditionEncounterDiagnosis": "Diabetic Retinopathy"] ) DiabeticRetinopathy
       such that DiabeticRetinopathy.prevalenceInterval ( ) overlaps day of ValidQualifyingEncounter.period
-        and DiabeticRetinopathy.isActive ( )
         and not ( DiabeticRetinopathy.verificationStatus ~ QICoreCommon."unconfirmed"
             or DiabeticRetinopathy.verificationStatus ~ QICoreCommon."refuted"
             or DiabeticRetinopathy.verificationStatus ~ QICoreCommon."entered-in-error"
