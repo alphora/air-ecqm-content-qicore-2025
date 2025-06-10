@@ -1,11 +1,12 @@
-library CMS135FHIRHFACEIorARBorARNIforLVSD version '0.4.000'
+library CMS135ACEIorARBorARNIforHFFHIR version '0.4.000'
 
 using QICore version '6.0.0'
+using USCore version '6.1.0'
 
 include FHIRHelpers version '4.4.000' called FHIRHelpers
 include SupplementalDataElements version '5.1.000' called SDE
 include QICoreCommon version '4.0.000' called QICoreCommon
-include AHAOverall version '3.1.000' called AHA
+include AHAOverall version '3.2.000' called AHA
 
 codesystem "SNOMEDCT": 'http://snomed.info/sct'
 
@@ -17,8 +18,10 @@ valueset "Medical Reason": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.1138
 valueset "Patient Reason": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1008'
 valueset "Patient Reason for ACE Inhibitor or ARB Decline": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1140'
 valueset "Pregnancy": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.378'
-valueset "Moderate or Severe LVSD": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1090'
 
+code "Possible pregnancy (finding)": '102874004' from "SNOMEDCT" display 'Possible pregnancy (finding)'
+code "Possible pregnancy (situation)": '146799005' from "SNOMEDCT" display 'Possible pregnancy (situation)'
+code "Pregnancy (finding)": '77386006' from "SNOMEDCT" display 'Pregnancy (finding)'
 code "Acute renal failure caused by angiotensin-converting-enzyme inhibitor (disorder)": '422593004' from "SNOMEDCT" display 'Acute renal failure caused by angiotensin-converting-enzyme inhibitor (disorder)'
 code "Substance with angiotensin II receptor antagonist mechanism of action (substance)": '372913009' from "SNOMEDCT" display 'Substance with angiotensin II receptor antagonist mechanism of action (substance)'
 code "Substance with angiotensin-converting enzyme inhibitor mechanism of action (substance)": '372733002' from "SNOMEDCT" display 'Substance with angiotensin-converting enzyme inhibitor mechanism of action (substance)'
@@ -29,7 +32,7 @@ parameter "Measurement Period" Interval<DateTime>
 context Patient
 
 define "Initial Population":
-  AHA."Is Adults With Two Qualifying Outpatient Encounters and One Heart Failure Outpatient Encounter During the Measurement Period"
+  AHA."Is Adult With Two Qualifying Outpatient Encounters and One Heart Failure Outpatient Encounter During the Measurement Period"
 
 define "Denominator":
   "Initial Population"
@@ -84,9 +87,20 @@ define "Has Diagnosis of Allergy or Intolerance to ACEI or ARB":
   )
 
 define "Has Diagnosis of Pregnancy":
-  exists ( [ConditionProblemsHealthConcerns: "Pregnancy"] PregnancyDiagnosis
-      with AHA."Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD" ModerateOrSevereLVSDHFOutpatientEncounter
-        such that PregnancyDiagnosis.prevalenceInterval ( ) starts 9 months or less before or on start of ModerateOrSevereLVSDHFOutpatientEncounter.period
+  exists (([ConditionProblemsHealthConcerns: "Pregnancy"] 
+      union ["ConditionEncounterDiagnosis": "Pregnancy"]) PregnancyDiagnosis
+        with AHA."Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD" ModerateOrSevereLVSDHFOutpatientEncounter
+        such that PregnancyDiagnosis.prevalenceInterval() starts 9 months or less before or on start of ModerateOrSevereLVSDHFOutpatientEncounter.period
+  ) 
+  or exists(
+        [USCoreObservationPregnancyStatusProfile] PregnantObservation
+        with AHA."Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD" ModerateOrSevereLVSDHFOutpatientEncounter
+        such that PregnantObservation.effective.toInterval() starts 9 months or less before or on start of ModerateOrSevereLVSDHFOutpatientEncounter.period
+        // TODO: would need to find out if all 3 of these are applicable, or only the "Pregnancy (finding)"
+        and (
+          PregnantObservation.value ~ "Possible pregnancy (finding)" or 
+          PregnantObservation.value ~ "Possible pregnancy (situation)" or 
+          PregnantObservation.value ~ "Pregnancy (finding)")
   )
 
 define "Has Diagnosis of Renal Failure Due to ACEI":
@@ -107,3 +121,4 @@ define "Is Currently Taking ACEI or ARB or ARNI":
   exists ( [MedicationRequest: medication in "ACE Inhibitor or ARB or ARNI"] ActiveACEIOrARBOrARNI
       where ActiveACEIOrARBOrARNI.overlapsAfterHeartFailureOutpatientEncounter ( )
   )
+  
