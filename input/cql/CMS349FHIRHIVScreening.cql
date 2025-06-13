@@ -41,8 +41,11 @@ define "Denominator Exclusions":
   ([ConditionProblemsHealthConcerns: "HIV"] union 
   [ConditionEncounterDiagnosis: "HIV"]) HIVDiagnosis
     where HIVDiagnosis.prevalenceInterval() starts before day of start of "Measurement Period"
-      and not ( HIVDiagnosis.verificationStatus in { "refuted", "unconfirmed", "entered-in-error" } )
-)
+      and (
+        (not ( HIVDiagnosis.verificationStatus in { "refuted", "unconfirmed", "entered-in-error" } ))
+        or (HIVDiagnosis.verificationStatus is null)
+      )
+  )
 define "Denominator Exceptions":
   "Patient Expired"
 
