@@ -78,7 +78,12 @@ define "Acute Tuberculosis Diagnosis":
     with "First Bladder Cancer Staging Procedure" FirstBladderCancerStaging
       such that (
           (ActiveTuberculosis.prevalenceInterval() overlaps after day of FirstBladderCancerStaging.performed.toInterval())
-          or (ActiveTuberculosis.onset.toInterval() overlaps after day of FirstBladderCancerStaging.performed.toInterval())
+          or (ActiveTuberculosis.onset.toInterval() overlaps after day of FirstBladderCancerStaging.performed.toInterval()
+            and (
+                (ActiveTuberculosis.abatement.toInterval() overlaps after day of FirstBladderCancerStaging.performed.toInterval()) 
+                or (ActiveTuberculosis.abatement is null)
+            )
+          )
       )
     where ActiveTuberculosis.isNotRefutedDiagnosis()
 
