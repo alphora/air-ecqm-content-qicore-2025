@@ -127,7 +127,7 @@ define "Macular Edema Presence Communicated":
 define "Medical or Patient Reason for Not Communicating Level of Severity of Retinopathy":
   [CommunicationNotDone: category in "Level of Severity of Retinopathy Findings"] LevelOfSeverityNotCommunicated
     with "Diabetic Retinopathy Encounter" EncounterDiabeticRetinopathy
-      such that LevelOfSeverityNotCommunicated.sent during EncounterDiabeticRetinopathy.period
+      such that LevelOfSeverityNotCommunicated.recorded during EncounterDiabeticRetinopathy.period
     where ( LevelOfSeverityNotCommunicated.statusReason in "Medical Reason"
         or LevelOfSeverityNotCommunicated.statusReason in "Patient Reason"
     )
@@ -135,7 +135,7 @@ define "Medical or Patient Reason for Not Communicating Level of Severity of Ret
 define "Medical or Patient Reason for Not Communicating Presence of Macular Edema":
   [CommunicationNotDone: category in "Macular Edema Findings Present"] MacularEdemaPresentNotCommunicated
     with "Diabetic Retinopathy Encounter" EncounterDiabeticRetinopathy
-      such that MacularEdemaPresentNotCommunicated.sent during EncounterDiabeticRetinopathy.period
+      such that MacularEdemaPresentNotCommunicated.recorded during EncounterDiabeticRetinopathy.period
     where ( MacularEdemaPresentNotCommunicated.statusReason in "Medical Reason"
         or MacularEdemaPresentNotCommunicated.statusReason in "Patient Reason"
     ) 
@@ -148,7 +148,7 @@ but when QI Core STU 5 gets in the tool, it may be reverted back to a DRC */
 define "Medical or Patient Reason for Not Communicating Absence of Macular Edema":
   [CommunicationNotDone: category in "Macular Edema Findings Absent"] MacularEdemaAbsentNotCommunicated
     with "Diabetic Retinopathy Encounter" EncounterDiabeticRetinopathy
-      such that MacularEdemaAbsentNotCommunicated.sent during EncounterDiabeticRetinopathy.period
+      such that MacularEdemaAbsentNotCommunicated.recorded during EncounterDiabeticRetinopathy.period
     where ( MacularEdemaAbsentNotCommunicated.statusReason in "Medical Reason"
         or MacularEdemaAbsentNotCommunicated.statusReason in "Patient Reason"
     )
