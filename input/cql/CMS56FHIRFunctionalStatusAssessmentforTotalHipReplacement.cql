@@ -200,7 +200,7 @@ define "Has THA with Initial and Follow Up HOOSJr Assessments":
 
 define "Date HOOSJr Total Assessment Completed":
   ((([ObservationScreeningAssessment: "Total interval score [HOOSJR]"]).isAssessmentPerformed()) HOOSJr
-    where ( HOOSJr as ObservationScreeningAssessment).value is not null ) DocumentedHOOSJr
+    where (HOOSJr as ObservationScreeningAssessment).value is not null) DocumentedHOOSJr
     return date from start of DocumentedHOOSJr.effective.toInterval() 
 
 define "Has THA with Initial and Follow Up PROMIS10 Assessments":
