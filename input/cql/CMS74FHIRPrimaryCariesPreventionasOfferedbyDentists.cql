@@ -23,7 +23,7 @@ define "Initial Population":
     and exists ( "Qualifying Encounters" )
 
 define "Qualifying Encounters":
-  ( ( [Encounter: "Clinical Oral Evaluation"] ).isEncounterPerformed() ) ValidEncounter
+  ( ( [Encounter: "Clinical Oral Evaluation"] ).isEncounterPerformedLocal() ) ValidEncounter
     where ValidEncounter.period during day of "Measurement Period"
 
 define "Denominator":
