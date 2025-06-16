@@ -1,4 +1,4 @@
-library CMS56FuncStatHipReplacementFHIR version '1.1.000'
+library CMS56FHIRFuncStatHipReplacement version '1.1.000'
 
 using QICore version '6.0.0'
 
