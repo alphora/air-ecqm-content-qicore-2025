@@ -164,11 +164,8 @@ define "Has Palliative Care in the Measure Assessment Period":
     )
 
 define fluent function isConfirmedActiveDiagnosis(condition ConditionProblemsHealthConcerns):
-  condition.isActive()
-    and condition.verificationStatus ~ QICoreCommon."confirmed"
+  condition.verificationStatus ~ QICoreCommon."confirmed"
         
-/* Commented out due to issues noted in https://oncprojectracking.healthit.gov/support/browse/BONNIEMAT-1489.
-Also, refer to https://github.com/cqframework/sample-content-ig/issues/70.
 define "Stratification 1":
   "Index Depression Assessment" IndexAssessment
     return AgeInYearsAt(date from start of IndexAssessment.effective.toInterval()) in Interval[12, 17]
@@ -176,4 +173,3 @@ define "Stratification 1":
 define "Stratification 2":
   "Index Depression Assessment" IndexAssessment
     return AgeInYearsAt(date from start of IndexAssessment.effective.toInterval()) >= 18
-*/
