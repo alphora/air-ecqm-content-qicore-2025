@@ -8,7 +8,7 @@ include QICoreCommon version '4.0.000' called QICoreCommon
 include Status version '1.13.000' called Status
 
 codesystem "CPT": 'http://www.ama-assn.org/go/cpt'
-
+ 
 valueset "Behavioral/Neuropsych Assessment": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1023'
 valueset "Consultant Report": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.121.12.1006'
 valueset "Office Visit": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1001'
@@ -83,18 +83,22 @@ define "Numerator":
   "Referring Clinician Receives Consultant Report to Close Referral Loop"
 
 define "Referring Clinician Receives Consultant Report to Close Referral Loop":
-  exists ( [Task: "Consultant Report"] ConsultantReportObtained
+  exists ( [Task: QICoreCommon."Fulfill"] ConsultantReportObtained
       with "First Referral during First 10 Months of Measurement Period" FirstReferral
         such that 
           // TODO: discuss with vendors .focus vs .basedOn
           (ConsultantReportObtained.focus.references(FirstReferral) or ConsultantReportObtained.basedOn.references(FirstReferral))
-          and ConsultantReportObtained.executionPeriod ends after FirstReferral.authoredOn
-          and ConsultantReportObtained.executionPeriod ends during day of "Measurement Period"
-          and ConsultantReportObtained.status = 'completed'
-          and ConsultantReportObtained.code ~ QICoreCommon."Fulfill"
-          and exists(
-            ConsultantReportObtained.output.value OV 
-              with [Composition] ConsultantReportComposition 
-                such that (OV as Reference).references(ConsultantReportComposition)
-          )
+            and ConsultantReportObtained.executionPeriod ends after FirstReferral.authoredOn
+            and ConsultantReportObtained.executionPeriod ends during day of "Measurement Period"
+            and ConsultantReportObtained.status = 'completed'
+            and ConsultantReportObtained.reasonCode in "Consultant Report"
+            /*
+            TODO: discuss usage of Composition resource for "Consultant Report"
+            NOTE: the following does not currently work due to "Composition" missing a profile in QICore
+            and exists(
+              ConsultantReportObtained.output.value OV 
+                with ([Composition] ReportComposition where ReportComposition.type in "Consultant Report") ConsultantReportComposition 
+                  such that (OV as Reference).references(ConsultantReportComposition)
+            )
+            */
   )
