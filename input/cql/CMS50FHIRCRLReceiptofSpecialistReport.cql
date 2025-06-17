@@ -85,9 +85,9 @@ define "Numerator":
 define "Referring Clinician Receives Consultant Report to Close Referral Loop":
   exists ( [Task: QICoreCommon."Fulfill"] ConsultantReportObtained
       with "First Referral during First 10 Months of Measurement Period" FirstReferral
-        such that 
-          // TODO: discuss with vendors .focus vs .basedOn
-          (ConsultantReportObtained.focus.references(FirstReferral) or ConsultantReportObtained.basedOn.references(FirstReferral))
+        // TODO: discuss with vendors .focus vs .basedOn
+        such that (
+          ConsultantReportObtained.focus.references(FirstReferral) or ConsultantReportObtained.basedOn.references(FirstReferral))
             and ConsultantReportObtained.executionPeriod ends after FirstReferral.authoredOn
             and ConsultantReportObtained.executionPeriod ends during day of "Measurement Period"
             and ConsultantReportObtained.status = 'completed'
@@ -101,4 +101,4 @@ define "Referring Clinician Receives Consultant Report to Close Referral Loop":
                   such that (OV as Reference).references(ConsultantReportComposition)
             )
             */
-  )
+        )
