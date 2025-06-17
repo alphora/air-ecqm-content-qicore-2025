@@ -46,22 +46,18 @@ define "Numerator":
   ( "Patient Age 12 to 16 Years at Start of Measurement Period"
       and ( "Has Most Recent Adolescent Screening Negative"
           or exists "Most Recent Adolescent Depression Screening Positive and Follow Up Provided"
-          or exists "Most Recent Adolescent Depression Screening Positive and Depression Medication Active"
       )
   )
     or ( "Patient Age 17 Years at Start of Measurement Period"
         and ( "Has Most Recent Adolescent Screening Negative"
             or exists "Most Recent Adolescent Depression Screening Positive and Follow Up Provided"
-            or exists "Most Recent Adolescent Depression Screening Positive and Depression Medication Active"
             or "Has Most Recent Adult Screening Negative"
             or exists "Most Recent Adult Depression Screening Positive and Follow Up Provided"
-            or exists "Most Recent Adult Depression Screening Positive and Depression Medication Active"
         )
     )
     or ( "Patient Age 18 Years or Older at Start of Measurement Period"
         and ( "Has Most Recent Adult Screening Negative"
             or exists "Most Recent Adult Depression Screening Positive and Follow Up Provided"
-            or exists "Most Recent Adult Depression Screening Positive and Depression Medication Active"
         )
     )
 
@@ -75,8 +71,12 @@ define "Denominator Exceptions":
 
 define "Follow Up Intervention for Positive Adolescent Depression Screening":
   ( ( [MedicationRequest: "Adolescent Depression Medications"] AdolescentMed
-        where AdolescentMed.status in { 'active', 'completed' }
-          and AdolescentMed.intent = 'order'
+      with "Qualifying Encounter During Measurement Period" QualifyingEncounter
+        such that "Most Recent Adolescent Depression Screening".effective.toInterval ( ) starts 14 days or less on or before day of start of QualifyingEncounter.period
+          and AdolescentMed.medicationRequestPeriod().toInterval() overlaps after day of QualifyingEncounter.period
+          and "Most Recent Adolescent Depression Screening".value ~ "Depression screening positive (finding)"
+          and AdolescentMed.status in { 'active', 'completed' }
+          and AdolescentMed.intent in { 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order' }
     )
       union ( [ServiceRequest: "Referral for Adolescent Depression"] AdolescentReferral
           where AdolescentReferral.status in { 'active', 'completed' }
@@ -88,8 +88,12 @@ define "Follow Up Intervention for Positive Adolescent Depression Screening":
 
 define "Follow Up Intervention for Positive Adult Depression Screening":
   ( ( [MedicationRequest: "Adult Depression Medications"] AdultMed
-        where AdultMed.status in { 'active', 'completed' }
-          and AdultMed.intent = 'order'
+      with "Qualifying Encounter During Measurement Period" QualifyingEncounter
+        such that "Most Recent Adult Depression Screening".effective.toInterval ( ) starts 14 days or less on or before day of start of QualifyingEncounter.period
+          and AdultMed.medicationRequestPeriod().toInterval() overlaps after day of QualifyingEncounter.period
+          and "Most Recent Adult Depression Screening".value ~ "Depression screening positive (finding)"     
+          and AdultMed.status in { 'active', 'completed' }
+          and AdultMed.intent in { 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order' }
     )
       union ( [ServiceRequest: "Referral for Adult Depression"] AdultReferral
           where AdultReferral.status in { 'active', 'completed' }
@@ -104,7 +108,7 @@ define "Has Adolescent Depression Screening":
       with "Qualifying Encounter During Measurement Period" QualifyingEncounter
         such that AdolescentScreening.effective.toInterval ( ) 14 days or less on or before day of start of QualifyingEncounter.period
           and AdolescentScreening.value is not null
-          and AdolescentScreening.status = 'final'
+          and AdolescentScreening.status in {'final', 'corrected'}
   )
 
 define "Has Adult Depression Screening":
@@ -112,7 +116,7 @@ define "Has Adult Depression Screening":
       with "Qualifying Encounter During Measurement Period" QualifyingEncounter
         such that AdultScreening.effective.toInterval ( ) 14 days or less on or before day of start of QualifyingEncounter.period
           and AdultScreening.value is not null
-          and AdultScreening.status = 'final'
+          and AdultScreening.status in {'final', 'corrected'}
   )
 
 define "Has Most Recent Adolescent Screening Negative":
@@ -137,7 +141,6 @@ define "Medical or Patient Reason for Not Screening Adolescent for Depression":
     where ( NoAdolescentScreen.notDoneReason ~ "Depression screening declined (situation)"
         or NoAdolescentScreen.notDoneReason in "Medical Reason"
     )
-      and NoAdolescentScreen.status = 'cancelled'
 
 define "Medical or Patient Reason for Not Screening Adult for Depression":
   [ObservationCancelled: code ~ "Adult depression screening assessment"] NoAdultScreen
@@ -146,27 +149,15 @@ define "Medical or Patient Reason for Not Screening Adult for Depression":
     where ( NoAdultScreen.notDoneReason ~ "Depression screening declined (situation)"
         or NoAdultScreen.notDoneReason in "Medical Reason"
     )
-      and NoAdultScreen.status = 'cancelled'
 
 define "Most Recent Adolescent Depression Screening":
   Last([ObservationScreeningAssessment: "Adolescent depression screening assessment"] AdolescentDepressionScreening
       with "Qualifying Encounter During Measurement Period" QualifyingEncounter
         such that AdolescentDepressionScreening.effective.toInterval() 14 days or less on or before day of start of QualifyingEncounter.period
           and AdolescentDepressionScreening.value is not null
-          and AdolescentDepressionScreening.status = 'final'
+          and AdolescentDepressionScreening.status in {'final', 'corrected'}
       sort by start of effective.toInterval()
   )
-
-define "Most Recent Adolescent Depression Screening Positive and Depression Medication Active":
-  from
-    [MedicationRequest: "Adolescent Depression Medications"] ActiveAdolescentMedications,
-    "Most Recent Adolescent Depression Screening" LastAdolescentScreen,
-    "Qualifying Encounter During Measurement Period" QualifyingEncounter
-    where LastAdolescentScreen.effective.toInterval ( ) starts 14 days or less on or before day of start of QualifyingEncounter.period
-      and LastAdolescentScreen.value ~ "Depression screening positive (finding)"
-      and ActiveAdolescentMedications.status in { 'active', 'completed' }
-      and ActiveAdolescentMedications.intent = 'order'
-      and ActiveAdolescentMedications.medicationRequestPeriod().toInterval() overlaps after day of QualifyingEncounter.period
 
 define "Most Recent Adolescent Depression Screening Positive and Follow Up Provided":
   from
@@ -185,20 +176,9 @@ define "Most Recent Adult Depression Screening":
       with "Qualifying Encounter During Measurement Period" QualifyingEncounter
         such that AdultDepressionScreening.effective.toInterval() 14 days or less on or before day of start of QualifyingEncounter.period
           and AdultDepressionScreening.value is not null
-          and AdultDepressionScreening.status = 'final'
+          and AdultDepressionScreening.status in {'final', 'corrected'}
       sort by start of effective.toInterval()
   )
-
-define "Most Recent Adult Depression Screening Positive and Depression Medication Active":
-  from
-    [MedicationRequest: "Adult Depression Medications"] ActiveAdultMedications,
-    "Most Recent Adult Depression Screening" LastAdultScreen,
-    "Qualifying Encounter During Measurement Period" QualifyingEncounter
-    where LastAdultScreen.effective.toInterval ( ) starts 14 days or less on or before day of start of QualifyingEncounter.period
-      and LastAdultScreen.value ~ "Depression screening positive (finding)"
-      and ActiveAdultMedications.status in { 'active', 'completed' }
-      and ActiveAdultMedications.intent = 'order'
-      and ActiveAdultMedications.medicationRequestPeriod().toInterval() overlaps after day of QualifyingEncounter.period
 
 define "Most Recent Adult Depression Screening Positive and Follow Up Provided":
   from
@@ -226,8 +206,8 @@ define "Patient Age 18 Years or Older at Start of Measurement Period":
 
 define "Qualifying Encounter During Measurement Period":
   ( [Encounter: type in "Encounter to Screen for Depression"]
-    union [Encounter: type in "Physical Therapy Evaluation"]
-    union [Encounter: type in "Telephone Visits"] ) QualifyingEncounter
+    union [Encounter: "Physical Therapy Evaluation"]
+    union [Encounter: "Telephone Visits"] ) QualifyingEncounter
     where QualifyingEncounter.period during day of "Measurement Period"
       and QualifyingEncounter.status = 'finished'
 
