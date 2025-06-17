@@ -76,11 +76,7 @@ define "First Referral during First 10 Months of Measurement Period":
       where ReferralOrder.status in { 'active', 'completed' }
         and ReferralOrder.intent = 'order'
         and ReferralOrder.authoredOn during day of Interval[start of "Measurement Period", Date(year from start of "Measurement Period", 10, 31)]
-      return {
-        ID: ReferralOrder.id,
-        AuthorDate: ReferralOrder.authoredOn
-      }
-      sort by AuthorDate ascending
+      sort by authoredOn ascending
   )
 
 define "Numerator":
@@ -89,12 +85,16 @@ define "Numerator":
 define "Referring Clinician Receives Consultant Report to Close Referral Loop":
   exists ( [Task: "Consultant Report"] ConsultantReportObtained
       with "First Referral during First 10 Months of Measurement Period" FirstReferral
-        such that FirstReferral.ID in "GetTaskBasedOnIDs"(ConsultantReportObtained)
-          and ConsultantReportObtained.executionPeriod ends after FirstReferral.AuthorDate
+        such that 
+          // TODO: discuss with vendors .focus vs .basedOn
+          (ConsultantReportObtained.focus.references(FirstReferral) or ConsultantReportObtained.basedOn.references(FirstReferral))
+          and ConsultantReportObtained.executionPeriod ends after FirstReferral.authoredOn
           and ConsultantReportObtained.executionPeriod ends during day of "Measurement Period"
           and ConsultantReportObtained.status = 'completed'
+          and ConsultantReportObtained.code ~ QICoreCommon."Fulfill"
+          and exists(
+            ConsultantReportObtained.output.value OV 
+              with [Composition] ConsultantReportComposition 
+                such that (OV as Reference).references(ConsultantReportComposition)
+          )
   )
-
-define function "GetTaskBasedOnIDs"(task Task):
-  task.basedOn Task
-    return QICoreCommon."GetId" ( Task.reference )
