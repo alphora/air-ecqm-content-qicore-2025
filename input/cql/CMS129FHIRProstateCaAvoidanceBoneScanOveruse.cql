@@ -1,4 +1,4 @@
-library CMS129FHIRProstateCaAvoidanceBoneScanOveruse version '1.1.000'
+library CMS129FHIRProstateCaBoneScanOveruse version '1.1.000'
 
 using QICore version '6.0.0'
 
@@ -73,9 +73,6 @@ define "Has Diagnosis of Pain related to Prostate Cancer":
   exists ( [ConditionProblemsHealthConcerns: "Pain Warranting Further Investigation for Prostate Cancer"] ProstateCancerPain
       with "Prostate Cancer Diagnosis" ActiveProstateCancer
         such that ProstateCancerPain.prevalenceInterval ( ) starts after start of ActiveProstateCancer.prevalenceInterval ( )
-          and ( ProstateCancerPain.isProblemListItem ( )
-              or ProstateCancerPain.isHealthConcern ( )
-          )
   )
 
 define "First Prostate Cancer Treatment during day of Measurement Period":
@@ -128,6 +125,17 @@ define "Most Recent Prostate Cancer Staging Tumor Size T1a to T2a":
     )
 
 define "Prostate Cancer Diagnosis":
-  ( [ConditionProblemsHealthConcerns: "Prostate Cancer"]
-    union [ConditionEncounterDiagnosis: "Prostate Cancer"] ) ProstateCancer
+  [ConditionProblemsHealthConcerns: "Prostate Cancer"] ProstateCancer
     where ProstateCancer.prevalenceInterval ( ) overlaps day of "Measurement Period"
+      and ProstateCancer.isVerificationStatusNotInvalid ( )
+
+/*
+@description: Returns true if the given condition's verification status has been invalidated.
+*/
+
+
+define fluent function isVerificationStatusNotInvalid(condition Choice<"ConditionEncounterDiagnosis", "ConditionProblemsHealthConcerns">):
+  not ( condition.verificationStatus ~ QICoreCommon."unconfirmed"
+      or condition.verificationStatus ~ QICoreCommon."refuted"
+      or condition.verificationStatus ~ QICoreCommon."entered-in-error"
+  )
