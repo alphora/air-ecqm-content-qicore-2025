@@ -93,7 +93,7 @@ define "Has Mental Health Disorder Diagnoses":
       union ([ConditionProblemsHealthConcerns: "Personality Disorder Emotionally Labile"] union [ConditionEncounterDiagnosis: "Personality Disorder Emotionally Labile"])
       union ([ConditionProblemsHealthConcerns: "Schizophrenia or Psychotic Disorder"] union [ConditionEncounterDiagnosis: "Schizophrenia or Psychotic Disorder"])
       union ([ConditionProblemsHealthConcerns: "Pervasive Developmental Disorder"] union [ConditionEncounterDiagnosis: "Pervasive Developmental Disorder"])) MentalHealthDisorderDiagnoses
-      where ToDate(start of MentalHealthDisorderDiagnoses.prevalenceInterval()) on or before day of end of "Measure Assessment Period"
+      where start of MentalHealthDisorderDiagnoses.prevalenceInterval() on or before day of end of "Measure Assessment Period"
         and MentalHealthDisorderDiagnoses.isConfirmedActiveDiagnosis()
   )
 
