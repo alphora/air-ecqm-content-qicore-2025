@@ -1,4 +1,4 @@
-library CMS90FHIRFunctionalStatusAssessmentsforHeartFailure version '0.3.000'
+library CMS90FHIRFSAforHeartFailure version '0.3.000'
 
 using QICore version '6.0.0'
 
@@ -100,12 +100,12 @@ define "Two Outpatient Encounters during Measurement Period":
     return OfficeVisit1
 
 define "Qualifying Encounters":
-  ([Encounter: "Office Visit"]
+    ([Encounter: "Office Visit"]
       union [Encounter: "Telephone Visits"]
       union [Encounter: "Virtual Encounter"]
-  ) ValidEncounter
+    ) ValidEncounter
     where ValidEncounter.status in {'finished', 'in-progress'}
-      and ValidEncounter.period during day of "Measurement Period"
+        and ValidEncounter.period during day of "Measurement Period"
 
 define "Has Encounter with Initial and Follow Up PROMIS10 Assessments":
   exists (from
