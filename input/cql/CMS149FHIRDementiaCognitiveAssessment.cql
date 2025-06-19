@@ -1,4 +1,4 @@
-library CMS149FHIRDementiaCognitiveAssessment version '0.2.000'
+library CMS149FHIRDementiaCognitiveAssess version '0.2.000'
 
 using QICore version '6.0.0'
 
@@ -7,8 +7,6 @@ using QICore version '6.0.0'
 include FHIRHelpers version '4.4.000' called FHIRHelpers
 include SupplementalDataElements version '5.1.000' called SDE
 include QICoreCommon version '4.0.000' called QICoreCommon
-
-codesystem "ActCode": 'http://terminology.hl7.org/CodeSystem/v3-ActCode'  
 
 valueset "Behavioral or Neuropsych Assessment": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1023' 
 valueset "Care Services in Long Term Residential Facility": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1014' 
@@ -60,8 +58,8 @@ define "Dementia Encounter During Measurement Period":
 "Encounter to Assess Cognition" EncounterAssessCognition
     with ([ConditionProblemsHealthConcerns: "Dementia & Mental Degenerations"]
           union [ConditionEncounterDiagnosis: "Dementia & Mental Degenerations"]) Dementia
-   such that EncounterAssessCognition.period during "Measurement Period"
-        and Dementia.prevalenceInterval() overlaps EncounterAssessCognition.period 
+   such that EncounterAssessCognition.period during day of "Measurement Period"
+        and Dementia.prevalenceInterval() overlaps day of EncounterAssessCognition.period 
         and (Dementia.abatement is null 
             or end of Dementia.abatement.toInterval() after end of "Measurement Period")
         and not ( Dementia.verificationStatus ~ QICoreCommon."unconfirmed"
@@ -69,7 +67,7 @@ define "Dementia Encounter During Measurement Period":
                      or Dementia.verificationStatus ~ QICoreCommon."entered-in-error" )
 
 define "Encounter to Assess Cognition":
-["Encounter": "Psych Visit Diagnostic Evaluation"]
+(["Encounter": "Psych Visit Diagnostic Evaluation"]
     union ["Encounter": "Nursing Facility Visit"]
     union ["Encounter": "Care Services in Long Term Residential Facility"]
     union ["Encounter": "Home Healthcare Services"]
@@ -77,7 +75,9 @@ define "Encounter to Assess Cognition":
     union ["Encounter": "Behavioral or Neuropsych Assessment"]
     union ["Encounter": "Occupational Therapy Evaluation"]
     union ["Encounter": "Office Visit"]
-    union ["Encounter": "Outpatient Consultation"]
+    union ["Encounter": "Outpatient Consultation"]) EncounterAssessCognition
+    where EncounterAssessCognition.period during day of "Measurement Period"
+      and EncounterAssessCognition.status ~ 'finished'
 
 define "Patient Reason for Not Performing Assessment of Cognition Using Standardized Tools or Alternate Methods":
 ([ObservationCancelled: code in "Standardized Tools for Assessment of Cognition"] 
@@ -88,7 +88,7 @@ define "Patient Reason for Not Performing Assessment of Cognition Using Standard
 
 define "Qualifying Encounter During Measurement Period":
 ("Encounter to Assess Cognition" union ["Encounter": "Patient Provider Interaction"] ) ValidEncounter
-    where ValidEncounter.period during "Measurement Period"
+    where ValidEncounter.period during day of "Measurement Period"
     and ValidEncounter.status = 'finished'
 
 define "SDE Ethnicity":
