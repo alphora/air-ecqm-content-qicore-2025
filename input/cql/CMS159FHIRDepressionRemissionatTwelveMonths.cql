@@ -33,7 +33,7 @@ code "Functional Assessment of Chronic Illness Therapy - Palliative Care Questio
 code "Hospice care [Minimum Data Set]": '45755-6' from "LOINC" display 'Hospice care [Minimum Data Set]'
 code "Yes (qualifier value)": '373066001' from "SNOMEDCT" display 'Yes (qualifier value)'
 
-parameter "Measurement Period" Interval<DateTime> default Interval[@2026-01-01, @2027-01-01)
+parameter "Measurement Period" Interval<DateTime>
 
 context Patient
 
@@ -93,7 +93,7 @@ define "Has Mental Health Disorder Diagnoses":
       union ([ConditionProblemsHealthConcerns: "Personality Disorder Emotionally Labile"] union [ConditionEncounterDiagnosis: "Personality Disorder Emotionally Labile"])
       union ([ConditionProblemsHealthConcerns: "Schizophrenia or Psychotic Disorder"] union [ConditionEncounterDiagnosis: "Schizophrenia or Psychotic Disorder"])
       union ([ConditionProblemsHealthConcerns: "Pervasive Developmental Disorder"] union [ConditionEncounterDiagnosis: "Pervasive Developmental Disorder"])) MentalHealthDisorderDiagnoses
-      where ToDate(start of MentalHealthDisorderDiagnoses.prevalenceInterval()) on or before day of end of "Measure Assessment Period"
+      where start of MentalHealthDisorderDiagnoses.prevalenceInterval() on or before day of end of "Measure Assessment Period"
         and MentalHealthDisorderDiagnoses.isConfirmedActiveDiagnosis()
   )
 
@@ -164,11 +164,12 @@ define "Has Palliative Care in the Measure Assessment Period":
     )
 
 define fluent function isConfirmedActiveDiagnosis(condition ConditionProblemsHealthConcerns):
-  condition.isActive()
-    and condition.verificationStatus ~ QICoreCommon."confirmed"
+  not( 
+    condition.verificationStatus ~ QICoreCommon."unconfirmed"
+      or condition.verificationStatus ~ QICoreCommon."refuted"
+      or condition.verificationStatus ~ QICoreCommon."entered-in-error"
+  )
         
-/* Commented out due to issues noted in https://oncprojectracking.healthit.gov/support/browse/BONNIEMAT-1489.
-Also, refer to https://github.com/cqframework/sample-content-ig/issues/70.
 define "Stratification 1":
   "Index Depression Assessment" IndexAssessment
     return AgeInYearsAt(date from start of IndexAssessment.effective.toInterval()) in Interval[12, 17]
@@ -176,4 +177,3 @@ define "Stratification 1":
 define "Stratification 2":
   "Index Depression Assessment" IndexAssessment
     return AgeInYearsAt(date from start of IndexAssessment.effective.toInterval()) >= 18
-*/
