@@ -1,4 +1,4 @@
-library CMS142FHIRDRCommunicationWithPhysicianManagingDiabetes version '0.2.000'
+library CMS142FHIRCommWithDrManagingDiab version '0.2.000'
 
 using QICore version '6.0.0'
 
@@ -144,7 +144,6 @@ define "Medical or Patient Reason for Not Communicating Presence of Macular Edem
 below definition workaround for 
 https://oncprojectracking.healthit.gov/support/browse/CQLIT-371. Using value set workaround has been applied for now
 but when QI Core STU 5 gets in the tool, it may be reverted back to a DRC */
-
 define "Medical or Patient Reason for Not Communicating Absence of Macular Edema":
   [CommunicationNotDone: category in "Macular Edema Findings Absent"] MacularEdemaAbsentNotCommunicated
     with "Diabetic Retinopathy Encounter" EncounterDiabeticRetinopathy
