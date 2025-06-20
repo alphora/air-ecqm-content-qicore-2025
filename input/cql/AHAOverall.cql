@@ -1,4 +1,4 @@
-library AHAOverall version '3.2.000'
+library AHAOverall version '3.3.000'
 
 using QICore version '6.0.0'
 using USCore version '6.1.0'
@@ -101,17 +101,13 @@ define "Has Left Ventricular Assist Device Complications":
                 * patient provider interactions (http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1012) 
 */          
 define "Qualifying Outpatient Encounter During Measurement Period":
-    "Outpatient Encounter During MP" ValidEncounter
+    "Outpatient Encounter or Patient Provider Interaction" ValidEncounter
       where ValidEncounter.period during day of "Measurement Period"
         and ValidEncounter.isFinished()
         
-define "Outpatient Encounter During MP":
-    ( [Encounter: "Office Visit"]
-        union [Encounter: "Outpatient Consultation"]
-        union [Encounter: "Nursing Facility Visit"]
-        union [Encounter: "Care Services in Long Term Residential Facility"]
-        union [Encounter: "Home Healthcare Services"]
-        union [Encounter: "Patient Provider Interaction"] )
+define "Outpatient Encounter or Patient Provider Interaction":
+  "Outpatient Encounter" 
+    union [Encounter: "Patient Provider Interaction"]
 
 /*
 @description: Returns completed heart tansplant procedures that start before the end of a heart failure outpatient encounter with history of moderate or severe LVSD
@@ -278,4 +274,3 @@ define fluent function overlapsAfterHeartFailureOutpatientEncounter(HeartRateObs
              where HeartRateObservation.effective.toInterval() overlaps after day of ModerateOrSevereLVSDHFOutpatientEncounter.period
                and HeartRateObservation.status in {'final', 'amended', 'corrected'}
           )
-          
