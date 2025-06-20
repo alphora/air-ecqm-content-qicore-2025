@@ -127,15 +127,12 @@ define "Most Recent Prostate Cancer Staging Tumor Size T1a to T2a":
 define "Prostate Cancer Diagnosis":
   [ConditionProblemsHealthConcerns: "Prostate Cancer"] ProstateCancer
     where ProstateCancer.prevalenceInterval ( ) overlaps day of "Measurement Period"
-      and ProstateCancer.isVerificationStatusNotInvalid ( )
+    and ProstateCancer.isVerificationStatusNotInvalid()
 
 /*
 @description: Returns true if the given condition's verification status has been invalidated.
-*/
-
-
+*/    
 define fluent function isVerificationStatusNotInvalid(condition Choice<"ConditionEncounterDiagnosis", "ConditionProblemsHealthConcerns">):
-  not ( condition.verificationStatus ~ QICoreCommon."unconfirmed"
-      or condition.verificationStatus ~ QICoreCommon."refuted"
-      or condition.verificationStatus ~ QICoreCommon."entered-in-error"
-  )
+  not (condition.verificationStatus ~ QICoreCommon."unconfirmed"
+  or condition.verificationStatus ~ QICoreCommon."refuted"
+  or condition.verificationStatus ~ QICoreCommon."entered-in-error")
