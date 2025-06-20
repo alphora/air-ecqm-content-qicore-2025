@@ -1,4 +1,4 @@
-library CMS142FHIRDRCommunicationWithPhysicianManagingDiabetes version '0.2.000'
+library CMS142FHIRCommWithDrManagingDiab version '0.2.000'
 
 using QICore version '6.0.0'
 
@@ -28,13 +28,8 @@ valueset "Office Visit": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883
 valueset "Ophthalmological Services": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1285'
 valueset "Outpatient Consultation": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1008'
 valueset "Patient Reason": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1008'
-valueset "Macular edema absent (situation)": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.2.1391'
+valueset "Macular Edema Findings Absent": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.2.1391'
 
-code "Healthcare professional (occupation)": '223366009' from "SNOMEDCT" display 'Healthcare professional (occupation)'
-code "Medical practitioner (occupation)": '158965000' from "SNOMEDCT" display 'Medical practitioner (occupation)'
-code "Ophthalmologist (occupation)": '422234006' from "SNOMEDCT" display 'Ophthalmologist (occupation)'
-code "Optometrist (occupation)": '28229004' from "SNOMEDCT" display 'Optometrist (occupation)'
-code "Physician (occupation)": '309343006' from "SNOMEDCT" display 'Physician (occupation)'
 code "virtual": 'VR' from "ActCode" display 'virtual'
 // code "Macular edema absent (situation)": '428341000124108' from "SNOMEDCT" display 'Macular edema absent (situation)'
 
@@ -90,7 +85,6 @@ define "Diabetic Retinopathy Encounter":
     with (["ConditionProblemsHealthConcerns": "Diabetic Retinopathy"]
      union ["ConditionEncounterDiagnosis": "Diabetic Retinopathy"] ) DiabeticRetinopathy
       such that DiabeticRetinopathy.prevalenceInterval ( ) overlaps day of ValidQualifyingEncounter.period
-        and DiabeticRetinopathy.isActive ( )
         and not ( DiabeticRetinopathy.verificationStatus ~ QICoreCommon."unconfirmed"
             or DiabeticRetinopathy.verificationStatus ~ QICoreCommon."refuted"
             or DiabeticRetinopathy.verificationStatus ~ QICoreCommon."entered-in-error"
@@ -117,7 +111,7 @@ define "Level of Severity of Retinopathy Findings Communicated":
     where LevelOfSeverityCommunicated.status = 'completed'
 
 define "Macular Edema Absence Communicated":
-  ["Communication": category in "Macular edema absent (situation)"] MacularEdemaAbsentCommunicated
+  ["Communication": category in "Macular Edema Findings Absent"] MacularEdemaAbsentCommunicated
     with "Diabetic Retinopathy Encounter" EncounterDiabeticRetinopathy
       such that MacularEdemaAbsentCommunicated.sent after start of EncounterDiabeticRetinopathy.period
         and MacularEdemaAbsentCommunicated.sent during day of "Measurement Period"
@@ -133,7 +127,7 @@ define "Macular Edema Presence Communicated":
 define "Medical or Patient Reason for Not Communicating Level of Severity of Retinopathy":
   [CommunicationNotDone: category in "Level of Severity of Retinopathy Findings"] LevelOfSeverityNotCommunicated
     with "Diabetic Retinopathy Encounter" EncounterDiabeticRetinopathy
-      such that LevelOfSeverityNotCommunicated.sent during EncounterDiabeticRetinopathy.period
+      such that LevelOfSeverityNotCommunicated.recorded during EncounterDiabeticRetinopathy.period
     where ( LevelOfSeverityNotCommunicated.statusReason in "Medical Reason"
         or LevelOfSeverityNotCommunicated.statusReason in "Patient Reason"
     )
@@ -141,7 +135,7 @@ define "Medical or Patient Reason for Not Communicating Level of Severity of Ret
 define "Medical or Patient Reason for Not Communicating Presence of Macular Edema":
   [CommunicationNotDone: category in "Macular Edema Findings Present"] MacularEdemaPresentNotCommunicated
     with "Diabetic Retinopathy Encounter" EncounterDiabeticRetinopathy
-      such that MacularEdemaPresentNotCommunicated.sent during EncounterDiabeticRetinopathy.period
+      such that MacularEdemaPresentNotCommunicated.recorded during EncounterDiabeticRetinopathy.period
     where ( MacularEdemaPresentNotCommunicated.statusReason in "Medical Reason"
         or MacularEdemaPresentNotCommunicated.statusReason in "Patient Reason"
     ) 
@@ -150,11 +144,10 @@ define "Medical or Patient Reason for Not Communicating Presence of Macular Edem
 below definition workaround for 
 https://oncprojectracking.healthit.gov/support/browse/CQLIT-371. Using value set workaround has been applied for now
 but when QI Core STU 5 gets in the tool, it may be reverted back to a DRC */
-
 define "Medical or Patient Reason for Not Communicating Absence of Macular Edema":
-  [CommunicationNotDone: category in "Macular edema absent (situation)"] MacularEdemaAbsentNotCommunicated
+  [CommunicationNotDone: category in "Macular Edema Findings Absent"] MacularEdemaAbsentNotCommunicated
     with "Diabetic Retinopathy Encounter" EncounterDiabeticRetinopathy
-      such that MacularEdemaAbsentNotCommunicated.sent during EncounterDiabeticRetinopathy.period
+      such that MacularEdemaAbsentNotCommunicated.recorded during EncounterDiabeticRetinopathy.period
     where ( MacularEdemaAbsentNotCommunicated.statusReason in "Medical Reason"
         or MacularEdemaAbsentNotCommunicated.statusReason in "Patient Reason"
     )
