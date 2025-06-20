@@ -1,4 +1,4 @@
-library AHAOverall version '3.1.000'
+library AHAOverall version '3.3.000'
 
 using QICore version '6.0.0'
 using USCore version '6.1.0'
@@ -25,7 +25,7 @@ valueset "Patient Provider Interaction": 'http://cts.nlm.nih.gov/fhir/ValueSet/2
 
 code "Left ventricular systolic dysfunction (disorder)": '134401001' from "SNOMEDCT" display 'Left ventricular systolic dysfunction (disorder)'
 
-parameter "Measurement Period" Interval<DateTime> default Interval[@2026-01-01, @2027-01-01)
+parameter "Measurement Period" Interval<DateTime>
 
 context Patient
 
@@ -38,21 +38,24 @@ context Patient
                 * outpatient consolutations (http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1008)
 */
 define "Heart Failure Outpatient Encounter":
-  ( [Encounter: type in "Care Services in Long Term Residential Facility"]
-      union [Encounter: type in "Home Healthcare Services"]
-      union [Encounter: type in "Nursing Facility Visit"]
-      union [Encounter: type in "Office Visit"] 
-      union [Encounter: type in "Outpatient Consultation"]
-     ) QualifyingEncounter
+  "Outpatient Encounter" QualifyingEncounter
     with ([ConditionProblemsHealthConcerns: "Heart Failure"]
       union [ConditionEncounterDiagnosis: "Heart Failure"]) HeartFailure
-      such that HeartFailure.prevalenceInterval() overlaps QualifyingEncounter.period  
+      such that HeartFailure.prevalenceInterval() overlaps day of QualifyingEncounter.period  
         and HeartFailure.isConfirmedActiveDiagnosis()
     where QualifyingEncounter.period during day of "Measurement Period"
       and QualifyingEncounter.isFinished()
+      
+define "Outpatient Encounter":
+  ( [Encounter: "Care Services in Long Term Residential Facility"]
+      union [Encounter: "Home Healthcare Services"]
+      union [Encounter: "Nursing Facility Visit"]
+      union [Encounter: "Office Visit"] 
+      union [Encounter: "Outpatient Consultation"]
+     ) 
 
 /*
-@description: Returns true if patient has confirmed heart transplant complications that start before the end of a heart failure outpatient encounter with history of moderate or severe LVSD
+@description: Returns true if patient has confirmed heart transplant complications that start before the end of a heart failure outpatient encounter with history of moderate or severe LVSD 
 */ 
 define "Has Heart Transplant Complications":
   exists ( 
@@ -98,14 +101,13 @@ define "Has Left Ventricular Assist Device Complications":
                 * patient provider interactions (http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1012) 
 */          
 define "Qualifying Outpatient Encounter During Measurement Period":
-    ( [Encounter: type in "Office Visit"]
-        union [Encounter: type in "Outpatient Consultation"]
-        union [Encounter: type in "Nursing Facility Visit"]
-        union [Encounter: type in "Care Services in Long Term Residential Facility"]
-        union [Encounter: type in "Home Healthcare Services"]
-        union [Encounter: type in "Patient Provider Interaction"] ) ValidEncounter
+    "Outpatient Encounter or Patient Provider Interaction" ValidEncounter
       where ValidEncounter.period during day of "Measurement Period"
         and ValidEncounter.isFinished()
+        
+define "Outpatient Encounter or Patient Provider Interaction":
+  "Outpatient Encounter" 
+    union [Encounter: "Patient Provider Interaction"]
 
 /*
 @description: Returns completed heart tansplant procedures that start before the end of a heart failure outpatient encounter with history of moderate or severe LVSD
@@ -161,7 +163,7 @@ define "Moderate or Severe LVSD Findings":
                 * Has two Qualifying Outpatient Encounters During Measurement Period
                 * Has a Heart Failure Outpatient Encounter
 */           
-define "Is Adults With Two Qualifying Outpatient Encounters and One Heart Failure Outpatient Encounter During the Measurement Period":
+define "Is Adult With Two Qualifying Outpatient Encounters and One Heart Failure Outpatient Encounter During the Measurement Period":
   AgeInYearsAt(date from start of "Measurement Period") >= 18
     and exists ( "Qualifying Outpatient Encounter During Measurement Period" Encounter1
         with "Qualifying Outpatient Encounter During Measurement Period" Encounter2
@@ -173,8 +175,7 @@ define "Is Adults With Two Qualifying Outpatient Encounters and One Heart Failur
 @description: Returns true if the given Condition is confirmed as active
 */
 define fluent function isConfirmedActiveDiagnosis(condition Choice<ConditionEncounterDiagnosis, ConditionProblemsHealthConcerns>):
-    condition.isActive()
-        and condition.verificationStatus ~ QICoreCommon."confirmed"
+    condition.verificationStatus ~ QICoreCommon."confirmed"
 
 /*
 @description: Returns true if the given Encounter is finished
