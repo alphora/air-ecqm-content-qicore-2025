@@ -164,7 +164,11 @@ define "Has Palliative Care in the Measure Assessment Period":
     )
 
 define fluent function isConfirmedActiveDiagnosis(condition ConditionProblemsHealthConcerns):
-  condition.verificationStatus ~ QICoreCommon."confirmed"
+  not( 
+    condition.verificationStatus ~ QICoreCommon."unconfirmed"
+      or condition.verificationStatus ~ QICoreCommon."refuted"
+      or condition.verificationStatus ~ QICoreCommon."entered-in-error"
+  )
         
 define "Stratification 1":
   "Index Depression Assessment" IndexAssessment
