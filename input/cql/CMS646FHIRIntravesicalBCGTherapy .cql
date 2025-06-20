@@ -85,7 +85,7 @@ define "Acute Tuberculosis Diagnosis":
             )
           )
       )
-    where ActiveTuberculosis.isNotRefutedDiagnosis()
+    where ActiveTuberculosis.verificationStatusIsNotInvalid()
 
 define "Cystectomy Done":
   [Procedure: "Cystectomy for Urology Care"] Cystectomy
@@ -105,7 +105,7 @@ define "Has Excluding HIV, Immunocompromised Conditions or Mixed Histology Befor
             (ExclusionDiagnosis.prevalenceInterval() starts on or before day of start of FirstBladderCancerStaging.performed.toInterval())
             or (ExclusionDiagnosis.onset.toInterval() starts on or before day of start of FirstBladderCancerStaging.performed.toInterval())
         )
-      where ExclusionDiagnosis.isNotRefutedDiagnosis()
+      where ExclusionDiagnosis.verificationStatusIsNotInvalid()
   )
 
 define "Has Excluding Chemotherapy or Radiotherapy Procedure Before Staging":
@@ -150,7 +150,7 @@ define "Bladder Cancer Diagnosis":
         BladderCancer.prevalenceInterval() starts before day of end of "Measurement Period"
         or BladderCancer.onset before day of end of "Measurement Period"
       )
-      and BladderCancer.isNotRefutedDiagnosis()
+      and BladderCancer.verificationStatusIsNotInvalid()
 
 define "BCG Not Available Within 6 Months After Bladder Cancer Staging":
   [MedicationAdministrationNotDone: "Bacillus Calmette Guerin for Urology Care"] BCGNotGiven
@@ -208,6 +208,10 @@ define "Immunosuppressive Drugs":
       such that medicationPeriod starts on or before day of start of FirstBladderCancerStaging.performed.toInterval()
     where ImmunosuppressiveDrugs.status in { 'active', 'completed' }
       and ImmunosuppressiveDrugs.intent = 'order'
-
-define fluent function isNotRefutedDiagnosis(Condition Choice<ConditionProblemsHealthConcerns, ConditionEncounterDiagnosis>):
-    not (Condition.verificationStatus in { "refuted", "unconfirmed", "entered-in-error" })
+      
+define fluent function verificationStatusIsNotInvalid(condition Choice<"ConditionEncounterDiagnosis", "ConditionProblemsHealthConcerns">):
+  condition.verificationStatus is null
+    or not ( condition.verificationStatus ~ QICoreCommon."unconfirmed"
+        or condition.verificationStatus ~ QICoreCommon."refuted"
+        or condition.verificationStatus ~ QICoreCommon."entered-in-error"
+    )
