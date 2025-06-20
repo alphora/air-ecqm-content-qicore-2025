@@ -164,6 +164,11 @@ define "Is Pregnant During Measurement Period":
   exists (([ConditionProblemsHealthConcerns: "Pregnancy or Other Related Diagnoses"]
     union [ConditionEncounterDiagnosis: "Pregnancy or Other Related Diagnoses"]) PregnancyDiagnosis
     where PregnancyDiagnosis.prevalenceInterval() overlaps day of "Measurement Period")
+    
+  or exists([USCoreObservationPregnancyStatusProfile] PregnantObservation
+    where PregnantObservation.effective.toInterval() overlaps day of "Measurement Period"
+     and (PregnantObservation.value in "Pregnancy or Other Related Diagnoses")
+  )
 
 define "Qualifying Encounter During Day Of Measurement Period":
   [Encounter: "Encounter to Evaluate BMI"] BMIEncounter
