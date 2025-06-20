@@ -18,9 +18,6 @@ valueset "Preventive Care Services-Initial Office Visit, 18 and Up": 'http://cts
 valueset "Preventive Care, Established Office Visit, 0 to 17": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1024'
 
 code "HIV 1 and 2 tests - Meaningful Use set": '75622-1' from "LOINC" display 'HIV 1 and 2 tests - Meaningful Use set'
-code "refuted": 'refuted' from "ConditionVerificationStatus"
-code "unconfirmed": 'unconfirmed' from "ConditionVerificationStatus"
-code "entered-in-error": 'entered-in-error' from "ConditionVerificationStatus"
 
 parameter "Measurement Period" Interval<DateTime>
 
@@ -41,11 +38,9 @@ define "Denominator Exclusions":
   ([ConditionProblemsHealthConcerns: "HIV"] union 
   [ConditionEncounterDiagnosis: "HIV"]) HIVDiagnosis
     where HIVDiagnosis.prevalenceInterval() starts before day of start of "Measurement Period"
-      and (
-        (not ( HIVDiagnosis.verificationStatus in { "refuted", "unconfirmed", "entered-in-error" } ))
-        or (HIVDiagnosis.verificationStatus is null)
-      )
+      and HIVDiagnosis.verificationStatusIsNotInvalid()
   )
+
 define "Denominator Exceptions":
   "Patient Expired"
 
@@ -83,3 +78,10 @@ define "SDE Race":
 
 define "SDE Sex":
   SDE."SDE Sex"
+
+define fluent function verificationStatusIsNotInvalid(condition Choice<"ConditionEncounterDiagnosis", "ConditionProblemsHealthConcerns">):
+  condition.verificationStatus is null
+    or not ( condition.verificationStatus ~ QICoreCommon."unconfirmed"
+        or condition.verificationStatus ~ QICoreCommon."refuted"
+        or condition.verificationStatus ~ QICoreCommon."entered-in-error"
+    )
