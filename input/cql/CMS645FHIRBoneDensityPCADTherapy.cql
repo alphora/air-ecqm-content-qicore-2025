@@ -102,16 +102,14 @@ define "Androgen Deprivation Therapy for Urology Care Medication Active Start Da
     ),
 
     //get the very first event as interval
-    
     firstMedicationEvent: First((ADTActive.dosageInstruction.timing dosageTiming
         //returns first event for the specific dosageTiming
-        
         return First(dosageTiming.event dosageTimingEvents
             sort ascending
         )) firstEvents
         sort ascending
     ),
-    medicationDateTime: Min({ firstMedicationEvent, firstMedicationPeriod.low, firstMedicationPeriod.high })
+    medicationDateTime: Min( { firstMedicationEvent, firstMedicationPeriod.low, firstMedicationPeriod.high } )
     where ADTActive.status in { 'active', 'completed' }
       and ADTActive.intent in { 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order' }
     return medicationDateTime
@@ -123,7 +121,7 @@ define "Androgen Deprivation Therapy for Urology Care Medication Order Start Dat
       )) DrugPeriods
         sort by start of $this
     ),
-    medicationDateTime: Min({ ADTOrder.authoredOn, firstMedicationPeriod.low, firstMedicationPeriod.high })
+    medicationDateTime: Min( { ADTOrder.authoredOn, firstMedicationPeriod.low, firstMedicationPeriod.high })
     where ADTOrder.status in { 'active', 'completed' }
       and ADTOrder.intent in { 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order' }
     return medicationDateTime
@@ -138,4 +136,13 @@ define "Prostate Cancer Diagnosis":
   ( [ConditionProblemsHealthConcerns: "Prostate Cancer"]
     union [ConditionEncounterDiagnosis: "Prostate Cancer"] ) ProstateCancer
     where ProstateCancer.prevalenceInterval ( ) overlaps day of "Measurement Period"
-      and ProstateCancer.verificationStatus ~ QICoreCommon."confirmed"
+      and ProstateCancer.verificationStatusIsNotInvalid()
+      
+define fluent function verificationStatusIsNotInvalid(condition Choice<"ConditionEncounterDiagnosis", "ConditionProblemsHealthConcerns">):
+  condition.verificationStatus is null
+  or not (
+    condition.verificationStatus ~ QICoreCommon."unconfirmed"
+    or condition.verificationStatus ~ QICoreCommon."refuted"
+    or condition.verificationStatus ~ QICoreCommon."entered-in-error"
+  )
+  
