@@ -98,7 +98,8 @@ define "Has Diagnosis of Pregnancy":
   )
 
 define "Has Diagnosis of Renal Failure Due to ACEI":
-  exists ( [ConditionEncounterDiagnosis: "Acute renal failure caused by angiotensin-converting-enzyme inhibitor (disorder)"] RenalFailureDueToACEI
+  exists ( ([ConditionProblemsHealthConcerns: "Acute renal failure caused by angiotensin-converting-enzyme inhibitor (disorder)"] 
+      union [ConditionEncounterDiagnosis: "Acute renal failure caused by angiotensin-converting-enzyme inhibitor (disorder)"]) RenalFailureDueToACEI
       where RenalFailureDueToACEI.overlapsHeartFailureOutpatientEncounter ( )
   )
 
