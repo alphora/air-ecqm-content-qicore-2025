@@ -19,9 +19,6 @@ valueset "Patient Reason": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.1138
 valueset "Patient Reason for ACE Inhibitor or ARB Decline": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1140'
 valueset "Pregnancy": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.378'
 
-code "Possible pregnancy (finding)": '102874004' from "SNOMEDCT" display 'Possible pregnancy (finding)'
-code "Possible pregnancy (situation)": '146799005' from "SNOMEDCT" display 'Possible pregnancy (situation)'
-code "Pregnancy (finding)": '77386006' from "SNOMEDCT" display 'Pregnancy (finding)'
 code "Acute renal failure caused by angiotensin-converting-enzyme inhibitor (disorder)": '422593004' from "SNOMEDCT" display 'Acute renal failure caused by angiotensin-converting-enzyme inhibitor (disorder)'
 code "Substance with angiotensin II receptor antagonist mechanism of action (substance)": '372913009' from "SNOMEDCT" display 'Substance with angiotensin II receptor antagonist mechanism of action (substance)'
 code "Substance with angiotensin-converting enzyme inhibitor mechanism of action (substance)": '372733002' from "SNOMEDCT" display 'Substance with angiotensin-converting enzyme inhibitor mechanism of action (substance)'
@@ -96,11 +93,8 @@ define "Has Diagnosis of Pregnancy":
         [USCoreObservationPregnancyStatusProfile] PregnantObservation
         with AHA."Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD" ModerateOrSevereLVSDHFOutpatientEncounter
         such that PregnantObservation.effective.toInterval() starts 9 months or less before or on start of ModerateOrSevereLVSDHFOutpatientEncounter.period
-        // TODO: would need to find out if all 3 of these are applicable, or only the "Pregnancy (finding)"
         and (
-          PregnantObservation.value ~ "Possible pregnancy (finding)" or 
-          PregnantObservation.value ~ "Possible pregnancy (situation)" or 
-          PregnantObservation.value ~ "Pregnancy (finding)")
+          PregnantObservation.value in "Pregnancy")
   )
 
 define "Has Diagnosis of Renal Failure Due to ACEI":
