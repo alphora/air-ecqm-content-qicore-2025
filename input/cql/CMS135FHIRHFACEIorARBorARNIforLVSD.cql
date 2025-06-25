@@ -1,11 +1,12 @@
-library CMS135FHIRHFACEIorARBorARNIforLVSD version '0.4.000'
+library CMS135FHIRACEIorARBorARNIforHF version '0.4.000'
 
 using QICore version '6.0.0'
+using USCore version '6.1.0'
 
 include FHIRHelpers version '4.4.000' called FHIRHelpers
 include SupplementalDataElements version '5.1.000' called SDE
 include QICoreCommon version '4.0.000' called QICoreCommon
-include AHAOverall version '3.0.000' called AHA
+include AHAOverall version '3.2.000' called AHA
 
 codesystem "SNOMEDCT": 'http://snomed.info/sct'
 
@@ -17,7 +18,6 @@ valueset "Medical Reason": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.1138
 valueset "Patient Reason": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1008'
 valueset "Patient Reason for ACE Inhibitor or ARB Decline": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1140'
 valueset "Pregnancy": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.378'
-valueset "Moderate or Severe LVSD": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1090'
 
 code "Acute renal failure caused by angiotensin-converting-enzyme inhibitor (disorder)": '422593004' from "SNOMEDCT" display 'Acute renal failure caused by angiotensin-converting-enzyme inhibitor (disorder)'
 code "Substance with angiotensin II receptor antagonist mechanism of action (substance)": '372913009' from "SNOMEDCT" display 'Substance with angiotensin II receptor antagonist mechanism of action (substance)'
@@ -29,7 +29,7 @@ parameter "Measurement Period" Interval<DateTime>
 context Patient
 
 define "Initial Population":
-  AHA."Is Adults With Two Qualifying Outpatient Encounters and One Heart Failure Outpatient Encounter During the Measurement Period"
+  AHA."Is Adult With Two Qualifying Outpatient Encounters and One Heart Failure Outpatient Encounter During the Measurement Period"
 
 define "Denominator":
   "Initial Population"
@@ -84,22 +84,28 @@ define "Has Diagnosis of Allergy or Intolerance to ACEI or ARB":
   )
 
 define "Has Diagnosis of Pregnancy":
-  exists ( [ConditionProblemsHealthConcerns: "Pregnancy"] PregnancyDiagnosis
-      with AHA."Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD" ModerateOrSevereLVSDHFOutpatientEncounter
-        such that PregnancyDiagnosis.prevalenceInterval ( ) starts 9 months or less before or on start of ModerateOrSevereLVSDHFOutpatientEncounter.period
+  exists (([ConditionProblemsHealthConcerns: "Pregnancy"] 
+      union ["ConditionEncounterDiagnosis": "Pregnancy"]) PregnancyDiagnosis
+        with AHA."Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD" ModerateOrSevereLVSDHFOutpatientEncounter
+        such that PregnancyDiagnosis.prevalenceInterval() starts 9 months or less before or on start of ModerateOrSevereLVSDHFOutpatientEncounter.period
+  ) 
+  or exists(
+        [USCoreObservationPregnancyStatusProfile] PregnantObservation
+        with AHA."Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD" ModerateOrSevereLVSDHFOutpatientEncounter
+        such that PregnantObservation.effective.toInterval() starts 9 months or less before or on start of ModerateOrSevereLVSDHFOutpatientEncounter.period
+        and (
+          PregnantObservation.value in "Pregnancy")
   )
 
 define "Has Diagnosis of Renal Failure Due to ACEI":
-  exists ( [ConditionEncounterDiagnosis: "Acute renal failure caused by angiotensin-converting-enzyme inhibitor (disorder)"] RenalFailureDueToACEI
+  exists ( ([ConditionProblemsHealthConcerns: "Acute renal failure caused by angiotensin-converting-enzyme inhibitor (disorder)"] 
+      union [ConditionEncounterDiagnosis: "Acute renal failure caused by angiotensin-converting-enzyme inhibitor (disorder)"]) RenalFailureDueToACEI
       where RenalFailureDueToACEI.overlapsHeartFailureOutpatientEncounter ( )
   )
 
-// TODO: https://oncprojectracking.healthit.gov/support/projects/MADIE/issues/MADIE-2124
-// Expecting 1 failure per population until this translator issue is incorporated into MADiE
-
 define "Has Medical or Patient Reason for Not Ordering ACEI or ARB or ARNI":
   exists ( [MedicationNotRequested: medication in "ACE Inhibitor or ARB or ARNI"] NoACEIOrARBOrARNIOrdered
-      where NoACEIOrARBOrARNIOrdered.isOrderedDuringHeartFailureOutpatientEncounter()
+      where NoACEIOrARBOrARNIOrdered.isMedicationNotRequestedOrderedDuringHeartFailureOutpatientEncounter()
         and ( NoACEIOrARBOrARNIOrdered.reasonCode in "Medical Reason"
             or NoACEIOrARBOrARNIOrdered.reasonCode in "Patient Reason"
             or NoACEIOrARBOrARNIOrdered.reasonCode in "Patient Reason for ACE Inhibitor or ARB Decline"
@@ -110,3 +116,4 @@ define "Is Currently Taking ACEI or ARB or ARNI":
   exists ( [MedicationRequest: medication in "ACE Inhibitor or ARB or ARNI"] ActiveACEIOrARBOrARNI
       where ActiveACEIOrARBOrARNI.overlapsAfterHeartFailureOutpatientEncounter ( )
   )
+  
