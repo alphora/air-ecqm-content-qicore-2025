@@ -1,15 +1,14 @@
-library CMS144FHIRHFBetaBlockerTherapyforLVSD version '1.5.000'
+library CMS144FHIRHFBetaBlockerForLVSD version '1.5.000'
 
 using QICore version '6.0.0'
-using USCore version '6.1.0'
 
 include FHIRHelpers version '4.4.000' called FHIRHelpers
 include SupplementalDataElements version '5.1.000' called SDE
 include QICoreCommon version '4.0.000' called QICoreCommon
-include AHAOverall version '3.0.000' called AHA 
+include AHAOverall version '3.3.000' called AHA 
 
 codesystem "SNOMEDCT": 'http://snomed.info/sct'
-
+ 
 valueset "Allergy to Beta Blocker Therapy": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1177'
 valueset "Arrhythmia": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.366'
 valueset "Asthma": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.362'
@@ -31,7 +30,7 @@ parameter "Measurement Period" Interval<DateTime>
 context Patient
 
 define "Initial Population":
-  AHA."Is Adults With Two Qualifying Outpatient Encounters and One Heart Failure Outpatient Encounter During the Measurement Period"
+  AHA."Is Adult With Two Qualifying Outpatient Encounters and One Heart Failure Outpatient Encounter During the Measurement Period"
 
 define "Denominator":
   "Initial Population"
@@ -46,11 +45,6 @@ define "Denominator Exclusions":
 define "Numerator":
   "Has Beta Blocker Therapy for LVSD Ordered"
     or "Is Currently Taking Beta Blocker Therapy for LVSD"
-
-/*
-@commentedOuf: Temporary removal of "Has Medical or Patient Reason for Not Ordering Beta Blocker for LVSD"
-@commentedOufReason: Negation issue noted in https://github.com/cqframework/cql-execution/issues/296, which is tied to https://oncprojectracking.healthit.gov/support/browse/BONNIEMAT-1455
-*/
 
 define "Denominator Exceptions":
   "Has Consecutive Heart Rates Less than 50" 
@@ -99,20 +93,24 @@ define "Has Hypotension Diagnosis":
   )
 
 define "Has Diagnosis of Cardiac Pacer in Situ":
-  exists ( ["ConditionProblemsHealthConcerns": "Cardiac Pacer in Situ"] CardiacPacerDiagnosis
+  exists ( (["ConditionProblemsHealthConcerns": "Cardiac Pacer in Situ"]
+      union ["ConditionEncounterDiagnosis": "Cardiac Pacer in Situ"]) CardiacPacerDiagnosis
       where CardiacPacerDiagnosis.overlapsAfterHeartFailureOutpatientEncounter ( )
         and CardiacPacerDiagnosis.isConfirmedActiveDiagnosis ( )
   )
 
 define "Has Diagnosis of Allergy or Intolerance to Beta Blocker Therapy":
-  exists ( ( ["ConditionProblemsHealthConcerns": "Allergy to Beta Blocker Therapy"]
-      union ["ConditionProblemsHealthConcerns": "Intolerance to Beta Blocker Therapy"] ) BetaBlockerAllergyOrIntoleranceDiagnosis
+  exists ( ( (["ConditionProblemsHealthConcerns": "Allergy to Beta Blocker Therapy"]
+        union ["ConditionEncounterDiagnosis": "Allergy to Beta Blocker Therapy"])
+      union (["ConditionProblemsHealthConcerns": "Intolerance to Beta Blocker Therapy"] ) 
+        union ["ConditionEncounterDiagnosis": "Intolerance to Beta Blocker Therapy"]) BetaBlockerAllergyOrIntoleranceDiagnosis
       where BetaBlockerAllergyOrIntoleranceDiagnosis.overlapsAfterHeartFailureOutpatientEncounter ( )
         and BetaBlockerAllergyOrIntoleranceDiagnosis.isConfirmedActiveDiagnosis ( )
   )
 
 define "Has Bradycardia Diagnosis":
-  exists ( [ConditionProblemsHealthConcerns: "Bradycardia"] BradycardiaAlias
+  exists ( ([ConditionProblemsHealthConcerns: "Bradycardia"]
+      union [ConditionEncounterDiagnosis: "Bradycardia"]) BradycardiaAlias
       where BradycardiaAlias.overlapsHeartFailureOutpatientEncounter ( )
         and BradycardiaAlias.isConfirmedActiveDiagnosis ( )
   )
@@ -133,65 +131,43 @@ define "Has Consecutive Heart Rates Less than 50":
       return HeartRate
   )
 
-/*
-@commentedOutEarlier: implies logic
-@commentedOutReason: implies not available in cql-execution. Reference https://github.com/cqframework/cql-execution/issues/319.
-
-@implies logic has been reinstated back
-*/
-
-
 define "Has Allergy or Intolerance to Beta Blocker Therapy Ingredient":
   exists ( ( [AllergyIntolerance: "Beta Blocker Therapy Ingredient"]
       union [AllergyIntolerance: "Substance with beta adrenergic receptor antagonist mechanism of action (substance)"] ) BetaBlockerAllergyIntolerance
-      where BetaBlockerAllergyIntolerance.overlapsAfterHeartFailureOutpatientEncounter ( )
-        and ( ( BetaBlockerAllergyIntolerance.clinicalStatus is not null implies 
-                             BetaBlockerAllergyIntolerance.clinicalStatus !~ QICoreCommon."allergy-inactive" ) 
-                        or
-          BetaBlockerAllergyIntolerance.clinicalStatus ~ QICoreCommon."allergy-active"
-        )
+      where BetaBlockerAllergyIntolerance.overlapsAfterHeartFailureOutpatientEncounter()
   )
 
 define "Has Arrhythmia Diagnosis":
-  exists ( [ConditionProblemsHealthConcerns: "Arrhythmia"] ArrhythmiaAlias
+  exists ( ([ConditionProblemsHealthConcerns: "Arrhythmia"]
+      union [ConditionEncounterDiagnosis: "Arrhythmia"]) ArrhythmiaAlias
       where ArrhythmiaAlias.overlapsHeartFailureOutpatientEncounter ( )
         and ArrhythmiaAlias.isConfirmedActiveDiagnosis ( )
   )
 
 define "Has Asthma Diagnosis":
-  exists ( [ConditionProblemsHealthConcerns: "Asthma"] AsthmaAlias
+  exists ( ([ConditionProblemsHealthConcerns: "Asthma"]
+      union [ConditionEncounterDiagnosis: "Asthma"]) AsthmaAlias
       where AsthmaAlias.overlapsHeartFailureOutpatientEncounter ( )
         and AsthmaAlias.isConfirmedActiveDiagnosis ( )
   )
 
 define "Has Atrioventricular Block Diagnosis":
-  exists ( [ConditionProblemsHealthConcerns: "Atrioventricular Block"] AtrioventricularBlock
-      where AtrioventricularBlock.overlapsHeartFailureOutpatientEncounter ( )
-        and AtrioventricularBlock.isConfirmedActiveDiagnosis ( )
+  exists ( ([ConditionProblemsHealthConcerns: "Atrioventricular Block"]
+      union [ConditionEncounterDiagnosis: "Atrioventricular Block"]) AtrioventricularBlockAlias
+      where AtrioventricularBlockAlias.overlapsHeartFailureOutpatientEncounter ( )
+        and AtrioventricularBlockAlias.isConfirmedActiveDiagnosis ( )
   )
 
 define "Has Beta Blocker Therapy for LVSD Ordered":
   exists ( [MedicationRequest: medication in "Beta Blocker Therapy for LVSD"] BetaBlockerOrdered
-      where BetaBlockerOrdered.isOrderedDuringHeartFailureOutpatientEncounter2()
+      where BetaBlockerOrdered.isOrderedDuringHeartFailureOutpatientEncounter()
   )
 
 define "Has Medical or Patient Reason for Not Ordering Beta Blocker for LVSD":
   exists ( ["MedicationNotRequested": medication in "Beta Blocker Therapy for LVSD"] NoBetaBlockerOrdered
       with AHA."Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD" ModerateOrSevereLVSDHFOutpatientEncounter
         such that NoBetaBlockerOrdered.authoredOn during day of ModerateOrSevereLVSDHFOutpatientEncounter.period
-    //   where ( NoBetaBlockerOrdered.reasonCode in "Medical Reason"
-    //       or NoBetaBlockerOrdered.reasonCode in "Patient Reason"
-    //   )
+      where ( NoBetaBlockerOrdered.reasonCode in "Medical Reason"
+          or NoBetaBlockerOrdered.reasonCode in "Patient Reason"
+      )
   )
- 
- // TODO: Need to figure out why this function isn't working when invoked from AHAOverall v3.0.000
- //       This test case fails when using AHAOverall v3.0.000, but passes with the copy below: 
- //       https://madie.cms.gov/measures/67e2e174ede72744898ad54f/edit/test-cases/67e2e1cb2dcc81152d60e878
- define fluent function isOrderedDuringHeartFailureOutpatientEncounter2(MedicationRequest MedicationRequest): 
-  exists ( AHA."Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD" ModerateOrSevereLVSDHFOutpatientEncounter
-            where MedicationRequest.authoredOn during day of ModerateOrSevereLVSDHFOutpatientEncounter.period
-              and MedicationRequest.status in {'active', 'completed'}
-              and MedicationRequest.intent in { 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order' }
-              /*Issue: The logic commented out below was added to the logic due to an issue described in the authoring patterns for QI-Core: https://github.com/cqframework/CQL-Formatting-and-Usage-Wiki/wiki/Authoring-Patterns---QICore-v4.1.1#medication-ordered. However, when this logic is present, it causes an issue in Coverage calculation for resources that must be QI-Core compliant, because the inverse cannot be tested for a QI-Core MedicationRequest profile instance. This logic was commented out to achieve 100% Coverage. This requirement is really to handle what would happen if a MedicationRequest instance that could be set to 'false' were provided, but this should not happen within a trusted environment where QI-Core profile instances must be provided.*/
-              // and MedicationRequest.doNotPerform is not true 
-          )
