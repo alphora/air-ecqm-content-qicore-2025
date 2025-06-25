@@ -30,7 +30,7 @@ code "Not detected (qualifier value)": '260415000' from "SNOMEDCT" display 'Not 
 
 parameter "Measurement Period" Interval<DateTime>
 
-context Patient
+context Patient 
 
 define "Denominator":
   "Initial Population"
@@ -39,6 +39,7 @@ define "Has Active HIV Diagnosis Before or in First 90 Days of Measurement Perio
     exists ( ["ConditionProblemsHealthConcerns": "HIV"] 
             union ["ConditionEncounterDiagnosis": "HIV"] ) HIVDx
         where HIVDx.prevalenceInterval() starts before day of ( start of "Measurement Period" + 90 days )
+        and HIVDx.verificationStatusIsNotInvalid()
 
 define "Initial Population":
     "Has Active HIV Diagnosis Before or in First 90 Days of Measurement Period"
@@ -48,7 +49,7 @@ define "Most Recent Viral Load Test During Measurement Period":
     Last ( ["LaboratoryResultObservation": "HIV Viral Load Tests"] ViralLoad
     where ViralLoad.status in { 'final', 'amended', 'corrected' }
     and ViralLoad.effective.latest() during day of "Measurement Period"
-        sort by start of effective.toInterval()) 
+        sort by effective.earliest())
         
 
 define "Has Qualifying Encounter During First 240 Days of Measurement Period":
@@ -70,6 +71,13 @@ define "Numerator":
     "Most Recent Viral Load Test During Measurement Period".value < 200 '{copies}/mL'
     or "Most Recent Viral Load Test During Measurement Period".value ~ "Below threshold level (qualifier value)"
     or "Most Recent Viral Load Test During Measurement Period".value ~ "Not detected (qualifier value)"
+
+define fluent function verificationStatusIsNotInvalid(condition Choice<"ConditionEncounterDiagnosis", "ConditionProblemsHealthConcerns">):
+  condition.verificationStatus is null
+    or not ( condition.verificationStatus ~ QICoreCommon."unconfirmed"
+        or condition.verificationStatus ~ QICoreCommon."refuted"
+        or condition.verificationStatus ~ QICoreCommon."entered-in-error"
+    )
 
 define "SDE Ethnicity":
     SDE."SDE Ethnicity"
