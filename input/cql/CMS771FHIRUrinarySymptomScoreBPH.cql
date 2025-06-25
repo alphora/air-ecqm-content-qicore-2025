@@ -1,7 +1,6 @@
-library CMS771FHIRUrinarySymptomScoreChangeBenignProstaticHyperplasia version '1.5.000'
+library CMS771FHIRUrinarySymptomScoreBPH version '1.5.000'
 
 using QICore version '6.0.0'
-using USCore version '6.1.0'
 
 include FHIRHelpers version '4.4.000' called FHIRHelpers
 include SupplementalDataElements version '5.1.000' called SDE
@@ -9,7 +8,6 @@ include QICoreCommon version '4.0.000' called QICoreCommon
 
 codesystem "LOINC": 'http://loinc.org'
 codesystem "ICD10CM": 'http://hl7.org/fhir/sid/icd-10-cm'
-codesystem "ObservationCategoryCodes": 'http://terminology.hl7.org/CodeSystem/observation-category'
 codesystem "ActCode": 'http://terminology.hl7.org/CodeSystem/v3-ActCode'
 
 valueset "Hospital Services for Urology Care": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1248.360'
@@ -61,7 +59,7 @@ define "Has Qualifying BPH Diagnosis":
   "Initial BPH Diagnosis Starts Within 6 Months Before the Measurement Period" is not null
 
 define "Patient is Male":
-  Patient.gender = 'male'
+  SDE."SDE Sex" ~ SDE."Male (finding)"
 
 define "Urinary Symptom Score Assessment":
   "Documented IPSS Assessment Result"
@@ -119,12 +117,12 @@ define "Urinary Retention Diagnosis Starts Within 1 Year After Initial BPH Diagn
     union [ConditionEncounterDiagnosis: "Urinary Retention"]) UrinaryRetention
     with "Initial BPH Diagnosis Starts Within 6 Months Before the Measurement Period" InitialBPHDiagnosis
       such that UrinaryRetention.prevalenceInterval() starts 1 year or less on or after day of start of InitialBPHDiagnosis.prevalenceInterval()
-    where UrinaryRetention.isConfirmedActiveDiagnosis()
+    where UrinaryRetention.verificationStatusIsNotInvalid()
 
 define "Urinary Symptom Score 6 to 12 Months After Initial BPH Diagnosis":
   Last("Urinary Symptom Score Assessment" USSAssessment
       with "Initial BPH Diagnosis Starts Within 6 Months Before the Measurement Period" InitialBPHDiagnosis
-        such that months between start of InitialBPHDiagnosis.prevalenceInterval() and USSAssessment.effectiveDatetime in Interval[6, 12]
+        such that difference in months between start of InitialBPHDiagnosis.prevalenceInterval() and USSAssessment.effectiveDatetime in Interval[6, 12]
       sort by effectiveDatetime
   )
 
@@ -145,7 +143,7 @@ define "Initial BPH Diagnosis Starts Within 6 Months Before the Measurement Peri
   First(([ConditionProblemsHealthConcerns: "Benign prostatic hyperplasia with lower urinary tract symptoms"] 
     union [ConditionEncounterDiagnosis: "Benign prostatic hyperplasia with lower urinary tract symptoms"]) NewBPHDiagnosis
       where NewBPHDiagnosis.prevalenceInterval() starts during Interval[start of "Measurement Period" - 6 months, start of "Measurement Period"]
-        and NewBPHDiagnosis.isConfirmedActiveDiagnosis()
+        and NewBPHDiagnosis.verificationStatusIsNotInvalid()
       sort by start of onset.toInterval()
   )
 
@@ -155,7 +153,7 @@ define "Morbid Obesity Diagnosis On or Before Follow Up USS Assessment":
     with "Urinary Symptom Score 6 to 12 Months After Initial BPH Diagnosis" FollowUpUSSAssessment
       such that MorbidObesityDiagnosis.prevalenceInterval() overlaps "Measurement Period"
         and MorbidObesityDiagnosis.prevalenceInterval() starts on or before FollowUpUSSAssessment.effectiveDatetime
-    where MorbidObesityDiagnosis.isConfirmedActiveDiagnosis()  
+    where MorbidObesityDiagnosis.verificationStatusIsNotInvalid()  
   
 /*
 * @code: Body mass index (BMI) [Ratio] - 39156-5
@@ -170,7 +168,12 @@ define "BMI Exam Result Greater Than or Equal To 40 During Measurement Period an
           and BMIExam.effective.earliest() on or before FollowUpUSSAssessment.effectiveDatetime
       return BMIExam.effective.earliest()
   )
-
-define fluent function isConfirmedActiveDiagnosis(condition Choice<ConditionProblemsHealthConcerns, ConditionEncounterDiagnosis>):
-  condition.isActive()
-    and condition.verificationStatus ~ QICoreCommon."confirmed"
+  
+  define fluent function verificationStatusIsNotInvalid(condition Choice<"ConditionEncounterDiagnosis", "ConditionProblemsHealthConcerns">):
+  condition.verificationStatus is null
+  or not (
+    condition.verificationStatus ~ QICoreCommon."unconfirmed"
+    or condition.verificationStatus ~ QICoreCommon."refuted"
+    or condition.verificationStatus ~ QICoreCommon."entered-in-error"
+  )
+  
