@@ -1,4 +1,4 @@
-library CMS645FHIRBoneDensityProstateCancerAndrogenDeprivationTherapy version '1.5.000'
+library CMS645FHIRBoneDensityPCADTherapy version '1.5.000'
 
 using QICore version '6.0.0'
 
@@ -28,15 +28,11 @@ define "Denominator":
   "Initial Population"
 
 define "Numerator":
-   "Has Baseline DEXA Scan Two Years Prior to the Start of or Less than Three Months After the Start of ADT"
+  "Has Baseline DEXA Scan Two Years Prior to the Start of or Less than Three Months After the Start of ADT"
 
 define "Denominator Exception":
-  false
-  // @commmentedOutReason: Negation issue related to https://github.com/cqframework/cql-execution/issues/296, 
-  //                       which is tied to https://oncprojectracking.healthit.gov/support/browse/BONNIEMAT-1455. 
-  //                       Due to this being the only logic in population, created a 'false' placeholder
-  // exists ( "No Bone Density Scan Ordered Due to Patient Refusal")
-  //   or exists ( "No Bone Density Scan Performed Due to Patient Refusal")
+  exists ( "No Bone Density Scan Ordered Due to Patient Refusal" )
+    or exists ( "No Bone Density Scan Performed Due to Patient Refusal" )
 
 define "SDE Ethnicity":
   SDE."SDE Ethnicity"
@@ -59,12 +55,12 @@ define "Has Baseline DEXA Scan Two Years Prior to the Start of or Less than Thre
           and DEXAOrdered.intent = 'order'
           and DEXAOrdered.doNotPerform is not true
     )
-    union ( [LaboratoryResultObservation: "DEXA Bone Density for Urology Care"] DEXAPerformed
-      with "Order for 12 Months of ADT in 3 Months Before to 9 Months After Start of Measurement Period" OrderTwelveMonthsADT
-        such that DEXAPerformed.effective.toInterval() 3 months or less on or after day of OrderTwelveMonthsADT.authoredOn
-          or DEXAPerformed.effective.toInterval() 2 years or less before day of OrderTwelveMonthsADT.authoredOn
-      where DEXAPerformed.status in { 'final', 'amended', 'corrected' }
-    )
+      union ( [ObservationClinicalResult: "DEXA Bone Density for Urology Care"] DEXAPerformed
+          with "Order for 12 Months of ADT in 3 Months Before to 9 Months After Start of Measurement Period" OrderTwelveMonthsADT
+            such that DEXAPerformed.effective.toInterval ( ) 3 months or less on or after day of OrderTwelveMonthsADT.authoredOn
+              or DEXAPerformed.effective.toInterval ( ) 2 years or less before day of OrderTwelveMonthsADT.authoredOn
+          where DEXAPerformed.status in { 'final', 'amended', 'corrected' }
+      )
   )
 
 define "No Bone Density Scan Ordered Due to Patient Refusal":
@@ -85,7 +81,7 @@ define "First ADT in 3 Months Before to 9 Months After Start of Measurement Peri
       with "Prostate Cancer Diagnosis" ProstateCancer
         such that ADTDateTime during day of ProstateCancer.prevalenceInterval()
           and ADTDateTime during day of Interval[start of "Measurement Period" - 3 months, start of "Measurement Period" + 9 months]
-    sort ascending
+      sort ascending
   )
 
 define "Order for 12 Months of ADT in 3 Months Before to 9 Months After Start of Measurement Period":
@@ -104,7 +100,8 @@ define "Androgen Deprivation Therapy for Urology Care Medication Active Start Da
       )) DrugPeriods
         sort by start of $this
     ),
-    //get the very first event
+
+    //get the very first event as interval
     firstMedicationEvent: First((ADTActive.dosageInstruction.timing dosageTiming
         //returns first event for the specific dosageTiming
         return First(dosageTiming.event dosageTimingEvents
@@ -112,7 +109,7 @@ define "Androgen Deprivation Therapy for Urology Care Medication Active Start Da
         )) firstEvents
         sort ascending
     ),
-    medicationDateTime: NormalizeInterval(firstMedicationEvent, firstMedicationPeriod).earliest()
+    medicationDateTime: Min( { firstMedicationEvent, firstMedicationPeriod.low, firstMedicationPeriod.high } )
     where ADTActive.status in { 'active', 'completed' }
       and ADTActive.intent in { 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order' }
     return medicationDateTime
@@ -124,25 +121,28 @@ define "Androgen Deprivation Therapy for Urology Care Medication Order Start Dat
       )) DrugPeriods
         sort by start of $this
     ),
-    medicationDateTime: NormalizeInterval(ADTOrder.authoredOn, firstMedicationPeriod).earliest()
+    medicationDateTime: Min( { ADTOrder.authoredOn, firstMedicationPeriod.low, firstMedicationPeriod.high })
     where ADTOrder.status in { 'active', 'completed' }
       and ADTOrder.intent in { 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order' }
     return medicationDateTime
 
 define "Has Qualifying Encounter":
   exists ( ["Encounter": "Office Visit"] OfficeVisit
-      where OfficeVisit.period during "Measurement Period"
+      where OfficeVisit.period during day of "Measurement Period"
         and OfficeVisit.status = 'finished'
   )
 
 define "Prostate Cancer Diagnosis":
-  ([ConditionProblemsHealthConcerns: "Prostate Cancer"] 
-    union [ConditionEncounterDiagnosis: "Prostate Cancer"]) ProstateCancer
-    where ProstateCancer.prevalenceInterval() overlaps "Measurement Period"
-      and ProstateCancer.clinicalStatus ~ QICoreCommon."active"
-      and ProstateCancer.verificationStatus ~ QICoreCommon."confirmed"
-
-define function NormalizeInterval(pointInTime DateTime, dateTimeInterval Interval<DateTime>):
-  if pointInTime is not null then Interval[pointInTime, pointInTime]
-    else if dateTimeInterval is not null then dateTimeInterval 
-    else null as Interval<DateTime>
+  ( [ConditionProblemsHealthConcerns: "Prostate Cancer"]
+    union [ConditionEncounterDiagnosis: "Prostate Cancer"] ) ProstateCancer
+    where ProstateCancer.prevalenceInterval ( ) overlaps day of "Measurement Period"
+      and ProstateCancer.verificationStatusIsNotInvalid()
+      
+define fluent function verificationStatusIsNotInvalid(condition Choice<"ConditionEncounterDiagnosis", "ConditionProblemsHealthConcerns">):
+  condition.verificationStatus is null
+  or not (
+    condition.verificationStatus ~ QICoreCommon."unconfirmed"
+    or condition.verificationStatus ~ QICoreCommon."refuted"
+    or condition.verificationStatus ~ QICoreCommon."entered-in-error"
+  )
+  

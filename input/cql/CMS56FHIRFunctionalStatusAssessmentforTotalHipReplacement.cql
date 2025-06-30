@@ -1,4 +1,4 @@
-library CMS56FHIRFunctionalStatusAssessmentforTotalHipReplacement version '1.1.000'
+library CMS56FHIRFuncStatHipReplacement version '1.1.000'
 
 using QICore version '6.0.0'
 
@@ -25,9 +25,6 @@ valueset "Telephone Visits": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.11
 
 code "Activities of daily living score [HOOS]": '72095-3' from "LOINC" display 'Activities of daily living score [HOOS]'
 code "Dead (finding)": '419099009' from "SNOMEDCT" display 'Dead (finding)'
-code "Discharge to healthcare facility for hospice care (procedure)": '428371000124100' from "SNOMEDCT" display 'Discharge to healthcare facility for hospice care (procedure)'
-code "Discharge to home for hospice care (procedure)": '428371000124100' from "SNOMEDCT" display 'Discharge to home for hospice care (procedure)'
-code "Hospice care [Minimum Data Set]": '45755-6' from "LOINC" display 'Hospice care [Minimum Data Set]'
 code "Pain score [HOOS]": '72097-9' from "LOINC" display 'Pain score [HOOS]'
 code "Postoperative follow-up visit, normally included in the surgical package, to indicate that an evaluation and management service was performed during a postoperative period for a reason(s) related to the original procedure": '99024' from "CPT" display 'Postoperative follow-up visit, normally included in the surgical package, to indicate that an evaluation and management service was performed during a postoperative period for a reason(s) related to the original procedure'
 code "PROMIS-10 Global Mental Health (GMH) score T-score": '71969-0' from "LOINC" display 'PROMIS-10 Global Mental Health (GMH) score T-score'
@@ -41,7 +38,6 @@ code "VR-12 Mental component summary (MCS) score - oblique method T-score": '720
 code "VR-12 Mental component summary (MCS) score - orthogonal method T-score": '72028-4' from "LOINC" display 'VR-12 Mental component summary (MCS) score - orthogonal method T-score'
 code "VR-12 Physical component summary (PCS) score - oblique method T-score": '72025-0' from "LOINC" display 'VR-12 Physical component summary (PCS) score - oblique method T-score'
 code "VR-12 Physical component summary (PCS) score - orthogonal method T-score": '72027-6' from "LOINC" display 'VR-12 Physical component summary (PCS) score - orthogonal method T-score'
-code "Yes (qualifier value)": '373066001' from "SNOMEDCT" display 'Yes (qualifier value)'
 
 parameter "Measurement Period" Interval<DateTime>
 
@@ -50,7 +46,7 @@ context Patient
 define "SDE Ethnicity":
   SDE."SDE Ethnicity"
 
-define "SDE Payer Type":
+define "SDE Payer":
   SDE."SDE Payer"
 
 define "SDE Race":
@@ -65,18 +61,18 @@ define "Initial Population":
     and AgeInYearsAt(date from start of "Measurement Period") >= 19
 
 define "Has Qualifying Encounter":
-  exists ((([Encounter: type in "Outpatient Consultation"]
-        union [Encounter: type in "Office Visit"]
+  exists ((([Encounter: "Outpatient Consultation"]
+        union [Encounter: "Office Visit"]
         union ([Encounter] E
-            where exists ((E.type) T
+            where exists ((E.type ) T
                 where T ~ "Postoperative follow-up visit, normally included in the surgical package, to indicate that an evaluation and management service was performed during a postoperative period for a reason(s) related to the original procedure"
-           )
-       )
-        union [Encounter: type in "Telephone Visits"]
-        union [Encounter: type in "Virtual Encounter"]
-   ).isEncounterPerformed()) ValidEncounters
-      where ValidEncounters.period.toInterval() during day of Interval["August 1 Year Prior to the Measurement Period", end of "Measurement Period"]
- )
+            )
+        )
+        union [Encounter: "Telephone Visits"]
+        union [Encounter: "Virtual Encounter"]
+    ).isEncounterPerformedLocal()) ValidEncounters
+      where ValidEncounters.period during day of Interval["August 1 Year Prior to the Measurement Period", end of "Measurement Period"]
+  )
 
 define "August 1 Year Prior to the Measurement Period":
   DateTime((year from start of "Measurement Period" - 1), 8, 1, 0, 0, 0, 0, 0)
@@ -89,7 +85,7 @@ define "November 1 Two Years Prior to the Measurement Period":
   DateTime((year from start of "Measurement Period" - 2), 11, 1, 0, 0, 0, 0, 0)
 
 define "October 31 Year Prior to the Measurement Period":
-  DateTime((year from start of "Measurement Period" - 1), 10, 31, 23, 59, 59, 0, 0)
+  DateTime((year from start of "Measurement Period" - 1), 10, 31, 23, 59, 59, 999, 0)
 
 define "Denominator":
   "Initial Population"
@@ -114,41 +110,41 @@ define "Has Total Hip Arthroplasty with 1 or More Lower Body Fractures":
   exists ("Total Hip Arthroplasty Procedure" THAProcedure
       with ([ConditionEncounterDiagnosis: "Lower Body Fractures Excluding Ankle and Foot"]
         union [ConditionProblemsHealthConcerns: "Lower Body Fractures Excluding Ankle and Foot"]) LowerBodyFracture
-        such that LowerBodyFracture.prevalenceInterval() starts 48 hours or less on or before start of THAProcedure.performed.toInterval()
- )
+        such that LowerBodyFracture.prevalenceInterval() starts 48 hours or less on or before start of THAProcedure.performed.toInterval() 
+  )
 
 define "Has Partial Hip Arthroplasty Procedure":
   exists ((([Procedure: "Partial Arthroplasty of Hip"]).isProcedurePerformed()) PartialTHAProcedure
       with "Total Hip Arthroplasty Procedure" THAProcedure
-        such that PartialTHAProcedure.performed.toInterval() during day of THAProcedure.performed.toInterval()
- )
+        such that PartialTHAProcedure.performed.toInterval() during day of THAProcedure.performed.toInterval() 
+  )
 
 define "Has Revision Hip Arthroplasty Procedure or Implanted Device or Prosthesis Removal Procedure":
-  exists("Total Hip Arthroplasty Procedure" THAProcedure
+  exists ("Total Hip Arthroplasty Procedure" THAProcedure
       with (([Procedure: "Removal, Revision and Supplement Procedures of the Lower Body and Spine"]).isProcedurePerformed()) RevisionTHAProcedure
-        such that RevisionTHAProcedure.performed.toInterval() during day of THAProcedure.performed.toInterval()
- )
+        such that RevisionTHAProcedure.performed.toInterval() during day of THAProcedure.performed.toInterval() 
+  )
 
 define "Has Malignant Neoplasm of Lower and Unspecified Limbs":
   exists (([ConditionProblemsHealthConcerns: "Malignant Neoplasms of Lower and Unspecified Limbs"]
-    union [ConditionEncounterDiagnosis: "Malignant Neoplasms of Lower and Unspecified Limbs"]) MalignantNeoplasm
+      union [ConditionEncounterDiagnosis: "Malignant Neoplasms of Lower and Unspecified Limbs"]) MalignantNeoplasm
       with "Total Hip Arthroplasty Procedure" THAProcedure
-        such that MalignantNeoplasm.prevalenceInterval() overlaps day of THAProcedure.performed.toInterval()
- )
+        such that MalignantNeoplasm.prevalenceInterval() overlaps day of THAProcedure.performed.toInterval() 
+  )
 
 define "Has Mechanical Complication":
   exists (([ConditionEncounterDiagnosis: "Mechanical Complications Excluding Upper Body"]
       union [ConditionProblemsHealthConcerns: "Mechanical Complications Excluding Upper Body"]) MechanicalComplications
       with "Total Hip Arthroplasty Procedure" THAProcedure
-        such that MechanicalComplications.prevalenceInterval() overlaps day of THAProcedure.performed.toInterval()
- )
+        such that MechanicalComplications.prevalenceInterval() overlaps day of THAProcedure.performed.toInterval() 
+  )
 
 define "Has More Than One Elective Primary Total Hip Arthroplasty Performed":
   exists ("Total Hip Arthroplasty Procedure" THAProcedure
       with (([Procedure: "Primary THA Procedure"]).isProcedurePerformed()) ElectiveTHAProcedure
         such that THAProcedure.id !~ ElectiveTHAProcedure.id
           and start of ElectiveTHAProcedure.performed.toInterval() during day of Interval[(start of THAProcedure.performed.toInterval()) - 1 year, (start of THAProcedure.performed.toInterval()) + 1 year]
- )
+  )
 
 define "Death Within 300 Days of the THA Procedure":
   exists "Total Hip Arthroplasty Procedure" THAProcedure
@@ -168,7 +164,7 @@ define "Has THA with Initial and Follow Up HOOS Assessments":
         such that TotalHip starts 90 days or less on or after day of InitialHipAssessmentHOOS
       with "Date HOOS Total Assessment Completed" FollowUpHipAssessmentHOOS
         such that date from FollowUpHipAssessmentHOOS during day of Interval[date from end of TotalHip + 300 days, date from end of TotalHip + 425 days]
- )
+  )
 
 define "Date HOOS Total Assessment Completed":
   from
@@ -181,7 +177,7 @@ define "Date HOOS Total Assessment Completed":
     HOOSSportDate: date from start of HOOSSport.effective.toInterval(),
     HOOSActivityScoreDate: date from start of HOOSActivityScore.effective.toInterval(),
     HOOSSymptomsDate: date from start of HOOSSymptoms.effective.toInterval(),
-    HOOSPainDate: date from start of HOOSPain.effective.toInterval()
+    HOOSPainDate: date from start of HOOSPain.effective.toInterval() 
     where HOOSLifeQualityDate same day as HOOSSportDate
       and (HOOSSport as ObservationScreeningAssessment).value is not null
       and HOOSLifeQualityDate same day as HOOSActivityScoreDate
@@ -200,13 +196,12 @@ define "Has THA with Initial and Follow Up HOOSJr Assessments":
         such that TotalHip starts 90 days or less on or after day of InitialHipAssessment
       with "Date HOOSJr Total Assessment Completed" FollowUpHipAssessment
         such that date from FollowUpHipAssessment during day of Interval[date from end of TotalHip + 300 days, date from end of TotalHip + 425 days]
- )
+  )
 
 define "Date HOOSJr Total Assessment Completed":
   ((([ObservationScreeningAssessment: "Total interval score [HOOSJR]"]).isAssessmentPerformed()) HOOSJr
-    where (HOOSJr as ObservationScreeningAssessment).value is not null
-  ) DocumentedHOOSJr
-    return date from start of DocumentedHOOSJr.effective.toInterval()
+    where (HOOSJr as ObservationScreeningAssessment).value is not null) DocumentedHOOSJr
+    return date from start of DocumentedHOOSJr.effective.toInterval() 
 
 define "Has THA with Initial and Follow Up PROMIS10 Assessments":
   exists (("Total Hip Arthroplasty Procedure" THAProcedure
@@ -215,14 +210,14 @@ define "Has THA with Initial and Follow Up PROMIS10 Assessments":
         such that TotalHip starts 90 days or less on or after day of InitialHipAssessmentPROMIS10
       with "Date PROMIS10 Total Assessment Completed" FollowUpHipAssessmentPROMIS10
         such that date from FollowUpHipAssessmentPROMIS10 during day of Interval[date from end of TotalHip + 300 days, date from end of TotalHip + 425 days]
- )
+  )
 
 define "Date PROMIS10 Total Assessment Completed":
   from
     (([ObservationScreeningAssessment: "PROMIS-10 Global Mental Health (GMH) score T-score"]).isAssessmentPerformed()) PROMIS10MentalScore,
     (([ObservationScreeningAssessment: "PROMIS-10 Global Physical Health (GPH) score T-score"]).isAssessmentPerformed()) PROMIS10PhysicalScore
     let PROMIS10MentalScoreDate: date from start of PROMIS10MentalScore.effective.toInterval(),
-    PROMIS10PhysicalScoreDate: date from start of PROMIS10PhysicalScore.effective.toInterval()
+    PROMIS10PhysicalScoreDate: date from start of PROMIS10PhysicalScore.effective.toInterval() 
     where PROMIS10MentalScoreDate same day as PROMIS10PhysicalScoreDate
       and (PROMIS10PhysicalScore as ObservationScreeningAssessment).value is not null
       and (PROMIS10MentalScore as ObservationScreeningAssessment).value is not null
@@ -235,14 +230,14 @@ define "Has THA with Initial and Follow Up VR12 Oblique Assessments":
         such that TotalHip starts 90 days or less on or after day of InitialHipAssessmentOblique
       with "Date VR12 Oblique Total Assessment Completed" FollowUpHipAssessmentOblique
         such that date from FollowUpHipAssessmentOblique during day of Interval[date from end of TotalHip + 300 days, date from end of TotalHip + 425 days]
- )
+  )
 
 define "Date VR12 Oblique Total Assessment Completed":
   from
     (([ObservationScreeningAssessment: "VR-12 Mental component summary (MCS) score - oblique method T-score"]).isAssessmentPerformed()) VR12MentalAssessment,
     (([ObservationScreeningAssessment: "VR-12 Physical component summary (PCS) score - oblique method T-score"]).isAssessmentPerformed()) VR12PhysicalAssessment
     let VR12MentalAssessmentDate: date from start of VR12MentalAssessment.effective.toInterval(),
-    VR12PhysicalAssessmentDate: date from start of VR12PhysicalAssessment.effective.toInterval()
+    VR12PhysicalAssessmentDate: date from start of VR12PhysicalAssessment.effective.toInterval() 
     where VR12MentalAssessmentDate same day as VR12PhysicalAssessmentDate
       and (VR12MentalAssessment as ObservationScreeningAssessment).value is not null
       and (VR12PhysicalAssessment as ObservationScreeningAssessment).value is not null
@@ -255,15 +250,19 @@ define "Has THA with Initial and Follow Up VR12 Orthogonal Assessments":
         such that TotalHip starts 90 days or less on or after day of InitialHipAssessmentOrthogonal
       with "Date VR12 Orthogonal Total Assessment Completed" FollowUpHipAssessmentOrthogonal
         such that date from FollowUpHipAssessmentOrthogonal during day of Interval[date from end of TotalHip + 300 days, date from end of TotalHip + 425 days]
- )
+  )
 
 define "Date VR12 Orthogonal Total Assessment Completed":
   from
     (([ObservationScreeningAssessment: "VR-12 Mental component summary (MCS) score - orthogonal method T-score"]).isAssessmentPerformed()) VR12MentalAssessment,
     (([ObservationScreeningAssessment: "VR-12 Physical component summary (PCS) score - orthogonal method T-score"]).isAssessmentPerformed()) VR12PhysicalAssessment
     let VR12MentalAssessmentDate: date from start of VR12MentalAssessment.effective.toInterval(),
-    VR12PhysicalAssessmentDate: date from start of VR12PhysicalAssessment.effective.toInterval()
+    VR12PhysicalAssessmentDate: date from start of VR12PhysicalAssessment.effective.toInterval() 
     where VR12MentalAssessmentDate same day as VR12PhysicalAssessmentDate
       and (VR12MentalAssessment as ObservationScreeningAssessment).value is not null
       and (VR12PhysicalAssessment as ObservationScreeningAssessment).value is not null
     return Max({ VR12MentalAssessmentDate, VR12PhysicalAssessmentDate })
+
+define fluent function isEncounterPerformedLocal(Enc List<Encounter>):
+  Enc E
+    where E.status in { 'finished', 'in-progress' }
