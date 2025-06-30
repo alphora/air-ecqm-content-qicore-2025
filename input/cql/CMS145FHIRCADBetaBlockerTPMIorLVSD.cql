@@ -128,6 +128,7 @@ define "Has Consecutive Heart Rates Less than 50 with Qualifying CAD Encounter a
       "Qualifying CAD Encounter and History of Moderate or Severe LVSD" CADEncounterModerateOrSevereLVSD
       let PriorHeartRateExam: Last(["USCoreHeartRateProfile"] MostRecentPriorHeartRateExam
           where MostRecentPriorHeartRateExam.effective.toInterval() during CADEncounterModerateOrSevereLVSD.period
+            and MostRecentPriorHeartRateExam.status in { 'final', 'amended', 'corrected' }
             and MostRecentPriorHeartRateExam.effective.toInterval() before HeartRateExam.effective.toInterval()
           sort by start of effective.toInterval()
       )
