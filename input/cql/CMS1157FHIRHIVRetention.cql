@@ -53,21 +53,23 @@ define "Encounter During Measurement Period With HIV":
       with ( ["ConditionProblemsHealthConcerns": "HIV"] 
             union ["ConditionEncounterDiagnosis": "HIV"] ) HIVDiagnosis
         such that ValidEncounter.period during day of "Measurement Period"
+          and ValidEncounter.status = 'finished'
           and HIVDiagnosis.prevalenceInterval() starts on or before day of start of ValidEncounter.period
-          and HIVDiagnosis.isActive ()
+          and HIVDiagnosis.verificationStatusIsNotInvalid()
   )
 
 define "Has Active HIV Diagnosis Starts On or Before First 240 Days of Measurement Period":
   exists ( ( ["ConditionProblemsHealthConcerns": "HIV"] 
             union ["ConditionEncounterDiagnosis": "HIV"] ) HIVDx
       where HIVDx.prevalenceInterval() starts on or before day of ( start of "Measurement Period" + 240 days )
-      and HIVDx.isActive ()
+        and HIVDx.verificationStatusIsNotInvalid()
   )
 
 define "Has One Encounter With HIV and One Viral Load Test At Least 90 Days Apart":
   exists ( "Encounter During Measurement Period With HIV" ) EncounterWithHIV
     with ["LaboratoryResultObservation": "HIV Viral Load Tests"] ViralLoadTest
-      such that ViralLoadTest.effective.toInterval ( ) during day of "Measurement Period"
+      such that ViralLoadTest.status in { 'final', 'amended', 'corrected' }
+      and ViralLoadTest.effective.toInterval ( ) during day of "Measurement Period"
         and ( ( ViralLoadTest.effective.toInterval ( ) starts 90 days or more after day of 
             end of EncounterWithHIV.period
           )
@@ -98,6 +100,14 @@ define "Has Two Encounters With HIV At Least 90 Days Apart":
             and AnotherEncounterWithHIV.period starts 90 days or more after day of 
             end of EncounterWithHIV.period
 
+define fluent function verificationStatusIsNotInvalid(condition Choice<"ConditionEncounterDiagnosis", "ConditionProblemsHealthConcerns">):
+  condition.verificationStatus is null
+  or not (
+    condition.verificationStatus ~ QICoreCommon."unconfirmed"
+    or condition.verificationStatus ~ QICoreCommon."refuted"
+    or condition.verificationStatus ~ QICoreCommon."entered-in-error"
+  )
+  
 define "SDE Ethnicity":
   SDE."SDE Ethnicity"
 
