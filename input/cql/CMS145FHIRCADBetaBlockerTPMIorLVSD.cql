@@ -102,9 +102,11 @@ define "Has Cardiac Pacer Device Implanted with Qualifying CAD Encounter and Pri
 
 define "Qualifying CAD Encounter and Prior MI":
   "Qualifying CAD Encounter" EncounterWithCADProxy
-    with [ConditionProblemsHealthConcerns: "Myocardial Infarction"] MyocardialInfarction
+    with ([ConditionProblemsHealthConcerns: "Myocardial Infarction"]
+     union [ConditionEncounterDiagnosis: "Myocardial Infarction"]) MyocardialInfarction
       such that MyocardialInfarction.prevalenceInterval ( ) starts 3 years or less before day of start of EncounterWithCADProxy.period
         and not exists AHA."Moderate or Severe LVSD Findings"
+        and MyocardialInfarction.isConfirmedActiveDiagnosis()
 
 define "Denominator 1":
   "Initial Population"
@@ -130,6 +132,7 @@ define "Has Consecutive Heart Rates Less than 50 with Qualifying CAD Encounter a
           sort by start of effective.toInterval()
       )
       where HeartRateExam.effective.toInterval ( ) during CADEncounterModerateOrSevereLVSD.period
+        and HeartRateExam.status in { 'final', 'amended', 'corrected' }
         and HeartRateExam.value < 50 '/min'
         and PriorHeartRateExam.value < 50 '/min'
   )
@@ -201,7 +204,8 @@ define "Qualifying Encounter During Measurement Period":
 
 define "Coronary Artery Disease Encounter":
   "Outpatient Encounter During Measurement Period" ValidQualifyingEncounter
-    with [ConditionProblemsHealthConcerns: "Coronary Artery Disease No MI"] CoronaryArteryDisease
+    with ([ConditionProblemsHealthConcerns: "Coronary Artery Disease No MI"]
+     union [ConditionEncounterDiagnosis: "Coronary Artery Disease No MI"]) CoronaryArteryDisease
       such that CoronaryArteryDisease.overlapsDayOfEncounter ( ValidQualifyingEncounter )
 
 define "Has Arrhythmia with Qualifying CAD Encounter and History of Moderate or Severe LVSD":
@@ -271,10 +275,9 @@ define "Has Hypotension with Qualifying CAD Encounter and History of Moderate or
       where HypotensionDiagnosis.overlapsDayOfEncounter ( "Qualifying CAD Encounter and History of Moderate or Severe LVSD" )
   )
 
-
-
 define "Has Hypotension with Qualifying CAD Encounter and Prior MI":
-  exists ( [ConditionProblemsHealthConcerns: "Hypotension"] HypotensionDiagnosis
+  exists (( [ConditionProblemsHealthConcerns: "Hypotension"]
+    union [ConditionEncounterDiagnosis: "Hypotension"]) HypotensionDiagnosis
       where HypotensionDiagnosis.overlapsDayOfEncounter ( "Qualifying CAD Encounter and Prior MI" )
   )
 
@@ -359,13 +362,13 @@ define "Qualifying CAD Encounter":
 
 define fluent function overlapsDayOfEncounter(Diagnosis ConditionProblemsHealthConcerns, EncounterList List<Encounter>):
   AnyTrue(EncounterList Visit
-      where Diagnosis.isActive()
+      where Diagnosis.isConfirmedActiveDiagnosis()
       return Diagnosis.prevalenceInterval() overlaps day of Visit.period
   )
 
 define fluent function overlapsDayOfEncounter(Diagnosis ConditionProblemsHealthConcerns, TheEncounter Encounter):
   TheEncounter Visit
-    where Diagnosis.isConfirmedActiveDiagnosis ( )
+    where Diagnosis.isConfirmedActiveDiagnosis()
     return Diagnosis.prevalenceInterval ( ) overlaps day of Visit.period
 
 define fluent function overlapsAfterDayOfEncounter(Event Choice<AllergyIntolerance, ConditionProblemsHealthConcerns>, EncounterList List<Encounter>):
@@ -375,9 +378,9 @@ define fluent function overlapsAfterDayOfEncounter(Event Choice<AllergyIntoleran
           and(Event.clinicalStatus is null
               or Event.clinicalStatus ~ QICoreCommon."allergy-active"
           )
+          and Event.isConfirmedActiveDiagnosis()
         when Event is ConditionProblemsHealthConcerns then Event.isConfirmedActiveDiagnosis()
           and Event.prevalenceInterval() overlaps after day of Visit.period
-          and Event.verificationStatus ~ QICoreCommon."confirmed" 
         else false 
       end
   )
