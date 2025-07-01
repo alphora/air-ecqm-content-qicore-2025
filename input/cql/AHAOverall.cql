@@ -274,4 +274,3 @@ define fluent function overlapsAfterHeartFailureOutpatientEncounter(HeartRateObs
              where HeartRateObservation.effective.toInterval() overlaps after day of ModerateOrSevereLVSDHFOutpatientEncounter.period
                and HeartRateObservation.status in {'final', 'amended', 'corrected'}
           )
-          
