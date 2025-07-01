@@ -5,7 +5,7 @@ using QICore version '6.0.0'
 include FHIRHelpers version '4.4.000' called FHIRHelpers
 include SupplementalDataElements version '5.1.000' called SDE
 include QICoreCommon version '4.0.000' called QICoreCommon
-include AHAOverall version '3.2.000' called AHA
+include AHAOverall version '3.3.000' called AHA
 
 codesystem "SNOMEDCT": 'http://snomed.info/sct'
 
@@ -379,7 +379,8 @@ define fluent function overlapsAfterDayOfEncounter(Event Choice<AllergyIntoleran
           and(Event.clinicalStatus is null
               or Event.clinicalStatus ~ QICoreCommon."allergy-active"
           )
-          and Event.isConfirmedActiveDiagnosis()
+          and (Event.verificationStatus is null
+          or Event.verificationStatus ~ QICoreCommon."allergy-confirmed")
         when Event is ConditionProblemsHealthConcerns then Event.isConfirmedActiveDiagnosis()
           and Event.prevalenceInterval() overlaps after day of Visit.period
         else false 
