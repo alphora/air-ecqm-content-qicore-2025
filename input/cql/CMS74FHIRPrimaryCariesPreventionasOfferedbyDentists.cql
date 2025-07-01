@@ -23,7 +23,7 @@ define "Initial Population":
     and exists ( "Qualifying Encounters" )
 
 define "Qualifying Encounters":
-  ( ( [Encounter: "Clinical Oral Evaluation"] ).isEncounterPerformed() ) ValidEncounter
+  ( ( [Encounter: "Clinical Oral Evaluation"] ).isEncounterPerformedLocal() ) ValidEncounter
     where ValidEncounter.period during day of "Measurement Period"
 
 define "Denominator":
@@ -38,6 +38,10 @@ define "Numerator":
       return distinct date from 
       end of FluorideApplication.performed.toInterval()
   ) >= 2
+
+define fluent function isEncounterPerformedLocal(Enc List<Encounter>):
+  Enc E
+    where E.status in {'finished', 'in-progress'}
 
 define "Stratification 1":
   AgeInYearsAt(date from start of "Measurement Period") in Interval[1, 5]
