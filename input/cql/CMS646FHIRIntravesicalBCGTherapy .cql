@@ -1,4 +1,4 @@
-library CMS646FHIRIntravesicalBacillusCalmetteGuerinForBladderCancer version '1.5.000'
+library CMS646FHIRIntravesicalBCGTherapy version '1.5.000'
 
 using QICore version '6.0.0'
 
@@ -48,12 +48,8 @@ define "Denominator Exclusion":
     or "Has Excluding HIV, Immunocompromised Conditions or Mixed Histology Before Staging"
     or "Has Excluding Chemotherapy or Radiotherapy Procedure Before Staging"
 
-/*
-@commentedOut: exists "BCG Not Available Within 6 Months After Bladder Cancer Staging"
-@commentedOutReason: Negation issue related to https://github.com/cqframework/cql-execution/issues/296, which is tied to https://oncprojectracking.healthit.gov/support/browse/BONNIEMAT-1455. Due to this being the only logic in this population added 'false' as a placeholder.
-*/
 define "Denominator Exception":
-  false
+  exists "BCG Not Available Within 6 Months After Bladder Cancer Staging"
 
 define "Numerator":
   "First BCG Administered" is not null
@@ -80,8 +76,16 @@ define "Acute Tuberculosis Diagnosis":
   ([ConditionProblemsHealthConcerns: "Tuberculosis for Urology Care"] 
     union [ConditionEncounterDiagnosis: "Tuberculosis for Urology Care"]) ActiveTuberculosis
     with "First Bladder Cancer Staging Procedure" FirstBladderCancerStaging
-      such that ActiveTuberculosis.prevalenceInterval() overlaps after day of FirstBladderCancerStaging.performed.toInterval()
-    where ActiveTuberculosis.isConfirmedActiveDiagnosis()
+      such that (
+          (ActiveTuberculosis.prevalenceInterval() overlaps after day of FirstBladderCancerStaging.performed.toInterval())
+          or (ActiveTuberculosis.onset.toInterval() overlaps after day of FirstBladderCancerStaging.performed.toInterval()
+            and (
+                (ActiveTuberculosis.abatement.toInterval() overlaps after day of FirstBladderCancerStaging.performed.toInterval()) 
+                or (ActiveTuberculosis.abatement is null)
+            )
+          )
+      )
+    where ActiveTuberculosis.verificationStatusIsNotInvalid()
 
 define "Cystectomy Done":
   [Procedure: "Cystectomy for Urology Care"] Cystectomy
@@ -97,8 +101,11 @@ define "Has Excluding HIV, Immunocompromised Conditions or Mixed Histology Befor
       union ([ConditionProblemsHealthConcerns: "Mixed Histology Urothelial Cell Carcinoma for Urology Care"]
         union [ConditionEncounterDiagnosis: "Mixed Histology Urothelial Cell Carcinoma for Urology Care"])) ExclusionDiagnosis
       with "First Bladder Cancer Staging Procedure" FirstBladderCancerStaging
-        such that ExclusionDiagnosis.prevalenceInterval() starts on or before day of start of FirstBladderCancerStaging.performed.toInterval()
-      where ExclusionDiagnosis.isConfirmedActiveDiagnosis()
+        such that (
+            (ExclusionDiagnosis.prevalenceInterval() starts on or before day of start of FirstBladderCancerStaging.performed.toInterval())
+            or (ExclusionDiagnosis.onset.toInterval() starts on or before day of start of FirstBladderCancerStaging.performed.toInterval())
+        )
+      where ExclusionDiagnosis.verificationStatusIsNotInvalid()
   )
 
 define "Has Excluding Chemotherapy or Radiotherapy Procedure Before Staging":
@@ -116,7 +123,7 @@ define "Has Excluding Chemotherapy or Radiotherapy Procedure Before Staging":
       union ( [Procedure: "Combined radiotherapy (procedure)"] ExclusionProcedure
           with "First Bladder Cancer Staging Procedure" FirstBladderCancerStaging
             such that ExclusionProcedure.performed.toInterval() starts 6 months or less before FirstBladderCancerStaging.performed.toInterval()
-          where ExclusionProcedure.status = 'completed'
+          where ExclusionProcedure.status in {'completed', 'in-progress'}
       )
   )
 
@@ -130,7 +137,7 @@ define "First Bladder Cancer Staging Procedure":
 
 define "Has Qualifying Encounter":
   exists ( [Encounter: "Office Visit"] ValidEncounter
-      where ValidEncounter.period during "Measurement Period"
+      where ValidEncounter.period during day of "Measurement Period"
         and ValidEncounter.class !~ "virtual"
         and ValidEncounter.status = 'finished'
   )
@@ -138,8 +145,12 @@ define "Has Qualifying Encounter":
 define "Bladder Cancer Diagnosis":
   ([ConditionProblemsHealthConcerns: "Bladder Cancer for Urology Care"] 
     union [ConditionEncounterDiagnosis: "Bladder Cancer for Urology Care"]) BladderCancer
-    where BladderCancer.prevalenceInterval() starts before day of end of "Measurement Period"
-      and BladderCancer.isConfirmedActiveDiagnosis()
+    where 
+      (
+        BladderCancer.prevalenceInterval() starts before day of end of "Measurement Period"
+        or BladderCancer.onset before day of end of "Measurement Period"
+      )
+      and BladderCancer.verificationStatusIsNotInvalid()
 
 define "BCG Not Available Within 6 Months After Bladder Cancer Staging":
   [MedicationAdministrationNotDone: "Bacillus Calmette Guerin for Urology Care"] BCGNotGiven
@@ -197,7 +208,10 @@ define "Immunosuppressive Drugs":
       such that medicationPeriod starts on or before day of start of FirstBladderCancerStaging.performed.toInterval()
     where ImmunosuppressiveDrugs.status in { 'active', 'completed' }
       and ImmunosuppressiveDrugs.intent = 'order'
-
-define fluent function isConfirmedActiveDiagnosis(Condition Choice<ConditionProblemsHealthConcerns, ConditionEncounterDiagnosis>):
-  Condition.isActive()
-    and Condition.verificationStatus ~ QICoreCommon."confirmed"
+      
+define fluent function verificationStatusIsNotInvalid(condition Choice<"ConditionEncounterDiagnosis", "ConditionProblemsHealthConcerns">):
+  condition.verificationStatus is null
+    or not ( condition.verificationStatus ~ QICoreCommon."unconfirmed"
+        or condition.verificationStatus ~ QICoreCommon."refuted"
+        or condition.verificationStatus ~ QICoreCommon."entered-in-error"
+    )
