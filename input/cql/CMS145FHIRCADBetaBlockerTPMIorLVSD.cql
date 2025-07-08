@@ -399,4 +399,3 @@ define fluent function authoredDuringDayOfEncounter(Order Choice<MedicationReque
         else false 
       end
   )
-  
