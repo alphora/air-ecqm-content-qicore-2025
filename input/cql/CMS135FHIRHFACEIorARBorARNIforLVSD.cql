@@ -1,4 +1,4 @@
-library CMS135FHIRACEIorARBorARNIforHF version '0.4.000'
+library CMS135FHIRACEIorARBorARNIforHF version '0.4.001'
 
 using QICore version '6.0.0'
 using USCore version '6.1.0'
@@ -6,7 +6,7 @@ using USCore version '6.1.0'
 include FHIRHelpers version '4.4.000' called FHIRHelpers
 include SupplementalDataElements version '5.1.000' called SDE
 include QICoreCommon version '4.0.000' called QICoreCommon
-include AHAOverall version '3.2.000' called AHA
+include AHAOverall version '4.0.000' called AHA
 
 codesystem "SNOMEDCT": 'http://snomed.info/sct'
 
