@@ -1,0 +1,31 @@
+{
+  "resourceType": "Condition",
+  "id": "bf98af64-03fd-4214-a2fb-c047b0fd3332",
+  "meta": {
+    "profile": [ "http://hl7.org/fhir/us/qicore/StructureDefinition/qicore-condition-problems-health-concerns" ]
+  },
+  "clinicalStatus": {
+    "coding": [ {
+      "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+      "code": "active"
+    } ]
+  },
+  "category": [ {
+    "coding": [ {
+      "system": "http://terminology.hl7.org/CodeSystem/condition-category",
+      "code": "problem-list-item",
+      "display": "Problem List Item"
+    } ]
+  } ],
+  "code": {
+    "coding": [ {
+      "system": "http://snomed.info/sct",
+      "code": "313436004",
+      "display": "Type II diabetes mellitus without complication (disorder)"
+    } ]
+  },
+  "subject": {
+    "reference": "Patient/893c0fc6-ac39-4c90-8dbb-c4645a65bb06"
+  },
+  "onsetDateTime": "1990-11-25T00:00:00+00:00"
+}
