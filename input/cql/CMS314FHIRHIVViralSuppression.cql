@@ -69,6 +69,7 @@ define "Has Qualifying Encounter During First 240 Days of Measurement Period":
     union ["Encounter": "Telephone Visits"]
     union ["Encounter": "Preventive Care Services Other"] ) QualifyingEncounter
     where QualifyingEncounter.period during day of Interval[start of "Measurement Period", start of "Measurement Period" + 240 days]
+      and QualifyingEncounter.status = 'finished'
 
 define "Numerator":
   "Most Recent Viral Load Test During Measurement Period".value < 200 '{copies}/mL'
