@@ -1,16 +1,17 @@
-library CMS347FHIRStatinPreventionTreatmentCVD version '0.3.000'
+library CMS347FHIRStatinPreventionTxCVD version '0.3.001'
 
 using QICore version '6.0.0'
 
 include FHIRHelpers version '4.4.000' called FHIRHelpers
-include Hospice version '6.15.000' called Hospice
-include PalliativeCare version '1.15.000' called PalliativeCare
+include Hospice version '6.18.000' called Hospice
+include PalliativeCare version '1.18.000' called PalliativeCare
 include QICoreCommon version '4.0.000' called QICoreCommon
 include SupplementalDataElements version '5.1.000' called SDE
 include CumulativeMedicationDuration version '6.0.000' called CMD
 
 codesystem "ICD10CM": 'http://hl7.org/fhir/sid/icd-10-cm'
 codesystem "LOINC": 'http://loinc.org'
+codesystem "CPT": 'http://www.ama-assn.org/go/cpt'
 
 valueset "Annual Wellness Visit": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1240'
 valueset "Atherosclerosis and Peripheral Arterial Disease": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1047.21'
@@ -49,6 +50,7 @@ valueset "Telemedicine Services": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840
 code "Cardiovascular disease 10Y risk [Likelihood]": '99055-6' from "LOINC" display 'Cardiovascular disease 10Y risk [Likelihood]'
 code "Cardiovascular disease 10Y risk [Likelihood] ACC-AHA Pooled Cohort by Goff 2013": '79423-0' from "LOINC" display 'Cardiovascular disease 10Y risk [Likelihood] ACC-AHA Pooled Cohort by Goff 2013'
 code "Subsequent non-ST elevation (NSTEMI) myocardial infarction": 'I22.2' from "ICD10CM" display 'Subsequent non-ST elevation (NSTEMI) myocardial infarction'
+code "Unlisted preventive medicine service": '99429' from "CPT" display 'Unlisted preventive medicine service'
 
 parameter "Measurement Period" Interval<DateTime>
 
@@ -56,19 +58,19 @@ context Patient
 
 define "Initial Population 1":
   exists "ASCVD Diagnosis or Procedure before End of Measurement Period"
-    and exists "Qualifying Encounter during day of Measurement Period"
+    and exists "Qualifying Encounter During Day of Measurement Period"
 
 define "Initial Population 2":
   "Patients Aged 20 to 75 with LDL Cholesterol Result Greater than or Equal to 190 or Hypercholesterolemia without ASCVD"
-    and exists "Qualifying Encounter during day of Measurement Period"
+    and exists "Qualifying Encounter During Day of Measurement Period"
 
 define "Initial Population 3":
   "Patients Aged 40 to 75 Years with Diabetes without ASCVD or LDL Greater than 190 or Hypercholesterolemia"
-    and exists "Qualifying Encounter during day of Measurement Period"
+    and exists "Qualifying Encounter During Day of Measurement Period"
 
 define "Initial Population 4":
   "Patients Age 40 to 75 Years and have a 10 Year CVD Risk of High without ASCVD and High LDL and Diabetes"
-    and exists "Qualifying Encounter during day of Measurement Period"
+    and exists "Qualifying Encounter During Day of Measurement Period"
 
 define "Denominator 1":
   "Initial Population 1"
@@ -86,7 +88,7 @@ define "Denominator Exclusions":
   exists ( ( [ConditionProblemsHealthConcerns: "Breastfeeding"]
       union [ConditionProblemsHealthConcerns: "Rhabdomyolysis"] ) ExclusionDiagnosis
       where ExclusionDiagnosis.prevalenceInterval ( ) overlaps day of "Measurement Period"
-        and ExclusionDiagnosis.verificationStatusIsNotInvalid ( )
+        and ExclusionDiagnosis.isVerified ( )
   )
 
 define "Denominator Exceptions":
@@ -111,7 +113,7 @@ define "ASCVD Diagnosis or Procedure before End of Measurement Period":
       union [ConditionProblemsHealthConcerns: "Ischemic Heart Disease or Other Related Diagnoses"]
       union [ConditionProblemsHealthConcerns: "Stable and Unstable Angina"] ) ASCVDDiagnosis
       where ASCVDDiagnosis.prevalenceInterval ( ) starts on or before day of end of "Measurement Period"
-        and ASCVDDiagnosis.verificationStatusIsNotInvalid ( )
+        and ASCVDDiagnosis.isVerified ( )
   )
     union ( ( [Procedure: "PCI"]
         union [Procedure: "CABG Surgeries"]
@@ -135,13 +137,13 @@ define "Has Allergy to Statin":
 define "Has Diabetes Diagnosis":
   exists ( [ConditionProblemsHealthConcerns: "Diabetes"] DiabetesDiagnosis
       where DiabetesDiagnosis.prevalenceInterval ( ) overlaps day of "Measurement Period"
-        and DiabetesDiagnosis.verificationStatusIsNotInvalid ( )
+        and DiabetesDiagnosis.isVerified ( )
   )
 
 define "Has ESRD Diagnosis":
   exists ( [ConditionProblemsHealthConcerns: "End Stage Renal Disease"] ESRD
       where ESRD.prevalenceInterval ( ) overlaps day of "Measurement Period"
-        and ESRD.verificationStatusIsNotInvalid ( )
+        and ESRD.isVerified ( )
   )
 
 define "Has Hepatitis or Liver Disease Diagnosis":
@@ -149,14 +151,14 @@ define "Has Hepatitis or Liver Disease Diagnosis":
       union [ConditionProblemsHealthConcerns: "Hepatitis B"]
       union [ConditionProblemsHealthConcerns: "Liver Disease"] ) HepatitisLiverDisease
       where HepatitisLiverDisease.prevalenceInterval ( ) overlaps day of "Measurement Period"
-        and HepatitisLiverDisease.verificationStatusIsNotInvalid ( )
+        and HepatitisLiverDisease.isVerified ( )
   )
 
 define "Has Medical Reason for Not Ordering Statin Therapy":
   exists ( ( [MedicationNotRequested: "Low Intensity Statin Therapy"]
       union [MedicationNotRequested: "Moderate Intensity Statin Therapy"]
       union [MedicationNotRequested: "High Intensity Statin Therapy"] ) NoStatinTherapyOrdered
-      with "Qualifying Encounter during day of Measurement Period" QualifyingEncounter
+      with "Qualifying Encounter During Day of Measurement Period" QualifyingEncounter
         such that NoStatinTherapyOrdered.authoredOn during day of QualifyingEncounter.period
           and NoStatinTherapyOrdered.status in { 'active', 'completed' }
           and NoStatinTherapyOrdered.reasonCode in "Medical Reason"
@@ -165,13 +167,13 @@ define "Has Medical Reason for Not Ordering Statin Therapy":
 define "Has Statin Associated Muscle Symptoms":
   exists ( [ConditionProblemsHealthConcerns: "Statin Associated Muscle Symptoms"] StatinMuscleSymptom
       where StatinMuscleSymptom.prevalenceInterval ( ) overlaps day of "Measurement Period"
-        and StatinMuscleSymptom.verificationStatusIsNotInvalid ( )
+        and StatinMuscleSymptom.isVerified ( )
   )
 
 define "Hypercholesterolemia Diagnosis":
   ( [ConditionProblemsHealthConcerns: "Familial Hypercholesterolemia"] Hypercholesterolemia
       where Hypercholesterolemia.prevalenceInterval ( ) starts on or before day of end of "Measurement Period"
-        and Hypercholesterolemia.verificationStatusIsNotInvalid ( )
+        and Hypercholesterolemia.isVerified ( )
   )
 
 define "LDL Result Greater Than or Equal To 190":
@@ -214,7 +216,7 @@ define "Patients Age 40 to 75 Years and have a 10 Year CVD Risk of High without 
         or "Has Diabetes Diagnosis"
     )
 
-define "Qualifying Encounter during day of Measurement Period":
+define "Qualifying Encounter During Day of Measurement Period":
   ( [Encounter: "Annual Wellness Visit"]
     union [Encounter: "Office Visit"]
     union [Encounter: "Outpatient Consultation"]
@@ -223,7 +225,8 @@ define "Qualifying Encounter during day of Measurement Period":
     union [Encounter: "Preventive Care Services Individual Counseling"]
     union [Encounter: "Preventive Care Services Initial Office Visit, 18 and Up"]
     union [Encounter: "Preventive Care Services Other"]
-    union [Encounter: "Telemedicine Services"] ) QualifyingEncounter
+    union [Encounter: "Telemedicine Services"]
+    union [Encounter: "Preventive Care Services Other"] ) QualifyingEncounter
     where QualifyingEncounter.period during day of "Measurement Period"
       and QualifyingEncounter.status = 'finished'
 
@@ -243,12 +246,12 @@ define "Ten Year CVD Risk is High":
         and AtRiskCVD.status in { 'final', 'amended', 'corrected' }
   )
 
-define fluent function verificationStatusIsNotInvalid(condition Choice<"ConditionEncounterDiagnosis", "ConditionProblemsHealthConcerns">):
-  condition.verificationStatus is null
-    or not ( condition.verificationStatus ~ QICoreCommon."unconfirmed"
-        or condition.verificationStatus ~ QICoreCommon."refuted"
-        or condition.verificationStatus ~ QICoreCommon."entered-in-error"
-    )
+define fluent function isVerified(condition Choice<ConditionEncounterDiagnosis, ConditionProblemsHealthConcerns>):
+  condition.verificationStatus is not null implies ( condition.verificationStatus ~ QICoreCommon."confirmed"
+      or condition.verificationStatus ~ QICoreCommon."unconfirmed"
+      or condition.verificationStatus ~ QICoreCommon."provisional"
+      or condition.verificationStatus ~ QICoreCommon."differential"
+  )
 
 define "SDE Ethnicity":
   SDE."SDE Ethnicity"
