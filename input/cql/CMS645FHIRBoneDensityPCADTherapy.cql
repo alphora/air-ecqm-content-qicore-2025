@@ -1,4 +1,4 @@
-library CMS645FHIRBoneDensityPCADTherapy version '1.5.000'
+library CMS645FHIRBoneDensityPCADTherapy version '1.5.001'
 
 using QICore version '6.0.0'
 
@@ -53,7 +53,6 @@ define "Has Baseline DEXA Scan Two Years Prior to the Start of or Less than Thre
             or DEXAOrdered.authoredOn 2 years or less before day of OrderTwelveMonthsADT.authoredOn
         where DEXAOrdered.status in { 'active', 'completed' }
           and DEXAOrdered.intent = 'order'
-          and DEXAOrdered.doNotPerform is not true
     )
       union ( [ObservationClinicalResult: "DEXA Bone Density for Urology Care"] DEXAPerformed
           with "Order for 12 Months of ADT in 3 Months Before to 9 Months After Start of Measurement Period" OrderTwelveMonthsADT
@@ -91,7 +90,6 @@ define "Order for 12 Months of ADT in 3 Months Before to 9 Months After Start of
         and OrderTwelveMonthADT.authoredOn during day of Interval[start of "Measurement Period" - 3 months, start of "Measurement Period" + 9 months]
         and OrderTwelveMonthADT.status in { 'active', 'completed' }
         and OrderTwelveMonthADT.intent = 'order'
-        and OrderTwelveMonthADT.doNotPerform is not true
 
 define "Androgen Deprivation Therapy for Urology Care Medication Active Start Dates":
   [MedicationRequest: "Androgen Deprivation Therapy for Urology Care"] ADTActive
@@ -102,14 +100,18 @@ define "Androgen Deprivation Therapy for Urology Care Medication Active Start Da
     ),
 
     //get the very first event as interval
+    
     firstMedicationEvent: First((ADTActive.dosageInstruction.timing dosageTiming
         //returns first event for the specific dosageTiming
+        
         return First(dosageTiming.event dosageTimingEvents
             sort ascending
         )) firstEvents
         sort ascending
     ),
-    medicationDateTime: Min( { firstMedicationEvent, firstMedicationPeriod.low, firstMedicationPeriod.high } )
+    medicationDateTime: Min({ firstMedicationEvent, start of firstMedicationPeriod, 
+      end of firstMedicationPeriod }
+    )
     where ADTActive.status in { 'active', 'completed' }
       and ADTActive.intent in { 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order' }
     return medicationDateTime
@@ -121,7 +123,9 @@ define "Androgen Deprivation Therapy for Urology Care Medication Order Start Dat
       )) DrugPeriods
         sort by start of $this
     ),
-    medicationDateTime: Min( { ADTOrder.authoredOn, firstMedicationPeriod.low, firstMedicationPeriod.high })
+    medicationDateTime: Min({ ADTOrder.authoredOn, start of firstMedicationPeriod, 
+      end of firstMedicationPeriod }
+    )
     where ADTOrder.status in { 'active', 'completed' }
       and ADTOrder.intent in { 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order' }
     return medicationDateTime
@@ -136,13 +140,16 @@ define "Prostate Cancer Diagnosis":
   ( [ConditionProblemsHealthConcerns: "Prostate Cancer"]
     union [ConditionEncounterDiagnosis: "Prostate Cancer"] ) ProstateCancer
     where ProstateCancer.prevalenceInterval ( ) overlaps day of "Measurement Period"
-      and ProstateCancer.verificationStatusIsNotInvalid()
-      
-define fluent function verificationStatusIsNotInvalid(condition Choice<"ConditionEncounterDiagnosis", "ConditionProblemsHealthConcerns">):
-  condition.verificationStatus is null
-  or not (
-    condition.verificationStatus ~ QICoreCommon."unconfirmed"
-    or condition.verificationStatus ~ QICoreCommon."refuted"
-    or condition.verificationStatus ~ QICoreCommon."entered-in-error"
+      and ProstateCancer.isVerified ( )
+
+/*      
+@description: Returns true if the given condition either has no verification status or has a verification status of confirmed, unconfirmed, provisional, or differential
+*/
+
+
+define fluent function isVerified(condition Choice<ConditionEncounterDiagnosis, ConditionProblemsHealthConcerns>):
+  condition.verificationStatus is not null implies ( condition.verificationStatus ~ QICoreCommon."confirmed"
+      or condition.verificationStatus ~ QICoreCommon."unconfirmed"
+      or condition.verificationStatus ~ QICoreCommon."provisional"
+      or condition.verificationStatus ~ QICoreCommon."differential"
   )
-  
