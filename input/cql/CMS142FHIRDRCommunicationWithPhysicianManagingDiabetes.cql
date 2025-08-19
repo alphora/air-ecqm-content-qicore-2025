@@ -1,14 +1,6 @@
-library CMS142FHIRCommWithDrManagingDiab version '0.2.000'
+library CMS142FHIRCommWithDrManagingDiab version '0.2.001'
 
 using QICore version '6.0.0'
-
-/*
-Notes: 
-- Per BonnieMat-1455 and ticket  https://github.com/cqframework/cql-execution/issues/296  
---https://oncprojectracking.healthit.gov/support/browse/CQLIT-371 (formerly BonnieMat-1420)
---surrounding negation with QI-Core 4.1.1 DRC are not supported as resource filters and must be replaced with valueset or used on unfiltered resource in predicate
---cardinality issues surrounding negation coding to be addressed in future execution engine update
-*/
 
 include FHIRHelpers version '4.4.000' called FHIRHelpers
 include SupplementalDataElements version '5.1.000' called SDE
@@ -85,17 +77,14 @@ define "Diabetic Retinopathy Encounter":
     with (["ConditionProblemsHealthConcerns": "Diabetic Retinopathy"]
      union ["ConditionEncounterDiagnosis": "Diabetic Retinopathy"] ) DiabeticRetinopathy
       such that DiabeticRetinopathy.prevalenceInterval ( ) overlaps day of ValidQualifyingEncounter.period
-        and not ( DiabeticRetinopathy.verificationStatus ~ QICoreCommon."unconfirmed"
-            or DiabeticRetinopathy.verificationStatus ~ QICoreCommon."refuted"
-            or DiabeticRetinopathy.verificationStatus ~ QICoreCommon."entered-in-error"
-        )
+        and DiabeticRetinopathy.isVerified()
 
 define "Macular Exam Performed":
   ["ObservationClinicalResult": "Macular Exam"] MacularExam
     with "Diabetic Retinopathy Encounter" EncounterDiabeticRetinopathy
       such that MacularExam.effective.toInterval ( ) during EncounterDiabeticRetinopathy.period
     where MacularExam.value is not null
-      and MacularExam.status in { 'final', 'amended', 'corrected', 'preliminary' }
+      and MacularExam.status in { 'final', 'amended', 'corrected' }
 
 define "Results of Dilated Macular or Fundus Exam Communicated":
   exists "Level of Severity of Retinopathy Findings Communicated"
@@ -121,13 +110,13 @@ define "Macular Edema Presence Communicated":
   ["Communication": category in "Macular Edema Findings Present"] MacularEdemaPresentCommunicated
     with "Diabetic Retinopathy Encounter" EncounterDiabeticRetinopathy
       such that MacularEdemaPresentCommunicated.sent after start of EncounterDiabeticRetinopathy.period
-        and MacularEdemaPresentCommunicated.sent during day of "Measurement Period"
+        and MacularEdemaPresentCommunicated.sent during "Measurement Period"
     where MacularEdemaPresentCommunicated.status = 'completed'
 
 define "Medical or Patient Reason for Not Communicating Level of Severity of Retinopathy":
   [CommunicationNotDone: category in "Level of Severity of Retinopathy Findings"] LevelOfSeverityNotCommunicated
     with "Diabetic Retinopathy Encounter" EncounterDiabeticRetinopathy
-      such that LevelOfSeverityNotCommunicated.recorded during EncounterDiabeticRetinopathy.period
+      such that LevelOfSeverityNotCommunicated.recorded during day of EncounterDiabeticRetinopathy.period
     where ( LevelOfSeverityNotCommunicated.statusReason in "Medical Reason"
         or LevelOfSeverityNotCommunicated.statusReason in "Patient Reason"
     )
@@ -135,7 +124,7 @@ define "Medical or Patient Reason for Not Communicating Level of Severity of Ret
 define "Medical or Patient Reason for Not Communicating Presence of Macular Edema":
   [CommunicationNotDone: category in "Macular Edema Findings Present"] MacularEdemaPresentNotCommunicated
     with "Diabetic Retinopathy Encounter" EncounterDiabeticRetinopathy
-      such that MacularEdemaPresentNotCommunicated.recorded during EncounterDiabeticRetinopathy.period
+      such that MacularEdemaPresentNotCommunicated.recorded during day of EncounterDiabeticRetinopathy.period
     where ( MacularEdemaPresentNotCommunicated.statusReason in "Medical Reason"
         or MacularEdemaPresentNotCommunicated.statusReason in "Patient Reason"
     ) 
@@ -147,7 +136,15 @@ but when QI Core STU 5 gets in the tool, it may be reverted back to a DRC */
 define "Medical or Patient Reason for Not Communicating Absence of Macular Edema":
   [CommunicationNotDone: category in "Macular Edema Findings Absent"] MacularEdemaAbsentNotCommunicated
     with "Diabetic Retinopathy Encounter" EncounterDiabeticRetinopathy
-      such that MacularEdemaAbsentNotCommunicated.recorded during EncounterDiabeticRetinopathy.period
+      such that MacularEdemaAbsentNotCommunicated.recorded during day of EncounterDiabeticRetinopathy.period
     where ( MacularEdemaAbsentNotCommunicated.statusReason in "Medical Reason"
         or MacularEdemaAbsentNotCommunicated.statusReason in "Patient Reason"
+    )
+    
+define fluent function isVerified(condition Choice<ConditionEncounterDiagnosis, ConditionProblemsHealthConcerns>):
+  condition.verificationStatus is not null implies
+    (condition.verificationStatus ~ QICoreCommon."confirmed"
+        or condition.verificationStatus ~ QICoreCommon."unconfirmed"
+        or condition.verificationStatus ~ QICoreCommon."provisional"
+        or condition.verificationStatus ~ QICoreCommon."differential"
     )
