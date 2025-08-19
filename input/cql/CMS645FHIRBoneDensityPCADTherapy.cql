@@ -100,18 +100,14 @@ define "Androgen Deprivation Therapy for Urology Care Medication Active Start Da
     ),
 
     //get the very first event as interval
-    
     firstMedicationEvent: First((ADTActive.dosageInstruction.timing dosageTiming
         //returns first event for the specific dosageTiming
-        
         return First(dosageTiming.event dosageTimingEvents
             sort ascending
         )) firstEvents
         sort ascending
     ),
-    medicationDateTime: Min({ firstMedicationEvent, start of firstMedicationPeriod, 
-      end of firstMedicationPeriod }
-    )
+    medicationDateTime: Min( { firstMedicationEvent, start of firstMedicationPeriod, end of firstMedicationPeriod } )
     where ADTActive.status in { 'active', 'completed' }
       and ADTActive.intent in { 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order' }
     return medicationDateTime
@@ -123,9 +119,7 @@ define "Androgen Deprivation Therapy for Urology Care Medication Order Start Dat
       )) DrugPeriods
         sort by start of $this
     ),
-    medicationDateTime: Min({ ADTOrder.authoredOn, start of firstMedicationPeriod, 
-      end of firstMedicationPeriod }
-    )
+    medicationDateTime: Min( { ADTOrder.authoredOn, start of firstMedicationPeriod, end of firstMedicationPeriod })
     where ADTOrder.status in { 'active', 'completed' }
       and ADTOrder.intent in { 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order' }
     return medicationDateTime
@@ -140,16 +134,15 @@ define "Prostate Cancer Diagnosis":
   ( [ConditionProblemsHealthConcerns: "Prostate Cancer"]
     union [ConditionEncounterDiagnosis: "Prostate Cancer"] ) ProstateCancer
     where ProstateCancer.prevalenceInterval ( ) overlaps day of "Measurement Period"
-      and ProstateCancer.isVerified ( )
+      and ProstateCancer.isVerified()
 
 /*      
 @description: Returns true if the given condition either has no verification status or has a verification status of confirmed, unconfirmed, provisional, or differential
 */
-
-
 define fluent function isVerified(condition Choice<ConditionEncounterDiagnosis, ConditionProblemsHealthConcerns>):
-  condition.verificationStatus is not null implies ( condition.verificationStatus ~ QICoreCommon."confirmed"
+  condition.verificationStatus is not null implies
+    (condition.verificationStatus ~ QICoreCommon."confirmed"
       or condition.verificationStatus ~ QICoreCommon."unconfirmed"
       or condition.verificationStatus ~ QICoreCommon."provisional"
       or condition.verificationStatus ~ QICoreCommon."differential"
-  )
+    )
