@@ -1,12 +1,12 @@
-library CMS90FHIRFSAforHeartFailure version '0.3.000'
+library CMS90FHIRFSAforHeartFailure version '0.3.001'
 
 using QICore version '6.0.0'
 
 include FHIRHelpers version '4.4.000' called FHIRHelpers
 include QICoreCommon version '4.0.000' called QICoreCommon
 include SupplementalDataElements version '5.1.000' called SDE
-include Hospice version '6.15.000' called Hospice
-include Status version '1.13.000' called Status
+include Hospice version '6.18.000' called Hospice
+include Status version '1.15.000' called Status
 
 codesystem "LOINC": 'http://loinc.org'
 codesystem "SNOMEDCT": 'http://snomed.info/sct'
@@ -64,19 +64,19 @@ define "SDE Sex":
 
 define "Initial Population":
   AgeInYearsAt(date from start of "Measurement Period") >= 18
-    and exists (([ConditionProblemsHealthConcerns: "Heart Failure"] 
-      union [ConditionEncounterDiagnosis: "Heart Failure"]) HeartFailure
+    and exists ((([ConditionProblemsHealthConcerns: "Heart Failure"] 
+      union [ConditionEncounterDiagnosis: "Heart Failure"]).verified()) HeartFailure
         where HeartFailure.prevalenceInterval() overlaps before day of "Measurement Period"
    )
-    and exists ("Two Outpatient Encounters during Measurement Period")
+    and exists ("Outpatient Encounters with at least one subsequent Outpatient Encounter during Measurement Period")
 
 define "Denominator":
   "Initial Population"
 
 define "Denominator Exclusions":
   Hospice."Has Hospice Services"
-    or exists (([ConditionProblemsHealthConcerns: "Severe cognitive impairment (finding)"] 
-      union [ConditionEncounterDiagnosis: "Severe cognitive impairment (finding)"]) SevereCognitiveImpairment
+    or exists ((([ConditionProblemsHealthConcerns: "Severe cognitive impairment (finding)"] 
+      union [ConditionEncounterDiagnosis: "Severe cognitive impairment (finding)"]).verified()) SevereCognitiveImpairment
         where SevereCognitiveImpairment.prevalenceInterval() overlaps day of "Measurement Period"
    )
 
@@ -92,20 +92,18 @@ define "Numerator":
     or ("Has Encounter with Initial and Follow Up KCCQ Domain Score Assessments")
     or ("Has Encounter with Initial and Follow Up KCCQ Total Score Assessments")
 
-define "Two Outpatient Encounters during Measurement Period":
+define "Outpatient Encounters with at least one subsequent Outpatient Encounter during Measurement Period":
   from
-    "Qualifying Encounters" OfficeVisit1,
-    "Qualifying Encounters" OfficeVisit2
-    where OfficeVisit2.period starts 1 day or more after day of end of OfficeVisit1.period
-    return OfficeVisit1
+    "Qualifying Encounters" OfficeVisit1
+      with "Qualifying Encounters" OfficeVisit2
+      such that OfficeVisit2.period starts 1 day or more after day of end of OfficeVisit1.period
 
 define "Qualifying Encounters":
-    ([Encounter: "Office Visit"]
+    (([Encounter: "Office Visit"]
       union [Encounter: "Telephone Visits"]
       union [Encounter: "Virtual Encounter"]
-    ) ValidEncounter
-    where ValidEncounter.status in {'finished', 'in-progress'}
-        and ValidEncounter.period during day of "Measurement Period"
+    ).isEncounterPerformed()) ValidEncounter
+    where ValidEncounter.period during day of "Measurement Period"
 
 define "Has Encounter with Initial and Follow Up PROMIS10 Assessments":
   exists (from
@@ -157,18 +155,18 @@ define "Date PROMIS29 Total Assessment Completed":
     Promis29DepressionDate: date from start of Promis29Depression.effective.toInterval(),
     Promis29AnxietyDate: date from start of Promis29Anxiety.effective.toInterval()
     where Promis29SleepDate same day as Promis29SocialRolesDate
-      and (Promis29SocialRoles as ObservationScreeningAssessment).value is not null
+      and Promis29SocialRoles.value is not null
       and Promis29SleepDate same day as Promis29PhysicalDate
-      and (Promis29Physical as ObservationScreeningAssessment).value is not null
+      and Promis29Physical.value is not null
       and Promis29SleepDate same day as Promis29PainDate
-      and (Promis29Pain as ObservationScreeningAssessment).value is not null
+      and Promis29Pain.value is not null
       and Promis29SleepDate same day as Promis29FatigueDate
-      and (Promis29Fatigue as ObservationScreeningAssessment).value is not null
+      and Promis29Fatigue.value is not null
       and Promis29SleepDate same day as Promis29DepressionDate
-      and (Promis29Depression as ObservationScreeningAssessment).value is not null
+      and Promis29Depression.value is not null
       and Promis29SleepDate same day as Promis29AnxietyDate
-      and (Promis29Anxiety as ObservationScreeningAssessment).value is not null
-      and (Promis29Sleep as ObservationScreeningAssessment).value is not null
+      and Promis29Anxiety.value is not null
+      and Promis29Sleep.value is not null
     return Promis29SleepDate
 
 define "Has Encounter with Initial and Follow Up VR12 Oblique Assessments":
@@ -340,12 +338,11 @@ define "Date KCCQ Domain Assessment Completed":
       and (KCCQSocialLimits as ObservationScreeningAssessment).value is not null
       and (KCCQLifeQuality as ObservationScreeningAssessment).value is not null
     return KCCQLifeQualityDate
-
+    
 define "Date KCCQ Total Assessment Completed":
-  (([ObservationScreeningAssessment: "Overall summary score [KCCQ]"]).isAssessmentPerformed()) KCCQSummaryScore
-    let KCCQSummaryScoreDate: date from start of KCCQSummaryScore.effective.toInterval()
-    where (KCCQSummaryScore as ObservationScreeningAssessment).value is not null
-    return KCCQSummaryScoreDate
+  ( ( [ObservationScreeningAssessment: "Overall summary score [KCCQ]"] ).isAssessmentPerformed ( ) ) KCCQSummaryScore
+    where ( KCCQSummaryScore as ObservationScreeningAssessment ).value is not null
+    return date from start of KCCQSummaryScore.effective.toInterval ( )
 
 define "Has Encounter with Initial and Follow Up KCCQ Total Score Assessments":
   exists (from
