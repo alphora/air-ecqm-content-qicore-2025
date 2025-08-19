@@ -1,4 +1,4 @@
-library CMS349FHIRHIVScreening version '0.3.000'
+library CMS349FHIRHIVScreening version '0.3.001'
 
 using QICore version '6.0.0'
 
@@ -7,7 +7,6 @@ include SupplementalDataElements version '5.1.000' called SDE
 include QICoreCommon version '4.0.000' called QICoreCommon
 
 codesystem "LOINC": 'http://loinc.org'
-codesystem "ConditionVerificationStatus": 'http://terminology.hl7.org/CodeSystem/condition-ver-status'
 
 valueset "HIV": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.120.12.1003'
 valueset "Human Immunodeficiency Virus (HIV) Laboratory Test Codes (Ab and Ag)": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1056.50'
@@ -38,7 +37,7 @@ define "Denominator Exclusions":
   ([ConditionProblemsHealthConcerns: "HIV"] union 
   [ConditionEncounterDiagnosis: "HIV"]) HIVDiagnosis
     where HIVDiagnosis.prevalenceInterval() starts before day of start of "Measurement Period"
-      and HIVDiagnosis.verificationStatusIsNotInvalid()
+      and HIVDiagnosis.isVerified()
   )
 
 define "Denominator Exceptions":
@@ -79,9 +78,13 @@ define "SDE Race":
 define "SDE Sex":
   SDE."SDE Sex"
 
-define fluent function verificationStatusIsNotInvalid(condition Choice<"ConditionEncounterDiagnosis", "ConditionProblemsHealthConcerns">):
-  condition.verificationStatus is null
-    or not ( condition.verificationStatus ~ QICoreCommon."unconfirmed"
-        or condition.verificationStatus ~ QICoreCommon."refuted"
-        or condition.verificationStatus ~ QICoreCommon."entered-in-error"
+/*
+@description: Returns true if the given condition either has no verification status or has a verification status of confirmed, unconfirmed, provisional, or differential
+*/
+define fluent function isVerified(condition Choice<ConditionEncounterDiagnosis, ConditionProblemsHealthConcerns>):
+  condition.verificationStatus is not null implies
+    (condition.verificationStatus ~ QICoreCommon."confirmed"
+      or condition.verificationStatus ~ QICoreCommon."unconfirmed"
+      or condition.verificationStatus ~ QICoreCommon."provisional"
+      or condition.verificationStatus ~ QICoreCommon."differential"
     )
