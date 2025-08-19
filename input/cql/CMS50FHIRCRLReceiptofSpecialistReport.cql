@@ -1,11 +1,11 @@
-library CMS50FHIRCRLReceiptofSpecialistReport version '0.4.000'
+library CMS50FHIRReceiptofSpecialistReport version '0.4.001'
 
 using QICore version '6.0.0'
 
 include FHIRHelpers version '4.4.000' called FHIRHelpers
 include SupplementalDataElements version '5.1.000' called SDE
 include QICoreCommon version '4.0.000' called QICoreCommon
-include Status version '1.13.000' called Status
+include Status version '1.15.000' called Status
 
 codesystem "CPT": 'http://www.ama-assn.org/go/cpt'
  
