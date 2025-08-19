@@ -1,12 +1,11 @@
-library CMS135FHIRACEIorARBorARNIforHF version '0.4.000'
+library CMS135FHIRACEIorARBorARNIforHF version '0.4.001'
 
 using QICore version '6.0.0'
-using USCore version '6.1.0'
 
 include FHIRHelpers version '4.4.000' called FHIRHelpers
 include SupplementalDataElements version '5.1.000' called SDE
 include QICoreCommon version '4.0.000' called QICoreCommon
-include AHAOverall version '3.2.000' called AHA
+include AHAOverall version '4.0.000' called AHA
 
 codesystem "SNOMEDCT": 'http://snomed.info/sct'
 
@@ -78,8 +77,10 @@ define "Has Allergy or Intolerance to ACEI or ARB or ARNI Ingredient":
   )
 
 define "Has Diagnosis of Allergy or Intolerance to ACEI or ARB":
-  exists ( ( ["ConditionProblemsHealthConcerns": "Allergy to ACE Inhibitor or ARB"]
-      union ["ConditionProblemsHealthConcerns": "Intolerance to ACE Inhibitor or ARB"] ) ACEIOrARBAllergyOrIntoleranceDiagnosis
+  exists ( ( (["ConditionProblemsHealthConcerns": "Allergy to ACE Inhibitor or ARB"]
+        union ["ConditionEncounterDiagnosis": "Allergy to ACE Inhibitor or ARB"])
+      union (["ConditionProblemsHealthConcerns": "Intolerance to ACE Inhibitor or ARB"] ) 
+        union ["ConditionEncounterDiagnosis": "Intolerance to ACE Inhibitor or ARB"]) ACEIOrARBAllergyOrIntoleranceDiagnosis
       where ACEIOrARBAllergyOrIntoleranceDiagnosis.overlapsAfterHeartFailureOutpatientEncounter ( )
   )
 
@@ -88,13 +89,15 @@ define "Has Diagnosis of Pregnancy":
       union ["ConditionEncounterDiagnosis": "Pregnancy"]) PregnancyDiagnosis
         with AHA."Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD" ModerateOrSevereLVSDHFOutpatientEncounter
         such that PregnancyDiagnosis.prevalenceInterval() starts 9 months or less before or on start of ModerateOrSevereLVSDHFOutpatientEncounter.period
+        and PregnancyDiagnosis.isVerified()
   ) 
   or exists(
         [USCoreObservationPregnancyStatusProfile] PregnantObservation
         with AHA."Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD" ModerateOrSevereLVSDHFOutpatientEncounter
         such that PregnantObservation.effective.toInterval() starts 9 months or less before or on start of ModerateOrSevereLVSDHFOutpatientEncounter.period
         and (
-          PregnantObservation.value in "Pregnancy")
+          PregnantObservation.value in "Pregnancy"
+          and PregnantObservation.status in { 'final', 'amended', 'corrected' })
   )
 
 define "Has Diagnosis of Renal Failure Due to ACEI":
@@ -116,4 +119,3 @@ define "Is Currently Taking ACEI or ARB or ARNI":
   exists ( [MedicationRequest: medication in "ACE Inhibitor or ARB or ARNI"] ActiveACEIOrARBOrARNI
       where ActiveACEIOrARBOrARNI.overlapsAfterHeartFailureOutpatientEncounter ( )
   )
-  
