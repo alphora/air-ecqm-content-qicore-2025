@@ -1,11 +1,11 @@
-library CMS69FHIRPCSBMIScreenAndFollowUp version '0.3.000'
+library CMS69FHIRPCSBMIScreenAndFollowUp version '0.3.001'
 
 using QICore version '6.0.0'
 
 include FHIRHelpers version '4.4.000' called FHIRHelpers
-include Status version '1.13.000' called Status
-include Hospice version '6.15.000' called Hospice
-include PalliativeCare version '1.15.000' called PalliativeCare
+include Status version '1.15.000' called Status
+include Hospice version '6.18.000' called Hospice
+include PalliativeCare version '1.18.000' called PalliativeCare
 include QICoreCommon version '4.0.000' called QICoreCommon
 include SupplementalDataElements version '5.1.000' called SDE
 
@@ -61,13 +61,11 @@ define "BMI During Measurement Period":
 
 define "Documented Low BMI During Measurement Period":
   "BMI During Measurement Period" BMI
-    where BMI.effective.toInterval() during day of "Measurement Period"
-      and BMI.value < 18.5 'kg/m2'
+    where BMI.value < 18.5 'kg/m2'
 
 define "Documented High BMI During Measurement Period":
   "BMI During Measurement Period" BMI
-    where BMI.effective.toInterval() during day of "Measurement Period"
-      and BMI.value >= 25 'kg/m2'
+    where BMI.value >= 25 'kg/m2'
 
 define "Has Normal BMI":
   exists ( "BMI During Measurement Period" BMI
@@ -167,6 +165,7 @@ define "Is Pregnant During Measurement Period":
     
   or exists([USCoreObservationPregnancyStatusProfile] PregnantObservation
     where PregnantObservation.effective.toInterval() overlaps day of "Measurement Period"
+    and PregnantObservation.status in { 'final', 'amended', 'corrected'}
      and (PregnantObservation.value in "Pregnancy or Other Related Diagnoses")
   )
 
