@@ -1,4 +1,4 @@
-library CMS149FHIRDementiaCognitiveAssess version '0.2.000'
+library CMS149FHIRDementiaCognitiveAssess version '0.2.001'
 
 using QICore version '6.0.0'
 
@@ -52,7 +52,7 @@ define "Assessment of Cognition Using Standardized Tools or Alternate Methods":
 such that CognitiveAssessment.effective.toInterval() starts 12 months or less on or before day of 
     end of EncounterDementia.period
     where CognitiveAssessment.value is not null
-    and CognitiveAssessment.status in { 'final', 'amended', 'corrected', 'preliminary' }
+    and CognitiveAssessment.status in { 'final', 'amended', 'corrected' }
     
 define "Dementia Encounter During Measurement Period":
 "Encounter to Assess Cognition" EncounterAssessCognition
@@ -61,10 +61,8 @@ define "Dementia Encounter During Measurement Period":
    such that EncounterAssessCognition.period during day of "Measurement Period"
         and Dementia.prevalenceInterval() overlaps day of EncounterAssessCognition.period 
         and (Dementia.abatement is null 
-            or end of Dementia.abatement.toInterval() after end of "Measurement Period")
-        and not ( Dementia.verificationStatus ~ QICoreCommon."unconfirmed"
-                     or Dementia.verificationStatus ~ QICoreCommon."refuted"
-                     or Dementia.verificationStatus ~ QICoreCommon."entered-in-error" )
+            or end of Dementia.abatement.toInterval() after day of end of "Measurement Period")
+        and Dementia.isConfirmed()
 
 define "Encounter to Assess Cognition":
 (["Encounter": "Psych Visit Diagnostic Evaluation"]
@@ -85,6 +83,13 @@ define "Patient Reason for Not Performing Assessment of Cognition Using Standard
     with "Dementia Encounter During Measurement Period" EncounterDementia
       such that NoCognitiveAssessment.issued during day of EncounterDementia.period
     where NoCognitiveAssessment.notDoneReason in "Patient Reason"
+    
+define fluent function isConfirmed(condition Choice<ConditionEncounterDiagnosis, ConditionProblemsHealthConcerns>):
+  condition.verificationStatus is not null implies
+    (condition.verificationStatus ~ QICoreCommon."confirmed"
+        or condition.verificationStatus ~ QICoreCommon."provisional"
+        or condition.verificationStatus ~ QICoreCommon."differential"
+    )
 
 define "Qualifying Encounter During Measurement Period":
 ("Encounter to Assess Cognition" union ["Encounter": "Patient Provider Interaction"] ) ValidEncounter
@@ -102,5 +107,3 @@ SDE."SDE Sex"
  
 define "SDE Payer":
 SDE."SDE Payer"
-
-
