@@ -82,7 +82,7 @@ define "Diabetic Retinopathy Encounter":
 define "Macular Exam Performed":
   ["ObservationClinicalResult": "Macular Exam"] MacularExam
     with "Diabetic Retinopathy Encounter" EncounterDiabeticRetinopathy
-      such that MacularExam.effective.toInterval ( ) during EncounterDiabeticRetinopathy.period
+      such that MacularExam.effective.toInterval ( ) during day of EncounterDiabeticRetinopathy.period
     where MacularExam.value is not null
       and MacularExam.status in { 'final', 'amended', 'corrected' }
 
@@ -110,7 +110,7 @@ define "Macular Edema Presence Communicated":
   ["Communication": category in "Macular Edema Findings Present"] MacularEdemaPresentCommunicated
     with "Diabetic Retinopathy Encounter" EncounterDiabeticRetinopathy
       such that MacularEdemaPresentCommunicated.sent after start of EncounterDiabeticRetinopathy.period
-        and MacularEdemaPresentCommunicated.sent during "Measurement Period"
+        and MacularEdemaPresentCommunicated.sent during day of "Measurement Period"
     where MacularEdemaPresentCommunicated.status = 'completed'
 
 define "Medical or Patient Reason for Not Communicating Level of Severity of Retinopathy":
