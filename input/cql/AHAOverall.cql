@@ -66,7 +66,7 @@ define "Has Heart Transplant Complications":
       union [ConditionProblemsHealthConcerns: "Heart Transplant Complications"] ) HeartTransplantComplications
       let diagnosisStart: Coalesce(HeartTransplantComplications.recordedDate, start of HeartTransplantComplications.prevalenceInterval())
       with "Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD" ModerateOrSevereLVSDHFOutpatientEncounter
-        such that diagnosisStart before end of ModerateOrSevereLVSDHFOutpatientEncounter.period
+        such that diagnosisStart before day of end of ModerateOrSevereLVSDHFOutpatientEncounter.period
       where HeartTransplantComplications.isVerified ( )
   )
 
@@ -78,7 +78,7 @@ define "Has Heart Transplant Complications":
 define "Has Left Ventricular Assist Device":
   exists ( [Procedure: "Left Ventricular Assist Device Placement"] LVADOutpatient
       with "Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD" ModerateOrSevereLVSDHFOutpatientEncounter
-        such that LVADOutpatient.performed.toInterval ( ) starts before end of ModerateOrSevereLVSDHFOutpatientEncounter.period
+        such that LVADOutpatient.performed.toInterval ( ) starts before day of end of ModerateOrSevereLVSDHFOutpatientEncounter.period
       where LVADOutpatient.status = 'completed'
   )
 
@@ -92,7 +92,7 @@ define "Has Left Ventricular Assist Device Complications":
       union [ConditionProblemsHealthConcerns: "Left Ventricular Assist Device Complications"] ) LVADComplications
       let diagnosisStart: Coalesce(LVADComplications.recordedDate, start of LVADComplications.prevalenceInterval())
       with "Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD" ModerateOrSevereLVSDHFOutpatientEncounter
-        such that diagnosisStart before end of ModerateOrSevereLVSDHFOutpatientEncounter.period
+        such that diagnosisStart before day of end of ModerateOrSevereLVSDHFOutpatientEncounter.period
       where LVADComplications.isVerified ( )
   )             
 
@@ -124,7 +124,7 @@ define "Outpatient Encounter or Patient Provider Interaction":
 define "Has Heart Transplant":
   exists ( [Procedure: "Heart Transplant"] HeartTransplant
       with "Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD" ModerateOrSevereLVSDHFOutpatientEncounter
-        such that HeartTransplant.performed.toInterval ( ) starts before end of ModerateOrSevereLVSDHFOutpatientEncounter.period
+        such that HeartTransplant.performed.toInterval ( ) starts before day of end of ModerateOrSevereLVSDHFOutpatientEncounter.period
       where HeartTransplant.status = 'completed'
   )
 
@@ -136,7 +136,7 @@ define "Has Heart Transplant":
 define "Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD":
   "Heart Failure Outpatient Encounter" HFOutpatientEncounter
     with "Moderate or Severe LVSD Findings" LVSDFindings
-      such that Coalesce(LVSDFindings.prevalenceInterval(), LVSDFindings.effective.toInterval()) starts before end of HFOutpatientEncounter.period 
+      such that Coalesce(LVSDFindings.prevalenceInterval(), LVSDFindings.effective.toInterval()) starts before day of end of HFOutpatientEncounter.period 
 
 /*
 @description: Returns a union  of the following:
