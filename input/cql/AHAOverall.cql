@@ -215,6 +215,10 @@ define fluent function isOrderedDuringHeartFailureOutpatientEncounter(Medication
       where MedicationRequest.authoredOn during day of ModerateOrSevereLVSDHFOutpatientEncounter.period
         and MedicationRequest.status in { 'active', 'completed' }
         and MedicationRequest.intent in { 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order' }
+        and not exists ( ["TaskRejected"] TaskReject
+            where TaskReject.focus.references ( MedicationRequest )
+              and TaskReject.code ~ QICoreCommon."Fulfill"
+        )
   )
 
 /*
@@ -227,6 +231,10 @@ define fluent function isMedicationNotRequestedOrderedDuringHeartFailureOutpatie
       where MedicationRequest.authoredOn during day of ModerateOrSevereLVSDHFOutpatientEncounter.period
         and MedicationRequest.status in { 'completed', 'active' }
         and MedicationRequest.intent in { 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order' }
+        and not exists ( ["TaskRejected"] TaskReject
+            where TaskReject.focus.references ( MedicationRequest )
+              and TaskReject.code ~ QICoreCommon."Fulfill"
+        )
   )
 
 /*
@@ -307,10 +315,10 @@ define fluent function overlapsAfterHeartFailureOutpatientEncounter(MedicationRe
       ) overlaps after day of ModerateOrSevereLVSDHFOutpatientEncounter.period
         and MedicationRequest.status in { 'active', 'completed' }
         and MedicationRequest.intent in { 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order' }
-               /*Issue: The logic commented out below was added to the logic due to an issue described in the authoring patterns for QI-Core: https://github.com/cqframework/CQL-Formatting-and-Usage-Wiki/wiki/Authoring-Patterns---QICore-v4.1.1#medication-ordered. However, when this logic is present, it causes an issue in Coverage calculation for resources that must be QI-Core compliant, because the inverse cannot be tested for a QI-Core MedicationRequest profile instance. This logic was commented out to achieve 100% Coverage. This requirement is really to handle what would happen if a MedicationRequest instance that could be set to 'false' were provided, but this should not happen within a trusted environment where QI-Core profile instances must be provided.*/
-               // and Event.doNotPerform is not true 
-  
-  
+        and not exists ( ["TaskRejected"] TaskReject
+            where TaskReject.focus.references ( MedicationRequest )
+              and TaskReject.code ~ QICoreCommon."Fulfill"
+        )
   )
 
 /*
