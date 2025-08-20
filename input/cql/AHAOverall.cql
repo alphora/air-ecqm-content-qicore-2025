@@ -35,7 +35,7 @@ context Patient
                 * home healthcare services (http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1016)
                 * nursing facility visits (http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1012)
                 * office visits (http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1001)
-                * outpatient consolutations (http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1008)
+                * outpatient consultation (http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1008)
 */
 
 
@@ -76,10 +76,10 @@ define "Has Heart Transplant Complications":
 
 
 define "Has Left Ventricular Assist Device":
-  exists ( [Procedure: "Left Ventricular Assist Device Placement"] LVADOutpatient
+  exists ( [Procedure: "Left Ventricular Assist Device Placement"] LVADPlacement
       with "Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD" ModerateOrSevereLVSDHFOutpatientEncounter
-        such that LVADOutpatient.performed.toInterval ( ) starts before day of end of ModerateOrSevereLVSDHFOutpatientEncounter.period
-      where LVADOutpatient.status = 'completed'
+        such that LVADPlacement.performed.toInterval ( ) starts before day of end of ModerateOrSevereLVSDHFOutpatientEncounter.period
+      where LVADPlacement.status = 'completed'
   )
 
 /*
@@ -99,7 +99,7 @@ define "Has Left Ventricular Assist Device Complications":
 /*
 @description: Returns certain finished encounter types that occurred during the measurement period: 
                 * office visits (http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1001)
-                * outpatient consolutations (http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1008)
+                * outpatient consultation (http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1008)
                 * nursing facility visits (http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1012)
                 * care services in long term residential facility (http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1014)
                 * home healthcare services (http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1016)
@@ -162,7 +162,7 @@ define "Moderate or Severe LVSD Findings":
 
 /*
 @description: Returns true if the patient meets the following criteria:
-                * 18 years of age or older, has two 
+                * 18 years of age or older,
                 * Has two Qualifying Outpatient Encounters During Measurement Period
                 * Has a Heart Failure Outpatient Encounter
 */
@@ -215,10 +215,6 @@ define fluent function isOrderedDuringHeartFailureOutpatientEncounter(Medication
       where MedicationRequest.authoredOn during day of ModerateOrSevereLVSDHFOutpatientEncounter.period
         and MedicationRequest.status in { 'active', 'completed' }
         and MedicationRequest.intent in { 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order' }
-              /*Issue: The logic commented out below was added to the logic due to an issue described in the authoring patterns for QI-Core: https://github.com/cqframework/CQL-Formatting-and-Usage-Wiki/wiki/Authoring-Patterns---QICore-v4.1.1#medication-ordered. However, when this logic is present, it causes an issue in Coverage calculation for resources that must be QI-Core compliant, because the inverse cannot be tested for a QI-Core MedicationRequest profile instance. This logic was commented out to achieve 100% Coverage. This requirement is really to handle what would happen if a MedicationRequest instance that could be set to 'false' were provided, but this should not happen within a trusted environment where QI-Core profile instances must be provided.*/
-              // and MedicationRequest.doNotPerform is not true 
-  
-  
   )
 
 /*
