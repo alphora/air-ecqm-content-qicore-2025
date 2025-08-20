@@ -50,7 +50,6 @@ valueset "Telemedicine Services": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840
 code "Cardiovascular disease 10Y risk [Likelihood]": '99055-6' from "LOINC" display 'Cardiovascular disease 10Y risk [Likelihood]'
 code "Cardiovascular disease 10Y risk [Likelihood] ACC-AHA Pooled Cohort by Goff 2013": '79423-0' from "LOINC" display 'Cardiovascular disease 10Y risk [Likelihood] ACC-AHA Pooled Cohort by Goff 2013'
 code "Subsequent non-ST elevation (NSTEMI) myocardial infarction": 'I22.2' from "ICD10CM" display 'Subsequent non-ST elevation (NSTEMI) myocardial infarction'
-code "Unlisted preventive medicine service": '99429' from "CPT" display 'Unlisted preventive medicine service'
 
 parameter "Measurement Period" Interval<DateTime>
 
@@ -86,9 +85,11 @@ define "Denominator 4":
 
 define "Denominator Exclusions":
   exists ( ( [ConditionProblemsHealthConcerns: "Breastfeeding"]
-      union [ConditionProblemsHealthConcerns: "Rhabdomyolysis"] ) ExclusionDiagnosis
+      union [ConditionProblemsHealthConcerns: "Rhabdomyolysis"]
+      union [ConditionEncounterDiagnosis: "Breastfeeding"]
+      union [ConditionEncounterDiagnosis: "Rhabdomyolysis"] ) ExclusionDiagnosis
       where ExclusionDiagnosis.prevalenceInterval ( ) overlaps day of "Measurement Period"
-        and ExclusionDiagnosis.isVerified ( )
+        and ExclusionDiagnosis.isVerified()
   )
 
 define "Denominator Exceptions":
@@ -113,7 +114,7 @@ define "ASCVD Diagnosis or Procedure before End of Measurement Period":
       union [ConditionProblemsHealthConcerns: "Ischemic Heart Disease or Other Related Diagnoses"]
       union [ConditionProblemsHealthConcerns: "Stable and Unstable Angina"] ) ASCVDDiagnosis
       where ASCVDDiagnosis.prevalenceInterval ( ) starts on or before day of end of "Measurement Period"
-        and ASCVDDiagnosis.isVerified ( )
+        and ASCVDDiagnosis.isVerified()
   )
     union ( ( [Procedure: "PCI"]
         union [Procedure: "CABG Surgeries"]
@@ -137,13 +138,13 @@ define "Has Allergy to Statin":
 define "Has Diabetes Diagnosis":
   exists ( [ConditionProblemsHealthConcerns: "Diabetes"] DiabetesDiagnosis
       where DiabetesDiagnosis.prevalenceInterval ( ) overlaps day of "Measurement Period"
-        and DiabetesDiagnosis.isVerified ( )
+        and DiabetesDiagnosis.isVerified()
   )
 
 define "Has ESRD Diagnosis":
   exists ( [ConditionProblemsHealthConcerns: "End Stage Renal Disease"] ESRD
       where ESRD.prevalenceInterval ( ) overlaps day of "Measurement Period"
-        and ESRD.isVerified ( )
+        and ESRD.isVerified()
   )
 
 define "Has Hepatitis or Liver Disease Diagnosis":
@@ -151,7 +152,7 @@ define "Has Hepatitis or Liver Disease Diagnosis":
       union [ConditionProblemsHealthConcerns: "Hepatitis B"]
       union [ConditionProblemsHealthConcerns: "Liver Disease"] ) HepatitisLiverDisease
       where HepatitisLiverDisease.prevalenceInterval ( ) overlaps day of "Measurement Period"
-        and HepatitisLiverDisease.isVerified ( )
+        and HepatitisLiverDisease.isVerified()
   )
 
 define "Has Medical Reason for Not Ordering Statin Therapy":
@@ -167,13 +168,13 @@ define "Has Medical Reason for Not Ordering Statin Therapy":
 define "Has Statin Associated Muscle Symptoms":
   exists ( [ConditionProblemsHealthConcerns: "Statin Associated Muscle Symptoms"] StatinMuscleSymptom
       where StatinMuscleSymptom.prevalenceInterval ( ) overlaps day of "Measurement Period"
-        and StatinMuscleSymptom.isVerified ( )
+        and StatinMuscleSymptom.isVerified()
   )
 
 define "Hypercholesterolemia Diagnosis":
   ( [ConditionProblemsHealthConcerns: "Familial Hypercholesterolemia"] Hypercholesterolemia
       where Hypercholesterolemia.prevalenceInterval ( ) starts on or before day of end of "Measurement Period"
-        and Hypercholesterolemia.isVerified ( )
+        and Hypercholesterolemia.isVerified()
   )
 
 define "LDL Result Greater Than or Equal To 190":
@@ -186,7 +187,7 @@ define "Medication Active during the Measurement Period":
   ( [MedicationRequest: "Low Intensity Statin Therapy"]
     union [MedicationRequest: "Moderate Intensity Statin Therapy"]
     union [MedicationRequest: "High Intensity Statin Therapy"] ) ActiveStatin
-    where ActiveStatin.medicationRequestPeriod ( ) overlaps day of "Measurement Period"
+    where ActiveStatin.medicationRequestPeriod() overlaps day of "Measurement Period"
       and ActiveStatin.status in { 'active', 'completed' }
 
 define "Patients Aged 20 to 75 with LDL Cholesterol Result Greater than or Equal to 190 or Hypercholesterolemia without ASCVD":
@@ -225,8 +226,7 @@ define "Qualifying Encounter During Day of Measurement Period":
     union [Encounter: "Preventive Care Services Individual Counseling"]
     union [Encounter: "Preventive Care Services Initial Office Visit, 18 and Up"]
     union [Encounter: "Preventive Care Services Other"]
-    union [Encounter: "Telemedicine Services"]
-    union [Encounter: "Preventive Care Services Other"] ) QualifyingEncounter
+    union [Encounter: "Telemedicine Services"]) QualifyingEncounter
     where QualifyingEncounter.period during day of "Measurement Period"
       and QualifyingEncounter.status = 'finished'
 
@@ -247,12 +247,13 @@ define "Ten Year CVD Risk is High":
   )
 
 define fluent function isVerified(condition Choice<ConditionEncounterDiagnosis, ConditionProblemsHealthConcerns>):
-  condition.verificationStatus is not null implies ( condition.verificationStatus ~ QICoreCommon."confirmed"
-      or condition.verificationStatus ~ QICoreCommon."unconfirmed"
-      or condition.verificationStatus ~ QICoreCommon."provisional"
-      or condition.verificationStatus ~ QICoreCommon."differential"
-  )
-
+  condition.verificationStatus is not null implies
+    (condition.verificationStatus ~ QICoreCommon."confirmed"
+        or condition.verificationStatus ~ QICoreCommon."unconfirmed"
+        or condition.verificationStatus ~ QICoreCommon."provisional"
+        or condition.verificationStatus ~ QICoreCommon."differential"
+    )
+ 
 define "SDE Ethnicity":
   SDE."SDE Ethnicity"
 
