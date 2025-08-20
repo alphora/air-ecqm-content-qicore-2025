@@ -1,4 +1,4 @@
-library CMS771FHIRUrinarySymptomScoreBPH version '1.5.000'
+library CMS771FHIRUrinarySymptomScoreBPH version '1.5.001'
 
 using QICore version '6.0.0'
 
@@ -176,4 +176,3 @@ define "BMI Exam Result Greater Than or Equal To 40 During Measurement Period an
     or condition.verificationStatus ~ QICoreCommon."refuted"
     or condition.verificationStatus ~ QICoreCommon."entered-in-error"
   )
-  
