@@ -1,4 +1,4 @@
-library CMS68FHIRDocumentationofCurrentMedications version '0.3.000'
+library CMS68FHIRDocumentationCurrentMeds version '0.3.001'
 
 using QICore version '6.0.0'
 
@@ -44,13 +44,13 @@ define "Numerator":
   "Qualifying Encounter During Day of Measurement Period" QualifyingEncounter
     with [Procedure: "Documentation of current medications (procedure)"] MedicationsDocumented
       such that MedicationsDocumented.performed.toInterval() starts during day of QualifyingEncounter.period
-        and MedicationsDocumented.performed.toInterval().hasEnd()    
+        and MedicationsDocumented.performed.toInterval().hasEnd()
         and MedicationsDocumented.status = 'completed'
 
 define "Denominator Exceptions":
   "Qualifying Encounter During Day of Measurement Period" QualifyingEncounter
     with [ProcedureNotDone: code ~ "Documentation of current medications (procedure)"] MedicationsNotDocumented
-      such that MedicationsNotDocumented.recorded during QualifyingEncounter.period
+      such that MedicationsNotDocumented.recorded during day of QualifyingEncounter.period
         and MedicationsNotDocumented.status = 'not-done'
         and exists (
           MedicationsNotDocumented.reasonCode reasonItem where reasonItem ~ "Acute health crisis (finding)"
