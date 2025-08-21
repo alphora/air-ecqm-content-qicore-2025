@@ -62,7 +62,7 @@ define "Dementia Encounter During Measurement Period":
         and Dementia.prevalenceInterval() overlaps day of EncounterAssessCognition.period 
         and (Dementia.abatement is null 
             or end of Dementia.abatement.toInterval() after day of end of "Measurement Period")
-        and Dementia.isConfirmed()
+        and Dementia.isVerified()
 
 define "Encounter to Assess Cognition":
 (["Encounter": "Psych Visit Diagnostic Evaluation"]
