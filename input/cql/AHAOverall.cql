@@ -64,9 +64,9 @@ define "Outpatient Encounter":
 define "Has Heart Transplant Complications":
   exists ( ( [ConditionEncounterDiagnosis: "Heart Transplant Complications"]
       union [ConditionProblemsHealthConcerns: "Heart Transplant Complications"] ) HeartTransplantComplications
-      let diagnosisStart: Coalesce(HeartTransplantComplications.recordedDate, start of HeartTransplantComplications.prevalenceInterval())
+      let diagnosisStart: Coalesce(start of HeartTransplantComplications.prevalenceInterval(), HeartTransplantComplications.recordedDate)
       with "Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD" ModerateOrSevereLVSDHFOutpatientEncounter
-        such that diagnosisStart before day of end of ModerateOrSevereLVSDHFOutpatientEncounter.period
+        such that date from diagnosisStart on or before date from end of ModerateOrSevereLVSDHFOutpatientEncounter.period
       where HeartTransplantComplications.isVerified ( )
   )
 
@@ -90,9 +90,9 @@ define "Has Left Ventricular Assist Device":
 define "Has Left Ventricular Assist Device Complications":
   exists ( ( [ConditionEncounterDiagnosis: "Left Ventricular Assist Device Complications"]
       union [ConditionProblemsHealthConcerns: "Left Ventricular Assist Device Complications"] ) LVADComplications
-      let diagnosisStart: Coalesce(LVADComplications.recordedDate, start of LVADComplications.prevalenceInterval())
+      let diagnosisStart: Coalesce(start of LVADComplications.prevalenceInterval(), LVADComplications.recordedDate)
       with "Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD" ModerateOrSevereLVSDHFOutpatientEncounter
-        such that diagnosisStart before day of end of ModerateOrSevereLVSDHFOutpatientEncounter.period
+        such that date from diagnosisStart on or before date from end of ModerateOrSevereLVSDHFOutpatientEncounter.period
       where LVADComplications.isVerified ( )
   )             
 
@@ -124,7 +124,7 @@ define "Outpatient Encounter or Patient Provider Interaction":
 define "Has Heart Transplant":
   exists ( [Procedure: "Heart Transplant"] HeartTransplant
       with "Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD" ModerateOrSevereLVSDHFOutpatientEncounter
-        such that HeartTransplant.performed.toInterval ( ) starts before day of end of ModerateOrSevereLVSDHFOutpatientEncounter.period
+        such that HeartTransplant.performed.toInterval ( ) starts before end of ModerateOrSevereLVSDHFOutpatientEncounter.period
       where HeartTransplant.status = 'completed'
   )
 
@@ -136,7 +136,7 @@ define "Has Heart Transplant":
 define "Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD":
   "Heart Failure Outpatient Encounter" HFOutpatientEncounter
     with "Moderate or Severe LVSD Findings" LVSDFindings
-      such that Coalesce(LVSDFindings.prevalenceInterval(), LVSDFindings.effective.toInterval()) starts before day of end of HFOutpatientEncounter.period 
+      such that Coalesce(LVSDFindings.prevalenceInterval(), LVSDFindings.effective.toInterval()) starts before end of HFOutpatientEncounter.period 
 
 /*
 @description: Returns a union  of the following:
@@ -281,12 +281,6 @@ define fluent function overlapsAfterHeartFailureOutpatientEncounter(Procedure Pr
 define fluent function overlapsAfterHeartFailureOutpatientEncounter(AllergyIntolerance AllergyIntolerance):
   exists ( "Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD" ModerateOrSevereLVSDHFOutpatientEncounter
       where Interval[start of AllergyIntolerance.onset.toInterval ( ), AllergyIntolerance.lastOccurrence]overlaps after day of ModerateOrSevereLVSDHFOutpatientEncounter.period
-               /* and (  https://oncprojectracking.healthit.gov/support/browse/BONNIEMAT-1771 - issue with implies operator tied to a non-supported feature in cql-exectuion
-                          ( AllergyIntolerance.clinicalStatus is null implies
-                              AllergyIntolerance.clinicalStatus ~ QICoreCommon."allergy-active" )
-                              or AllergyIntolerance.clinicalStatus ~ QICoreCommon."allergy-active" 
-                         ) */
-        
         and AllergyIntolerance.isVerified ( )
   )
           
