@@ -83,13 +83,12 @@ define "Patient Reason for Not Performing Assessment of Cognition Using Standard
     with "Dementia Encounter During Measurement Period" EncounterDementia
       such that NoCognitiveAssessment.issued during day of EncounterDementia.period
     where NoCognitiveAssessment.notDoneReason in "Patient Reason"
-    
-define fluent function isConfirmed(condition Choice<ConditionEncounterDiagnosis, ConditionProblemsHealthConcerns>):
-  condition.verificationStatus is not null implies
-    (condition.verificationStatus ~ QICoreCommon."confirmed"
-        or condition.verificationStatus ~ QICoreCommon."provisional"
-        or condition.verificationStatus ~ QICoreCommon."differential"
-    )
+    define fluent function isVerified(condition Choice<ConditionEncounterDiagnosis, ConditionProblemsHealthConcerns>):
+  condition.verificationStatus is not null implies ( condition.verificationStatus ~ QICoreCommon."confirmed"
+      or condition.verificationStatus ~ QICoreCommon."unconfirmed"
+      or condition.verificationStatus ~ QICoreCommon."provisional"
+      or condition.verificationStatus ~ QICoreCommon."differential"
+  )
 
 define "Qualifying Encounter During Measurement Period":
 ("Encounter to Assess Cognition" union ["Encounter": "Patient Provider Interaction"] ) ValidEncounter
