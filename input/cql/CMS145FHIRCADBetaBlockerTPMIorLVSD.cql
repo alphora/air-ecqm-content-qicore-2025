@@ -5,7 +5,7 @@ using QICore version '6.0.0'
 include FHIRHelpers version '4.4.000' called FHIRHelpers
 include SupplementalDataElements version '5.1.000' called SDE
 include QICoreCommon version '4.0.000' called QICoreCommon
-include AHAOverall version '4.0.000' called AHA
+include AHAOverall version '4.1.000' called AHA
 
 codesystem "SNOMEDCT": 'http://snomed.info/sct'
 
@@ -98,7 +98,7 @@ define "Has Cardiac Pacer Device Implanted with Qualifying CAD Encounter and Pri
   exists ( [Procedure: "Cardiac Pacer"] ImplantedCardiacPacer
       with "Qualifying CAD Encounter and Prior MI" CADEncounterMI
         such that ImplantedCardiacPacer.performed.toInterval ( ) starts before end of CADEncounterMI.period
-            and ImplantedCardiacPacer.status = 'completed'
+          and ImplantedCardiacPacer.status = 'completed'
   )
 
 define "Qualifying CAD Encounter and Prior MI":
@@ -144,7 +144,7 @@ define "Has Cardiac Pacer Device Implanted with Qualifying CAD Encounter and His
       with "Qualifying CAD Encounter and History of Moderate or Severe LVSD" CADEncounterModerateOrSevereLVSD
         such that ImplantedCardiacPacer.performed.toInterval ( ) starts before end of CADEncounterModerateOrSevereLVSD.period
   )
-  
+
 define "Has Diagnosis of Cardiac Pacer in Situ with Qualifying CAD Encounter and History of Moderate or Severe LVSD":
   exists ( [ConditionProblemsHealthConcerns: "Cardiac Pacer in Situ"] CardiacPacerDiagnosis
       where CardiacPacerDiagnosis.overlapsDayOfEncounter ( "Qualifying CAD Encounter and History of Moderate or Severe LVSD" )
