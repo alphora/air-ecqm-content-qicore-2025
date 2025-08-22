@@ -1,4 +1,4 @@
-library AHAOverall version '4.0.000'
+library AHAOverall version '4.1.000'
 
 using QICore version '6.0.0'
 using USCore version '6.1.0'
@@ -278,15 +278,10 @@ define fluent function overlapsAfterHeartFailureOutpatientEncounter(HeartRateObs
       where HeartRateObservation.effective.toInterval ( ) overlaps after day of ModerateOrSevereLVSDHFOutpatientEncounter.period
         and HeartRateObservation.status in { 'final', 'amended', 'corrected' }
   )
- 
+
 define function TimingBoundToInterval(startDate System.DateTime, choice Choice<Quantity, Interval<Quantity>, Interval<DateTime>>):
   case
-    when choice is Interval<DateTime> then
-        choice as Interval<DateTime>
-    when choice is Interval<Quantity> then
-        Interval[startDate + (choice.low as Quantity), startDate + (choice.high as Quantity)]
-    when choice is Quantity then
-        Interval[startDate, startDate + (choice as Quantity))
-    else
-		null as Interval<DateTime>
-	end
+    when choice is Interval<DateTime>then choice as Interval<DateTime>
+    when choice is Interval<Quantity>then Interval[startDate + ( choice.low as Quantity ), startDate + ( choice.high as Quantity )]
+    when choice is Quantity then Interval[startDate, startDate + ( choice as Quantity ) ) 
+    else null as Interval<DateTime>end
