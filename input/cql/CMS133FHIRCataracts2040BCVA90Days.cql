@@ -1,4 +1,4 @@
-library CMS133FHIRCataracts2040BCVA90Days version '0.2.000'
+library CMS133FHIRCataracts2040BCVA90Days version '0.2.001'
 
 using QICore version '6.0.0'
 
@@ -147,14 +147,26 @@ define "Cataract Surgeries in Patients with Significant Ocular Conditions Impact
       union (["ConditionProblemsHealthConcerns": "Vascular Disorders of Iris and Ciliary Body"] union ["ConditionEncounterDiagnosis": "Vascular Disorders of Iris and Ciliary Body"])
       union (["ConditionProblemsHealthConcerns": "Visual Field Defects"] union ["ConditionEncounterDiagnosis": "Visual Field Defects"])) ComorbidDiagnosis
       such that ComorbidDiagnosis.prevalenceInterval() overlaps before day of CataractSurgeryPerformed.performed.toInterval()
+      and ComorbidDiagnosis.isVerified()
 
 define "Numerator":
   "Cataract Surgery Between January and September of Measurement Period" CataractSurgeryPerformed
     with ( [ObservationClinicalResult: "Best corrected visual acuity (observable entity)"]
       union [ObservationClinicalResult: "Best Corrected Visual Acuity Exam Using Snellen Chart"] ) VisualAcuityExamPerformed
       such that VisualAcuityExamPerformed.effective.toInterval() 90 days or less after day of end of CataractSurgeryPerformed.performed.toInterval()
-        and VisualAcuityExamPerformed.status in { 'final', 'amended', 'corrected', 'preliminary' }
+        and VisualAcuityExamPerformed.status in { 'final', 'amended', 'corrected'}
         and VisualAcuityExamPerformed.value as Concept in "Visual Acuity 20/40 or Better"
+        
+/*
+@description: Returns true if the given Condition has a verification status of "confirmed", "unconfirmed", "provisional", or "differential"
+*/
+define fluent function isVerified(condition Choice<ConditionEncounterDiagnosis, ConditionProblemsHealthConcerns>):
+  condition.verificationStatus is not null implies
+    (condition.verificationStatus ~ QICoreCommon."confirmed"
+        or condition.verificationStatus ~ QICoreCommon."unconfirmed"
+        or condition.verificationStatus ~ QICoreCommon."provisional"
+        or condition.verificationStatus ~ QICoreCommon."differential"
+    )
 
 define "SDE Ethnicity":
   SDE."SDE Ethnicity"
