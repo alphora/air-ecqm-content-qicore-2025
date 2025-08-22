@@ -1,12 +1,6 @@
-library CMS143FHIRPOAGOpticNerveEval version '0.2.000'
+library CMS143FHIRPOAGOpticNerveEval version '0.2.001'
 
 using QICore version '6.0.0'
-
-/*
-Notes 
-1. 8/09.2023: Per BonnieMat-1455 and ticket  https://github.com/cqframework/cql-execution/issues/296 
-*/
-
 
 include FHIRHelpers version '4.4.000' called FHIRHelpers
 include SupplementalDataElements version '5.1.000' called SDE
@@ -67,12 +61,9 @@ define "Primary Open Angle Glaucoma Encounter":
   "Qualifying Encounter During Measurement Period" ValidQualifyingEncounter
     with (["ConditionProblemsHealthConcerns": "Primary Open-Angle Glaucoma"]
     union ["ConditionEncounterDiagnosis": "Primary Open-Angle Glaucoma"]) PrimaryOpenAngleGlaucoma
-      such that PrimaryOpenAngleGlaucoma.prevalenceInterval() overlaps ValidQualifyingEncounter.period
-        and not ( PrimaryOpenAngleGlaucoma.verificationStatus ~ QICoreCommon."unconfirmed"
-            or PrimaryOpenAngleGlaucoma.verificationStatus ~ QICoreCommon."refuted"
-            or PrimaryOpenAngleGlaucoma.verificationStatus ~ QICoreCommon."entered-in-error"
-        )
-
+      such that PrimaryOpenAngleGlaucoma.prevalenceInterval() overlaps day of ValidQualifyingEncounter.period
+        and PrimaryOpenAngleGlaucoma.isVerified()
+        
 define "Cup to Disc Ratio Performed with Result":
   ["ObservationClinicalResult": "Cup to Disc Ratio"] CupToDiscExamPerformed
     with "Primary Open Angle Glaucoma Encounter" EncounterWithPOAG
@@ -83,7 +74,7 @@ define "Cup to Disc Ratio Performed with Result":
 define "Optic Disc Exam Performed with Result":
   ["ObservationClinicalResult": "Optic Disc Exam for Structural Abnormalities"] OpticDiscExamPerformed
     with "Primary Open Angle Glaucoma Encounter" EncounterWithPOAG
-      such that OpticDiscExamPerformed.effective.toInterval() during EncounterWithPOAG.period
+      such that OpticDiscExamPerformed.effective.toInterval() during day of EncounterWithPOAG.period
     where OpticDiscExamPerformed.value is not null
       and OpticDiscExamPerformed.status in { 'final', 'amended', 'corrected' }
 
@@ -102,3 +93,11 @@ define "Medical Reason for Not Performing Optic Disc Exam":
     with "Primary Open Angle Glaucoma Encounter" EncounterWithPOAG
       such that OpticDiscExamNotPerformed.issued during day of EncounterWithPOAG.period
     where OpticDiscExamNotPerformed.notDoneReason in "Medical Reason"
+    
+define fluent function isVerified(condition Choice<ConditionEncounterDiagnosis, ConditionProblemsHealthConcerns>):
+  condition.verificationStatus is not null implies
+    (condition.verificationStatus ~ QICoreCommon."confirmed"
+        or condition.verificationStatus ~ QICoreCommon."unconfirmed"
+        or condition.verificationStatus ~ QICoreCommon."provisional"
+        or condition.verificationStatus ~ QICoreCommon."differential"
+    )

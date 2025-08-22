@@ -1,11 +1,10 @@
-library CMS22FHIRPCSBPScreeningFollowUp version '0.3.000'
+library CMS22FHIRPCSBPScreeningFollowUp version '0.3.001'
 
 using QICore version '6.0.0'
 
 include FHIRHelpers version '4.4.000' called FHIRHelpers
 include SupplementalDataElements version '5.1.000' called SDE
 include QICoreCommon version '4.0.000' called QICoreCommon
-
 
 codesystem "ActCode": 'http://terminology.hl7.org/CodeSystem/v3-ActCode'
 codesystem "LOINC": 'http://loinc.org'
@@ -49,6 +48,7 @@ define "Denominator Exclusions":
   "Qualifying Encounter during Measurement Period" QualifyingEncounter
     with [ConditionProblemsHealthConcerns: "Diagnosis of Hypertension"] Hypertension
       such that Hypertension.prevalenceInterval ( ) starts before or on day of QualifyingEncounter.period
+        and Hypertension.isVerified ( )
 
 define "Numerator":
   "Encounter with Normal Blood Pressure Reading"
@@ -69,7 +69,7 @@ define "Laboratory Test or ECG for Hypertension":
   ( [ServiceRequest: "12 lead EKG panel"]
     union [ServiceRequest: "EKG study"]
     union [ServiceRequest: "Laboratory Tests for Hypertension"] ) EKGLab
-    where EKGLab.intent ~ 'order'
+    where EKGLab.intent in { 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order' }
 
 define "NonPharmacological Interventions":
   ( [ServiceRequest: "Lifestyle Recommendation"]
@@ -77,7 +77,7 @@ define "NonPharmacological Interventions":
     union [ServiceRequest: "Dietary Recommendations"]
     union [ServiceRequest: "Recommendation to Increase Physical Activity"]
     union [ServiceRequest: "Referral or Counseling for Alcohol Consumption"] ) NonPharmaInterventions
-    where NonPharmaInterventions.intent ~ 'order'
+    where NonPharmaInterventions.intent in { 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order' }
 
 define "Encounter with First Hypertensive Reading SBP Greater than or Equal to 130 OR DBP Greater than or Equal to 80 and Interventions":
   "Encounter with First Hypertensive Reading SBP Greater than or Equal to 130 OR DBP Greater than or Equal to 80" FirstHTNEncounter
@@ -108,27 +108,27 @@ define "First Hypertensive Reading Interventions or Referral to Alternate Profes
       with "NonPharmacological Interventions" NonPharmInterventionsHTN
         such that FourWeekRescreen.authoredOn during day of "Measurement Period"
           and NonPharmInterventionsHTN.authoredOn during day of "Measurement Period"
-          and FourWeekRescreen.intent ~ 'order'
+          and FourWeekRescreen.intent in { 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order' }
   )
     union ( "Referral to Alternate or Primary Healthcare Professional for Hypertensive Reading" )
 
 define "Referral to Alternate or Primary Healthcare Professional for Hypertensive Reading":
   [ServiceRequest: "Referral to Primary Care or Alternate Provider"] Referral
     where Referral.reasonCode in "Finding of Elevated Blood Pressure or Hypertension"
-      and Referral.intent ~ 'order'
+      and Referral.intent in { 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order' }
 
 define "Second Hypertensive Reading SBP Greater than or Equal to 140 OR DBP Greater than or Equal to 90 Interventions":
   ( [ServiceRequest: "Follow Up Within 4 Weeks"] WeeksRescreen
       with "Laboratory Test or ECG for Hypertension" ECGLabTest
         such that WeeksRescreen.authoredOn during day of "Measurement Period"
           and ECGLabTest.authoredOn during day of "Measurement Period"
-          and WeeksRescreen.intent ~ 'order'
-          and ECGLabTest.intent ~ 'order'
+          and WeeksRescreen.intent in { 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order' }
+          and ECGLabTest.intent in { 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order' }
       with "NonPharmacological Interventions" HTNInterventions
         such that HTNInterventions.authoredOn during day of "Measurement Period"
       with ["MedicationRequest": "Pharmacologic Therapy for Hypertension"] Medications
         such that Medications.authoredOn during day of "Measurement Period"
-          and Medications.status ~ 'active'
+          and Medications.status in { 'active', 'completed' }
   )
 
 define "Second Hypertensive Reading SBP 130 to 139 OR DBP 80 to 89 and Interventions":
@@ -164,8 +164,14 @@ define "Encounter with Normal Blood Pressure Reading":
           and BloodPressure.status in { 'final', 'amended', 'corrected' }
         sort by start of effective.toInterval()
     )
-    where (singleton from (EncounterLastBP.component C where C.code ~ "Systolic blood pressure")).value in Interval[1 'mm[Hg]', 120 'mm[Hg]' )
-      and (singleton from (EncounterLastBP.component C where C.code ~ "Diastolic blood pressure")).value in Interval[1 'mm[Hg]', 80 'mm[Hg]' )
+    where ( singleton from ( EncounterLastBP.component C
+          where C.code ~ "Systolic blood pressure"
+      )
+    ).value in Interval[1 'mm[Hg]', 120 'mm[Hg]' )
+      and ( singleton from ( EncounterLastBP.component C
+            where C.code ~ "Diastolic blood pressure"
+        )
+      ).value in Interval[1 'mm[Hg]', 80 'mm[Hg]' )
 
 define "Encounter with Elevated Blood Pressure Reading SBP 120 to 129 AND DBP less than 80":
   "Qualifying Encounter during Measurement Period" QualifyingEncounter
@@ -174,57 +180,99 @@ define "Encounter with Elevated Blood Pressure Reading SBP 120 to 129 AND DBP le
           and BloodPressure.status in { 'final', 'amended', 'corrected' }
         sort by start of effective.toInterval()
     )
-    where ( (singleton from (EncounterLastBP.component C where C.code ~ "Systolic blood pressure")).value in Interval[120 'mm[Hg]', 129 'mm[Hg]']
-        and (singleton from (EncounterLastBP.component C where C.code ~ "Diastolic blood pressure")).value in Interval[1 'mm[Hg]', 80 'mm[Hg]' )
+    where ( ( singleton from ( EncounterLastBP.component C
+            where C.code ~ "Systolic blood pressure"
+        )
+      ).value in Interval[120 'mm[Hg]', 129 'mm[Hg]']
+        and ( singleton from ( EncounterLastBP.component C
+              where C.code ~ "Diastolic blood pressure"
+          )
+        ).value in Interval[1 'mm[Hg]', 80 'mm[Hg]' )
     )
 
 define "Encounter with Second Hypertensive Reading SBP Greater than or Equal to 140 OR DBP Greater than or Equal to 90":
   ( ( "Qualifying Encounter during Measurement Period" QualifyingEncounter
-      let EncounterLastBP: Last([USCoreBloodPressureProfile] BloodPressure
-          where BloodPressure.effective.toInterval() ends during day of QualifyingEncounter.period
-            and BloodPressure.status in { 'final', 'amended', 'corrected' }
-          sort by start of effective.toInterval()
-      )
-      where ( (singleton from (EncounterLastBP.component C where C.code ~ "Systolic blood pressure")).value > 0 'mm[Hg]'
-          and (singleton from (EncounterLastBP.component C where C.code ~ "Diastolic blood pressure")).value > 0 'mm[Hg]'
-          and ( (singleton from (EncounterLastBP.component C where C.code ~ "Systolic blood pressure")).value >= 140 'mm[Hg]'
-              or (singleton from (EncounterLastBP.component C where C.code ~ "Diastolic blood pressure")).value >= 90 'mm[Hg]'
-          )
-      )
+        let EncounterLastBP: Last([USCoreBloodPressureProfile] BloodPressure
+            where BloodPressure.effective.toInterval() ends during day of QualifyingEncounter.period
+              and BloodPressure.status in { 'final', 'amended', 'corrected' }
+            sort by start of effective.toInterval()
+        )
+        where ( ( singleton from ( EncounterLastBP.component C
+                where C.code ~ "Systolic blood pressure"
+            )
+          ).value > 0 'mm[Hg]'
+            and ( singleton from ( EncounterLastBP.component C
+                  where C.code ~ "Diastolic blood pressure"
+              )
+            ).value > 0 'mm[Hg]'
+            and ( ( singleton from ( EncounterLastBP.component C
+                    where C.code ~ "Systolic blood pressure"
+                )
+              ).value >= 140 'mm[Hg]'
+                or ( singleton from ( EncounterLastBP.component C
+                      where C.code ~ "Diastolic blood pressure"
+                  )
+                ).value >= 90 'mm[Hg]'
+            )
+        )
     )
-    intersect "Encounter with Hypertensive Reading Within Year Prior"
+      intersect "Encounter with Hypertensive Reading Within Year Prior"
   )
 
 define "Encounter with Second Hypertensive Reading SBP 130 to 139 OR DBP 80 to 89":
   ( ( "Qualifying Encounter during Measurement Period" QualifyingEncounter
-      let EncounterLastBP: Last([USCoreBloodPressureProfile] BloodPressure
-          where BloodPressure.effective.toInterval() ends during day of QualifyingEncounter.period
-            and BloodPressure.status in { 'final', 'amended', 'corrected' }
-          sort by start of effective.toInterval()
-      )
-      where ( ( (singleton from (EncounterLastBP.component C where C.code ~ "Systolic blood pressure")).value in Interval[130 'mm[Hg]', 139 'mm[Hg]']
-            or (singleton from (EncounterLastBP.component C where C.code ~ "Diastolic blood pressure")).value in Interval[80 'mm[Hg]', 89 'mm[Hg]']
+        let EncounterLastBP: Last([USCoreBloodPressureProfile] BloodPressure
+            where BloodPressure.effective.toInterval() ends during day of QualifyingEncounter.period
+              and BloodPressure.status in { 'final', 'amended', 'corrected' }
+            sort by start of effective.toInterval()
         )
-          and not ( (singleton from (EncounterLastBP.component C where C.code ~ "Systolic blood pressure")).value >= 140 'mm[Hg]'
-              or (singleton from (EncounterLastBP.component C where C.code ~ "Diastolic blood pressure")).value >= 90 'mm[Hg]'
+        where ( ( ( singleton from ( EncounterLastBP.component C
+                  where C.code ~ "Systolic blood pressure"
+              )
+            ).value in Interval[130 'mm[Hg]', 139 'mm[Hg]']
+              or ( singleton from ( EncounterLastBP.component C
+                    where C.code ~ "Diastolic blood pressure"
+                )
+              ).value in Interval[80 'mm[Hg]', 89 'mm[Hg]']
           )
-      )
+            and not ( ( singleton from ( EncounterLastBP.component C
+                    where C.code ~ "Systolic blood pressure"
+                )
+              ).value >= 140 'mm[Hg]'
+                or ( singleton from ( EncounterLastBP.component C
+                      where C.code ~ "Diastolic blood pressure"
+                  )
+                ).value >= 90 'mm[Hg]'
+            )
+        )
     )
-    intersect "Encounter with Hypertensive Reading Within Year Prior"
+      intersect "Encounter with Hypertensive Reading Within Year Prior"
   )
 
 define "Encounter with First Hypertensive Reading SBP Greater than or Equal to 130 OR DBP Greater than or Equal to 80":
   ( "Qualifying Encounter during Measurement Period" QualifyingEncounter
       let EncounterLastBP: Last([USCoreBloodPressureProfile] BloodPressure
           where BloodPressure.effective.toInterval() ends during day of QualifyingEncounter.period
-          and BloodPressure.status in { 'final', 'amended', 'corrected' }
+            and BloodPressure.status in { 'final', 'amended', 'corrected' }
           sort by start of effective.toInterval()
       )
-      where ( ( (singleton from (EncounterLastBP.component C where C.code ~ "Systolic blood pressure")).value > 0 'mm[Hg]'
-            and (singleton from (EncounterLastBP.component C where C.code ~ "Diastolic blood pressure")).value > 0 'mm[Hg]'
+      where ( ( ( singleton from ( EncounterLastBP.component C
+                where C.code ~ "Systolic blood pressure"
+            )
+          ).value > 0 'mm[Hg]'
+            and ( singleton from ( EncounterLastBP.component C
+                  where C.code ~ "Diastolic blood pressure"
+              )
+            ).value > 0 'mm[Hg]'
         )
-          and ( (singleton from (EncounterLastBP.component C where C.code ~ "Systolic blood pressure")).value >= 130 'mm[Hg]'
-              or (singleton from (EncounterLastBP.component C where C.code ~ "Diastolic blood pressure")).value >= 80 'mm[Hg]'
+          and ( ( singleton from ( EncounterLastBP.component C
+                  where C.code ~ "Systolic blood pressure"
+              )
+            ).value >= 130 'mm[Hg]'
+              or ( singleton from ( EncounterLastBP.component C
+                    where C.code ~ "Diastolic blood pressure"
+                )
+              ).value >= 80 'mm[Hg]'
           )
       )
   )
@@ -237,10 +285,22 @@ define "Encounter with Hypertensive Reading Within Year Prior":
             and BloodPressure.status in { 'final', 'amended', 'corrected' }
           sort by start of effective.toInterval()
       )
-      where ( (singleton from (EncounterLastBP.component C where C.code ~ "Systolic blood pressure")).value > 0 'mm[Hg]'
-          and (singleton from (EncounterLastBP.component C where C.code ~ "Diastolic blood pressure")).value > 0 'mm[Hg]'
-          and ( (singleton from (EncounterLastBP.component C where C.code ~ "Systolic blood pressure")).value >= 130 'mm[Hg]'
-              or (singleton from (EncounterLastBP.component C where C.code ~ "Diastolic blood pressure")).value >= 80 'mm[Hg]'
+      where ( ( singleton from ( EncounterLastBP.component C
+              where C.code ~ "Systolic blood pressure"
+          )
+        ).value > 0 'mm[Hg]'
+          and ( singleton from ( EncounterLastBP.component C
+                where C.code ~ "Diastolic blood pressure"
+            )
+          ).value > 0 'mm[Hg]'
+          and ( ( singleton from ( EncounterLastBP.component C
+                  where C.code ~ "Systolic blood pressure"
+              )
+            ).value >= 130 'mm[Hg]'
+              or ( singleton from ( EncounterLastBP.component C
+                    where C.code ~ "Diastolic blood pressure"
+                )
+              ).value >= 80 'mm[Hg]'
           )
       )
   )
@@ -251,23 +311,25 @@ define "NonPharmacological Intervention Not Ordered":
     union [ServiceNotRequested: "Dietary Recommendations"]
     union [ServiceNotRequested: "Recommendation to Increase Physical Activity"]
     union [ServiceNotRequested: "Referral or Counseling for Alcohol Consumption"] ) NonPharmIntervention
-      where NonPharmIntervention.reasonRefused in "Patient Declined"
+    where NonPharmIntervention.status in { 'active', 'completed', 'on-hold' }
+      and NonPharmIntervention.reasonRefused in "Patient Declined"
 
 define "Encounter with Medical Reason for Not Obtaining or Patient Declined Blood Pressure Measurement":
   "Qualifying Encounter during Measurement Period" QualifyingEncounter
-    with ( [ObservationCancelled:code ~ "Blood pressure panel with all children optional"]
-        union [ObservationCancelled:code ~ "Systolic blood pressure"]
-        union [ObservationCancelled:code ~ "Diastolic blood pressure"] ) NoBPScreen
-         such that NoBPScreen.issued during day of QualifyingEncounter.period
-         and ( NoBPScreen.notDoneReason in "Patient Declined"
-          or NoBPScreen.notDoneReason in "Medical Reason"
+    with ( [ObservationCancelled: code ~ "Blood pressure panel with all children optional"]
+      union [ObservationCancelled: code ~ "Systolic blood pressure"]
+      union [ObservationCancelled: code ~ "Diastolic blood pressure"] ) NoBPScreen
+      such that NoBPScreen.issued during day of QualifyingEncounter.period
+        and ( NoBPScreen.notDoneReason in "Patient Declined"
+            or NoBPScreen.notDoneReason in "Medical Reason"
         )
 
 define "Encounter with Order for Hypertension Follow Up Declined by Patient":
   ( ( "Encounter with Elevated Blood Pressure Reading SBP 120 to 129 AND DBP less than 80" ElevatedBPEncounter
         with ( [ServiceNotRequested: "Referral to Primary Care or Alternate Provider"]
-           union [ServiceNotRequested: "Follow Up Within 6 Months"] ) ElevatedBPDeclinedInterventions
+          union [ServiceNotRequested: "Follow Up Within 6 Months"] ) ElevatedBPDeclinedInterventions
           such that ElevatedBPDeclinedInterventions.authoredOn during day of ElevatedBPEncounter.period
+            and ElevatedBPDeclinedInterventions.status in { 'active', 'completed', 'on-hold' }
             and ElevatedBPDeclinedInterventions.reasonRefused in "Patient Declined"
     )
       union ( "Encounter with Elevated Blood Pressure Reading SBP 120 to 129 AND DBP less than 80" ElevatedBPEncounter
@@ -278,6 +340,7 @@ define "Encounter with Order for Hypertension Follow Up Declined by Patient":
           with ( [ServiceNotRequested: "Follow Up Within 4 Weeks"]
             union [ServiceNotRequested: "Referral to Primary Care or Alternate Provider"] ) FirstHTNDeclinedInterventions
             such that FirstHTNDeclinedInterventions.authoredOn during day of FirstHTNEncounter.period
+              and FirstHTNDeclinedInterventions.status in { 'active', 'completed', 'on-hold' }
               and FirstHTNDeclinedInterventions.reasonRefused in "Patient Declined"
       )
       union ( "Encounter with First Hypertensive Reading SBP Greater than or Equal to 130 OR DBP Greater than or Equal to 80" FirstHTNEncounter
@@ -296,19 +359,21 @@ define "Encounter with Order for Hypertension Follow Up Declined by Patient":
 
 define "Second Hypertensive Reading SBP 130 to 139 OR DBP 80 to 89 Interventions Declined":
   ( ( [ServiceNotRequested: "Referral to Primary Care or Alternate Provider"]
-        union [ServiceNotRequested: "Follow Up Within 6 Months"] ) SecondHTNDeclinedReferralAndFollowUp
-        where SecondHTNDeclinedReferralAndFollowUp.reasonRefused in "Patient Declined"
-    )
-      union "Laboratory Test or ECG for Hypertension Not Ordered"
-      union "NonPharmacological Intervention Not Ordered"
+      union [ServiceNotRequested: "Follow Up Within 6 Months"] ) SecondHTNDeclinedReferralAndFollowUp
+      where SecondHTNDeclinedReferralAndFollowUp.status in { 'active', 'completed', 'on-hold' }
+        and SecondHTNDeclinedReferralAndFollowUp.reasonRefused in "Patient Declined"
+  )
+    union "Laboratory Test or ECG for Hypertension Not Ordered"
+    union "NonPharmacological Intervention Not Ordered"
 
 define "Second Hypertensive Reading SBP Greater than or Equal to 140 OR DBP Greater than or Equal to 90 Interventions Declined":
   ( ( ( [ServiceNotRequested: "Referral to Primary Care or Alternate Provider"]
         union [ServiceNotRequested: "Follow Up Within 4 Weeks"] ) SecondHTN140Over90ReferralFollowUpNotDone
-        where SecondHTN140Over90ReferralFollowUpNotDone.reasonRefused in "Patient Declined"
+        where SecondHTN140Over90ReferralFollowUpNotDone.status in { 'active', 'completed', 'on-hold' }
+          and SecondHTN140Over90ReferralFollowUpNotDone.reasonRefused in "Patient Declined"
     )
       union ( [MedicationNotRequested: "Pharmacologic Therapy for Hypertension"] MedicationRequestNotOrdered
-          where MedicationRequestNotOrdered.status = 'completed'
+          where MedicationRequestNotOrdered.status in { 'active', 'completed' }
       )
       union "Laboratory Test or ECG for Hypertension Not Ordered"
       union "NonPharmacological Intervention Not Ordered"
@@ -318,10 +383,7 @@ define "Laboratory Test or ECG for Hypertension Not Ordered":
   ( [ServiceNotRequested: code = "12 lead EKG panel"]
     union [ServiceNotRequested: code = "EKG study"]
     union [ServiceNotRequested: "Laboratory Tests for Hypertension"] ) LabECGNotDone
-    where exists(LabECGNotDone.extension E
-      where E.url = 'http://hl7.org/fhir/us/qicore/StructureDefinition/qicore-doNotPerformReason' 
-      and E.value as Concept in "Patient Declined"
-    )
+    where LabECGNotDone.status in { 'active', 'completed', 'on-hold' }
       and LabECGNotDone.reasonRefused in "Patient Declined"
 
 define "SDE Ethnicity":
@@ -335,3 +397,15 @@ define "SDE Race":
 
 define "SDE Sex":
   SDE."SDE Sex"
+
+/*
+@description: Returns true if the given condition either has no verification status or has a verification status of confirmed, unconfirmed, provisional, or differential
+*/
+
+
+define fluent function isVerified(condition Choice<QICore.ConditionProblemsHealthConcerns, QICore.ConditionEncounterDiagnosis>):
+  condition.verificationStatus is not null implies ( condition.verificationStatus ~ QICoreCommon."confirmed"
+      or condition.verificationStatus ~ QICoreCommon."unconfirmed"
+      or condition.verificationStatus ~ QICoreCommon."provisional"
+      or condition.verificationStatus ~ QICoreCommon."differential"
+  )

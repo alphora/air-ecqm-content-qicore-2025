@@ -45,7 +45,7 @@ define "Numerator":
     or "Is Currently Taking ACEI or ARB or ARNI"
 
 define "Denominator Exceptions":
-  "Has Medical or Patient Reason for Not Ordering ACEI or ARB or ARNI"
+ "Has Medical or Patient Reason for Not Ordering ACEI or ARB or ARNI" 
     or "Has Allergy or Intolerance to ACEI or ARB or ARNI Ingredient"
     or "Has Diagnosis of Allergy or Intolerance to ACEI or ARB"
     or "Has Diagnosis of Pregnancy"
@@ -77,38 +77,38 @@ define "Has Allergy or Intolerance to ACEI or ARB or ARNI Ingredient":
   )
 
 define "Has Diagnosis of Allergy or Intolerance to ACEI or ARB":
-  exists ( ( ( ["ConditionProblemsHealthConcerns": "Allergy to ACE Inhibitor or ARB"]
-        union ["ConditionEncounterDiagnosis": "Allergy to ACE Inhibitor or ARB"]
-    )
-      union ( ["ConditionProblemsHealthConcerns": "Intolerance to ACE Inhibitor or ARB"] )
-      union ["ConditionEncounterDiagnosis": "Intolerance to ACE Inhibitor or ARB"] ) ACEIOrARBAllergyOrIntoleranceDiagnosis
+  exists ( ( (["ConditionProblemsHealthConcerns": "Allergy to ACE Inhibitor or ARB"]
+        union ["ConditionEncounterDiagnosis": "Allergy to ACE Inhibitor or ARB"])
+      union (["ConditionProblemsHealthConcerns": "Intolerance to ACE Inhibitor or ARB"] ) 
+        union ["ConditionEncounterDiagnosis": "Intolerance to ACE Inhibitor or ARB"]) ACEIOrARBAllergyOrIntoleranceDiagnosis
       where ACEIOrARBAllergyOrIntoleranceDiagnosis.overlapsAfterHeartFailureOutpatientEncounter ( )
   )
 
 define "Has Diagnosis of Pregnancy":
-  exists ( ( [ConditionProblemsHealthConcerns: "Pregnancy"]
-      union ["ConditionEncounterDiagnosis": "Pregnancy"] ) PregnancyDiagnosis
-      with AHA."Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD" ModerateOrSevereLVSDHFOutpatientEncounter
-        such that PregnancyDiagnosis.prevalenceInterval ( ) starts 9 months or less before or on start of ModerateOrSevereLVSDHFOutpatientEncounter.period
-          and PregnancyDiagnosis.isVerified ( )
-  )
-    or exists ( [USCoreObservationPregnancyStatusProfile] PregnantObservation
+  exists (([ConditionProblemsHealthConcerns: "Pregnancy"] 
+      union ["ConditionEncounterDiagnosis": "Pregnancy"]) PregnancyDiagnosis
         with AHA."Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD" ModerateOrSevereLVSDHFOutpatientEncounter
-          such that PregnantObservation.effective.toInterval ( ) starts 9 months or less before or on start of ModerateOrSevereLVSDHFOutpatientEncounter.period
-            and ( PregnantObservation.value in "Pregnancy"
-                and PregnantObservation.status in { 'final', 'amended', 'corrected' }
-            )
-    )
+        such that PregnancyDiagnosis.prevalenceInterval() starts 9 months or less before or on start of ModerateOrSevereLVSDHFOutpatientEncounter.period
+        and PregnancyDiagnosis.isVerified()
+  ) 
+  or exists(
+        [USCoreObservationPregnancyStatusProfile] PregnantObservation
+        with AHA."Heart Failure Outpatient Encounter with History of Moderate or Severe LVSD" ModerateOrSevereLVSDHFOutpatientEncounter
+        such that PregnantObservation.effective.toInterval() starts 9 months or less before or on start of ModerateOrSevereLVSDHFOutpatientEncounter.period
+        and (
+          PregnantObservation.value in "Pregnancy"
+          and PregnantObservation.status in { 'final', 'amended', 'corrected' })
+  )
 
 define "Has Diagnosis of Renal Failure Due to ACEI":
-  exists ( ( [ConditionProblemsHealthConcerns: "Acute renal failure caused by angiotensin-converting-enzyme inhibitor (disorder)"]
-      union [ConditionEncounterDiagnosis: "Acute renal failure caused by angiotensin-converting-enzyme inhibitor (disorder)"] ) RenalFailureDueToACEI
+  exists ( ([ConditionProblemsHealthConcerns: "Acute renal failure caused by angiotensin-converting-enzyme inhibitor (disorder)"] 
+      union [ConditionEncounterDiagnosis: "Acute renal failure caused by angiotensin-converting-enzyme inhibitor (disorder)"]) RenalFailureDueToACEI
       where RenalFailureDueToACEI.overlapsHeartFailureOutpatientEncounter ( )
   )
 
 define "Has Medical or Patient Reason for Not Ordering ACEI or ARB or ARNI":
   exists ( [MedicationNotRequested: medication in "ACE Inhibitor or ARB or ARNI"] NoACEIOrARBOrARNIOrdered
-      where NoACEIOrARBOrARNIOrdered.isMedicationNotRequestedOrderedDuringHeartFailureOutpatientEncounter ( )
+      where NoACEIOrARBOrARNIOrdered.isMedicationNotRequestedOrderedDuringHeartFailureOutpatientEncounter()
         and ( NoACEIOrARBOrARNIOrdered.reasonCode in "Medical Reason"
             or NoACEIOrARBOrARNIOrdered.reasonCode in "Patient Reason"
             or NoACEIOrARBOrARNIOrdered.reasonCode in "Patient Reason for ACE Inhibitor or ARB Decline"

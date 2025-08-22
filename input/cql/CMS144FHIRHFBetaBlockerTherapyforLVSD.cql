@@ -1,14 +1,14 @@
-library CMS144FHIRHFBetaBlockerForLVSD version '1.5.000'
+library CMS144FHIRHFBetaBlockerForLVSD version '0.0.000'
 
 using QICore version '6.0.0'
 
 include FHIRHelpers version '4.4.000' called FHIRHelpers
 include SupplementalDataElements version '5.1.000' called SDE
 include QICoreCommon version '4.0.000' called QICoreCommon
-include AHAOverall version '4.1.000' called AHA
+include AHAOverall version '4.1.000' called AHA 
 
 codesystem "SNOMEDCT": 'http://snomed.info/sct'
-
+ 
 valueset "Allergy to Beta Blocker Therapy": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1177'
 valueset "Arrhythmia": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.366'
 valueset "Asthma": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.362'
@@ -47,7 +47,7 @@ define "Numerator":
     or "Is Currently Taking Beta Blocker Therapy for LVSD"
 
 define "Denominator Exceptions":
-  "Has Consecutive Heart Rates Less than 50"
+  "Has Consecutive Heart Rates Less than 50" 
     or "Has Medical or Patient Reason for Not Ordering Beta Blocker for LVSD"
     or "Has Arrhythmia Diagnosis"
     or "Has Hypotension Diagnosis"
@@ -56,7 +56,7 @@ define "Denominator Exceptions":
     or "Has Bradycardia Diagnosis"
     or "Has Allergy or Intolerance to Beta Blocker Therapy Ingredient"
     or "Atrioventricular Block without Cardiac Pacer"
-
+    
 define "SDE Ethnicity":
   SDE."SDE Ethnicity"
 
@@ -87,34 +87,33 @@ define "Is Currently Taking Beta Blocker Therapy for LVSD":
   )
 
 define "Has Hypotension Diagnosis":
-  exists ( ( ["ConditionProblemsHealthConcerns": "Hypotension"]
-      union ["ConditionEncounterDiagnosis": "Hypotension"] ) HypotensionAlias
+  exists ( (["ConditionProblemsHealthConcerns": "Hypotension"]
+        union ["ConditionEncounterDiagnosis": "Hypotension"]) HypotensionAlias
       where HypotensionAlias.overlapsHeartFailureOutpatientEncounter ( )
-        and HypotensionAlias.isVerified ( )
+        and HypotensionAlias.isVerified()
   )
 
 define "Has Diagnosis of Cardiac Pacer in Situ":
-  exists ( ( ["ConditionProblemsHealthConcerns": "Cardiac Pacer in Situ"]
-      union ["ConditionEncounterDiagnosis": "Cardiac Pacer in Situ"] ) CardiacPacerDiagnosis
+  exists ( (["ConditionProblemsHealthConcerns": "Cardiac Pacer in Situ"]
+      union ["ConditionEncounterDiagnosis": "Cardiac Pacer in Situ"]) CardiacPacerDiagnosis
       where CardiacPacerDiagnosis.overlapsAfterHeartFailureOutpatientEncounter ( )
-        and CardiacPacerDiagnosis.isVerified ( )
+        and CardiacPacerDiagnosis.isVerified()
   )
 
 define "Has Diagnosis of Allergy or Intolerance to Beta Blocker Therapy":
-  exists ( ( ( ["ConditionProblemsHealthConcerns": "Allergy to Beta Blocker Therapy"]
-        union ["ConditionEncounterDiagnosis": "Allergy to Beta Blocker Therapy"]
-    )
-      union ( ["ConditionProblemsHealthConcerns": "Intolerance to Beta Blocker Therapy"] )
-      union ["ConditionEncounterDiagnosis": "Intolerance to Beta Blocker Therapy"] ) BetaBlockerAllergyOrIntoleranceDiagnosis
+  exists ( ( (["ConditionProblemsHealthConcerns": "Allergy to Beta Blocker Therapy"]
+        union ["ConditionEncounterDiagnosis": "Allergy to Beta Blocker Therapy"])
+      union (["ConditionProblemsHealthConcerns": "Intolerance to Beta Blocker Therapy"] ) 
+        union ["ConditionEncounterDiagnosis": "Intolerance to Beta Blocker Therapy"]) BetaBlockerAllergyOrIntoleranceDiagnosis
       where BetaBlockerAllergyOrIntoleranceDiagnosis.overlapsAfterHeartFailureOutpatientEncounter ( )
-        and BetaBlockerAllergyOrIntoleranceDiagnosis.isVerified ( )
+        and BetaBlockerAllergyOrIntoleranceDiagnosis.isVerified()
   )
 
 define "Has Bradycardia Diagnosis":
-  exists ( ( [ConditionProblemsHealthConcerns: "Bradycardia"]
-      union [ConditionEncounterDiagnosis: "Bradycardia"] ) BradycardiaAlias
+  exists ( ([ConditionProblemsHealthConcerns: "Bradycardia"]
+      union [ConditionEncounterDiagnosis: "Bradycardia"]) BradycardiaAlias
       where BradycardiaAlias.overlapsHeartFailureOutpatientEncounter ( )
-        and BradycardiaAlias.isVerified ( )
+        and BradycardiaAlias.isVerified()
   )
 
 define "Has Consecutive Heart Rates Less than 50":
@@ -136,34 +135,34 @@ define "Has Consecutive Heart Rates Less than 50":
 define "Has Allergy or Intolerance to Beta Blocker Therapy Ingredient":
   exists ( ( [AllergyIntolerance: "Beta Blocker Therapy Ingredient"]
       union [AllergyIntolerance: "Substance with beta adrenergic receptor antagonist mechanism of action (substance)"] ) BetaBlockerAllergyIntolerance
-      where BetaBlockerAllergyIntolerance.overlapsAfterHeartFailureOutpatientEncounter ( )
-        and BetaBlockerAllergyIntolerance.isVerified ( )
+      where BetaBlockerAllergyIntolerance.overlapsAfterHeartFailureOutpatientEncounter()
+      and BetaBlockerAllergyIntolerance.isVerified()
   )
 
 define "Has Arrhythmia Diagnosis":
-  exists ( ( [ConditionProblemsHealthConcerns: "Arrhythmia"]
-      union [ConditionEncounterDiagnosis: "Arrhythmia"] ) ArrhythmiaAlias
+  exists ( ([ConditionProblemsHealthConcerns: "Arrhythmia"]
+      union [ConditionEncounterDiagnosis: "Arrhythmia"]) ArrhythmiaAlias
       where ArrhythmiaAlias.overlapsHeartFailureOutpatientEncounter ( )
-        and ArrhythmiaAlias.isVerified ( )
+        and ArrhythmiaAlias.isVerified()
   )
 
 define "Has Asthma Diagnosis":
-  exists ( ( [ConditionProblemsHealthConcerns: "Asthma"]
-      union [ConditionEncounterDiagnosis: "Asthma"] ) AsthmaAlias
+  exists ( ([ConditionProblemsHealthConcerns: "Asthma"]
+      union [ConditionEncounterDiagnosis: "Asthma"]) AsthmaAlias
       where AsthmaAlias.overlapsHeartFailureOutpatientEncounter ( )
-        and AsthmaAlias.isVerified ( )
+        and AsthmaAlias.isVerified()
   )
 
 define "Has Atrioventricular Block Diagnosis":
-  exists ( ( [ConditionProblemsHealthConcerns: "Atrioventricular Block"]
-      union [ConditionEncounterDiagnosis: "Atrioventricular Block"] ) AtrioventricularBlockAlias
+  exists ( ([ConditionProblemsHealthConcerns: "Atrioventricular Block"]
+      union [ConditionEncounterDiagnosis: "Atrioventricular Block"]) AtrioventricularBlockAlias
       where AtrioventricularBlockAlias.overlapsHeartFailureOutpatientEncounter ( )
-        and AtrioventricularBlockAlias.isVerified ( )
+        and AtrioventricularBlockAlias.isVerified()
   )
 
 define "Has Beta Blocker Therapy for LVSD Ordered":
   exists ( [MedicationRequest: medication in "Beta Blocker Therapy for LVSD"] BetaBlockerOrdered
-      where BetaBlockerOrdered.isOrderedDuringHeartFailureOutpatientEncounter ( )
+      where BetaBlockerOrdered.isOrderedDuringHeartFailureOutpatientEncounter()
   )
 
 define "Has Medical or Patient Reason for Not Ordering Beta Blocker for LVSD":
@@ -178,9 +177,8 @@ define "Has Medical or Patient Reason for Not Ordering Beta Blocker for LVSD":
  /*
 @description: Returns true if the given condition either has no verification status or has a verification status of confirmed, unconfirmed, provisional, or differential
 */
-
-
 define fluent function isVerified(allergyIntolerance QICore.AllergyIntolerance):
-  allergyIntolerance.verificationStatus is not null implies ( allergyIntolerance.verificationStatus ~ QICoreCommon."allergy-confirmed"
+  allergyIntolerance.verificationStatus is not null implies
+    (allergyIntolerance.verificationStatus ~ QICoreCommon."allergy-confirmed"
       or allergyIntolerance.verificationStatus ~ QICoreCommon."allergy-unconfirmed"
-  )
+    )

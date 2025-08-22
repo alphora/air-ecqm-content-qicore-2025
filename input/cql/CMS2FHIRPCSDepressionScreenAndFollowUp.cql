@@ -1,4 +1,4 @@
-library CMS2FHIRPCSDepressionScreenAndFollowUp version '0.4.000'
+library CMS2FHIRPCSDepScreenAndFollowUp version '0.4.001'
 
 using QICore version '6.0.0'
 
@@ -108,7 +108,7 @@ define "Has Adolescent Depression Screening":
       with "Qualifying Encounter During Measurement Period" QualifyingEncounter
         such that AdolescentScreening.effective.toInterval ( ) 14 days or less on or before day of start of QualifyingEncounter.period
           and AdolescentScreening.value is not null
-          and AdolescentScreening.status in {'final', 'corrected'}
+          and AdolescentScreening.status in {'final', 'amended', 'corrected'}
   )
 
 define "Has Adult Depression Screening":
@@ -116,7 +116,7 @@ define "Has Adult Depression Screening":
       with "Qualifying Encounter During Measurement Period" QualifyingEncounter
         such that AdultScreening.effective.toInterval ( ) 14 days or less on or before day of start of QualifyingEncounter.period
           and AdultScreening.value is not null
-          and AdultScreening.status in {'final', 'corrected'}
+          and AdultScreening.status in {'final', 'amended', 'corrected'}
   )
 
 define "Has Most Recent Adolescent Screening Negative":
@@ -155,7 +155,7 @@ define "Most Recent Adolescent Depression Screening":
       with "Qualifying Encounter During Measurement Period" QualifyingEncounter
         such that AdolescentDepressionScreening.effective.toInterval() 14 days or less on or before day of start of QualifyingEncounter.period
           and AdolescentDepressionScreening.value is not null
-          and AdolescentDepressionScreening.status in {'final', 'corrected'}
+          and AdolescentDepressionScreening.status in {'final', 'amended', 'corrected'}
       sort by start of effective.toInterval()
   )
 
@@ -176,7 +176,7 @@ define "Most Recent Adult Depression Screening":
       with "Qualifying Encounter During Measurement Period" QualifyingEncounter
         such that AdultDepressionScreening.effective.toInterval() 14 days or less on or before day of start of QualifyingEncounter.period
           and AdultDepressionScreening.value is not null
-          and AdultDepressionScreening.status in {'final', 'corrected'}
+          and AdultDepressionScreening.status in {'final', 'amended', 'corrected'}
       sort by start of effective.toInterval()
   )
 
@@ -205,7 +205,7 @@ define "Patient Age 18 Years or Older at Start of Measurement Period":
   AgeInYearsAt(date from start of "Measurement Period") >= 18
 
 define "Qualifying Encounter During Measurement Period":
-  ( [Encounter: type in "Encounter to Screen for Depression"]
+  ( [Encounter: "Encounter to Screen for Depression"]
     union [Encounter: "Physical Therapy Evaluation"]
     union [Encounter: "Telephone Visits"] ) QualifyingEncounter
     where QualifyingEncounter.period during day of "Measurement Period"
@@ -222,3 +222,4 @@ define "SDE Race":
 
 define "SDE Sex":
   SDE."SDE Sex"
+  

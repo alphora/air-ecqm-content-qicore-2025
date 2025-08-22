@@ -58,7 +58,6 @@ define "Has Atrioventricular Block with Qualifying CAD Encounter and Prior MI wi
 * @profile: http://hl7.org/fhir/us/core/StructureDefinition/us-core-heart-rate 
 */
 
-
 define "Has Consecutive Heart Rates Less than 50 with Qualifying CAD Encounter and Prior MI":
   exists ( from
       ["USCoreHeartRateProfile"] HeartRateExam,
@@ -103,11 +102,11 @@ define "Has Cardiac Pacer Device Implanted with Qualifying CAD Encounter and Pri
 
 define "Qualifying CAD Encounter and Prior MI":
   "Qualifying CAD Encounter" EncounterWithCADProxy
-    with ( [ConditionProblemsHealthConcerns: "Myocardial Infarction"]
-      union [ConditionEncounterDiagnosis: "Myocardial Infarction"] ) MyocardialInfarction
+    with ([ConditionProblemsHealthConcerns: "Myocardial Infarction"]
+     union [ConditionEncounterDiagnosis: "Myocardial Infarction"]) MyocardialInfarction
       such that MyocardialInfarction.prevalenceInterval ( ) starts 3 years or less before day of start of EncounterWithCADProxy.period
         and not exists AHA."Moderate or Severe LVSD Findings"
-        and MyocardialInfarction.isVerified ( )
+        and MyocardialInfarction.isVerified()
 
 define "Denominator 1":
   "Initial Population"
@@ -122,7 +121,6 @@ define "Has Atrioventricular Block with Qualifying CAD Encounter and History of 
 * @code: Heart rate - 8867-4
 * @profile: http://hl7.org/fhir/us/core/StructureDefinition/us-core-heart-rate
 */
-
 
 define "Has Consecutive Heart Rates Less than 50 with Qualifying CAD Encounter and History of Moderate or Severe LVSD":
   exists ( from
@@ -207,8 +205,8 @@ define "Qualifying Encounter During Measurement Period":
 
 define "Coronary Artery Disease Encounter":
   "Outpatient Encounter During Measurement Period" ValidQualifyingEncounter
-    with ( [ConditionProblemsHealthConcerns: "Coronary Artery Disease No MI"]
-      union [ConditionEncounterDiagnosis: "Coronary Artery Disease No MI"] ) CoronaryArteryDisease
+    with ([ConditionProblemsHealthConcerns: "Coronary Artery Disease No MI"]
+     union [ConditionEncounterDiagnosis: "Coronary Artery Disease No MI"]) CoronaryArteryDisease
       such that CoronaryArteryDisease.overlapsDayOfEncounter ( ValidQualifyingEncounter )
 
 define "Has Arrhythmia with Qualifying CAD Encounter and History of Moderate or Severe LVSD":
@@ -279,8 +277,8 @@ define "Has Hypotension with Qualifying CAD Encounter and History of Moderate or
   )
 
 define "Has Hypotension with Qualifying CAD Encounter and Prior MI":
-  exists ( ( [ConditionProblemsHealthConcerns: "Hypotension"]
-      union [ConditionEncounterDiagnosis: "Hypotension"] ) HypotensionDiagnosis
+  exists (( [ConditionProblemsHealthConcerns: "Hypotension"]
+    union [ConditionEncounterDiagnosis: "Hypotension"]) HypotensionDiagnosis
       where HypotensionDiagnosis.overlapsDayOfEncounter ( "Qualifying CAD Encounter and Prior MI" )
   )
 
@@ -315,8 +313,6 @@ define "Has Allergy or Intolerance to Beta Blocker Therapy Ingredient with Quali
 // TODO: https://oncprojectracking.healthit.gov/support/projects/MADIE/issues/MADIE-2124
 // Expecting 1 failures per population until this translator issue is incorporated into MADiE
 
-
-
 define "Has Medical or Patient Reason for Not Ordering Beta Blocker for LVSD":
   exists ( [MedicationNotRequested: medication in "Beta Blocker Therapy for LVSD"] NoBetaBlockerForLVSDOrdered
       with "Qualifying CAD Encounter and History of Moderate or Severe LVSD" LVSDVisit
@@ -330,8 +326,6 @@ define "Has Medical or Patient Reason for Not Ordering Beta Blocker for LVSD":
  
 // TODO: https://oncprojectracking.healthit.gov/support/projects/MADIE/issues/MADIE-2124
 // Expecting 1 failures per population until this translator issue is incorporated into MADiE
-
-
 
 define "Has Medical or Patient Reason for Not Ordering Beta Blocker Therapy":
   exists ( [MedicationNotRequested: medication in "Beta Blocker Therapy for LVSD"] NoBetaBlockerForLVSDOrdered
@@ -375,30 +369,27 @@ define fluent function overlapsDayOfEncounter(Diagnosis ConditionProblemsHealthC
 
 define fluent function overlapsDayOfEncounter(Diagnosis ConditionProblemsHealthConcerns, TheEncounter Encounter):
   TheEncounter Visit
-    where Diagnosis.isVerified ( )
+    where Diagnosis.isVerified()
     return Diagnosis.prevalenceInterval ( ) overlaps day of Visit.period
 
 define fluent function overlapsAfterDayOfEncounter(Event Choice<AllergyIntolerance, ConditionProblemsHealthConcerns>, EncounterList List<Encounter>):
   AnyTrue(EncounterList Visit
-      return
-      case
+      return case
         when Event is AllergyIntolerance then Interval[start of Event.onset.toInterval(), Event.lastOccurrence]overlaps after day of Visit.period
           and(Event.clinicalStatus is null
               or Event.clinicalStatus ~ QICoreCommon."allergy-active"
           )
-          and(Event.verificationStatus is null
-              or Event.verificationStatus ~ QICoreCommon."allergy-confirmed"
-          )
+          and (Event.verificationStatus is null
+          or Event.verificationStatus ~ QICoreCommon."allergy-confirmed")
         when Event is ConditionProblemsHealthConcerns then Event.isVerified()
-          and Event.prevalenceInterval() overlaps after day of Visit.period 
+          and Event.prevalenceInterval() overlaps after day of Visit.period
         else false 
       end
   )
 
 define fluent function authoredDuringDayOfEncounter(Order Choice<MedicationRequest, MedicationNotRequested>, EncounterList List<Encounter>):
   AnyTrue(EncounterList Visit
-      return
-      case
+      return case
         when Order is MedicationRequest then Order.authoredOn during day of Visit.period
           and Order.status in { 'active', 'completed' }
           and Order.intent in { 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order' }
