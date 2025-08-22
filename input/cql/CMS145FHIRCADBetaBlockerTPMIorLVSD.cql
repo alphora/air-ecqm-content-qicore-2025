@@ -98,6 +98,7 @@ define "Has Cardiac Pacer Device Implanted with Qualifying CAD Encounter and Pri
   exists ( [Procedure: "Cardiac Pacer"] ImplantedCardiacPacer
       with "Qualifying CAD Encounter and Prior MI" CADEncounterMI
         such that ImplantedCardiacPacer.performed.toInterval ( ) starts before end of CADEncounterMI.period
+          and ImplantedCardiacPacer.status = 'completed'
   )
 
 define "Qualifying CAD Encounter and Prior MI":
@@ -142,6 +143,16 @@ define "Has Cardiac Pacer Device Implanted with Qualifying CAD Encounter and His
   exists ( [Procedure: "Cardiac Pacer"] ImplantedCardiacPacer
       with "Qualifying CAD Encounter and History of Moderate or Severe LVSD" CADEncounterModerateOrSevereLVSD
         such that ImplantedCardiacPacer.performed.toInterval ( ) starts before end of CADEncounterModerateOrSevereLVSD.period
+  )
+
+define "Has Diagnosis of Cardiac Pacer in Situ with Qualifying CAD Encounter and History of Moderate or Severe LVSD":
+  exists ( [ConditionProblemsHealthConcerns: "Cardiac Pacer in Situ"] CardiacPacerDiagnosis
+      where CardiacPacerDiagnosis.overlapsDayOfEncounter ( "Qualifying CAD Encounter and History of Moderate or Severe LVSD" )
+  )
+
+define "Has Diagnosis of Cardiac Pacer in Situ with Qualifying CAD Encounter and Prior MI":
+  exists ( [ConditionProblemsHealthConcerns: "Cardiac Pacer in Situ"] CardiacPacerDiagnosis
+      where CardiacPacerDiagnosis.overlapsDayOfEncounter ( "Qualifying CAD Encounter and Prior MI" )
   )
 
 define "Has Allergy or Intolerance to Beta Blocker Therapy Ingredient with Qualifying CAD Encounter and Prior MI":
@@ -261,16 +272,6 @@ define "Has Diagnosis of Allergy or Intolerance to Beta Blocker Therapy with Qua
       where BetaBlockerAllergyOrIntoleranceDiagnosis.overlapsAfterDayOfEncounter ( "Qualifying CAD Encounter and Prior MI" )
   )
 
-define "Has Diagnosis of Cardiac Pacer in Situ with Qualifying CAD Encounter and History of Moderate or Severe LVSD":
-  exists ( [ConditionProblemsHealthConcerns: "Cardiac Pacer in Situ"] CardiacPacerDiagnosis
-      where CardiacPacerDiagnosis.overlapsDayOfEncounter ( "Qualifying CAD Encounter and History of Moderate or Severe LVSD" )
-  )
-
-define "Has Diagnosis of Cardiac Pacer in Situ with Qualifying CAD Encounter and Prior MI":
-  exists ( [ConditionProblemsHealthConcerns: "Cardiac Pacer in Situ"] CardiacPacerDiagnosis
-      where CardiacPacerDiagnosis.overlapsDayOfEncounter ( "Qualifying CAD Encounter and Prior MI" )
-  )
-
 define "Has Hypotension with Qualifying CAD Encounter and History of Moderate or Severe LVSD":
   exists ( [ConditionProblemsHealthConcerns: "Hypotension"] HypotensionDiagnosis
       where HypotensionDiagnosis.overlapsDayOfEncounter ( "Qualifying CAD Encounter and History of Moderate or Severe LVSD" )
@@ -310,9 +311,6 @@ define "Has Allergy or Intolerance to Beta Blocker Therapy Ingredient with Quali
       where BetaBlockerAllergyIntolerance.overlapsAfterDayOfEncounter ( "Qualifying CAD Encounter and History of Moderate or Severe LVSD" )
   )
 
-// TODO: https://oncprojectracking.healthit.gov/support/projects/MADIE/issues/MADIE-2124
-// Expecting 1 failures per population until this translator issue is incorporated into MADiE
-
 define "Has Medical or Patient Reason for Not Ordering Beta Blocker for LVSD":
   exists ( [MedicationNotRequested: medication in "Beta Blocker Therapy for LVSD"] NoBetaBlockerForLVSDOrdered
       with "Qualifying CAD Encounter and History of Moderate or Severe LVSD" LVSDVisit
@@ -323,9 +321,6 @@ define "Has Medical or Patient Reason for Not Ordering Beta Blocker for LVSD":
             or NoBetaBlockerForLVSDOrdered.reasonCode in "Patient Reason"
         )
   )
- 
-// TODO: https://oncprojectracking.healthit.gov/support/projects/MADIE/issues/MADIE-2124
-// Expecting 1 failures per population until this translator issue is incorporated into MADiE
 
 define "Has Medical or Patient Reason for Not Ordering Beta Blocker Therapy":
   exists ( [MedicationNotRequested: medication in "Beta Blocker Therapy for LVSD"] NoBetaBlockerForLVSDOrdered
@@ -363,8 +358,7 @@ define "Qualifying CAD Encounter":
 
 define fluent function overlapsDayOfEncounter(Diagnosis ConditionProblemsHealthConcerns, EncounterList List<Encounter>):
   AnyTrue(EncounterList Visit
-      where Diagnosis.isVerified()
-      return Diagnosis.prevalenceInterval() overlaps day of Visit.period
+      return Diagnosis.overlapsDayOfEncounter(Visit)
   )
 
 define fluent function overlapsDayOfEncounter(Diagnosis ConditionProblemsHealthConcerns, TheEncounter Encounter):
