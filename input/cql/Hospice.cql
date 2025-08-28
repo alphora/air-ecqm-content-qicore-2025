@@ -1,10 +1,10 @@
-library Hospice version '6.15.000'
+library Hospice version '6.18.000'
 
 using QICore version '6.0.0'
 
 include FHIRHelpers version '4.4.000' called FHIRHelpers
 include QICoreCommon version '4.0.000' called QICoreCommon
-include Status version '1.13.000' called Status
+include Status version '1.15.000' called Status
 
 codesystem "LOINC": 'http://loinc.org'
 codesystem "SNOMEDCT": 'http://snomed.info/sct'
@@ -19,7 +19,7 @@ code "Discharge to home for hospice care (procedure)": '428361000124107' from "S
 code "Hospice care [Minimum Data Set]": '45755-6' from "LOINC" display 'Hospice care [Minimum Data Set]'
 code "Yes (qualifier value)": '373066001' from "SNOMEDCT" display 'Yes (qualifier value)'
 
-parameter "Measurement Period" Interval<DateTime> default Interval[@2026-01-01, @2027-01-01)
+parameter "Measurement Period" Interval<DateTime>
 
 context Patient
 
@@ -28,22 +28,22 @@ define "Has Hospice Services":
       where (InpatientEncounter.hospitalization.dischargeDisposition ~ "Discharge to home for hospice care (procedure)"
           or InpatientEncounter.hospitalization.dischargeDisposition ~ "Discharge to healthcare facility for hospice care (procedure)"
       )
-        and InpatientEncounter.period.toInterval() ends during day of "Measurement Period"
+        and InpatientEncounter.period ends during day of "Measurement Period"
   )
     or exists ((([Encounter: "Hospice Encounter"]).isEncounterPerformed()) HospiceEncounter
-        where HospiceEncounter.period.toInterval() overlaps day of "Measurement Period"
+        where HospiceEncounter.period overlaps day of "Measurement Period"
     )
     or exists ((([ObservationScreeningAssessment: "Hospice care [Minimum Data Set]"]).isAssessmentPerformed()) HospiceAssessment
         where HospiceAssessment.value ~ "Yes (qualifier value)"
           and HospiceAssessment.effective.toInterval() overlaps day of "Measurement Period"
     )
     or exists ((([ServiceRequest: "Hospice Care Ambulatory"]).isInterventionOrder()) HospiceOrder
-        where HospiceOrder.authoredOn.toInterval() during day of "Measurement Period"
+        where HospiceOrder.authoredOn during day of "Measurement Period"
     )
     or exists ((([Procedure: "Hospice Care Ambulatory"]).isInterventionPerformed()) HospicePerformed
         where HospicePerformed.performed.toInterval() overlaps day of "Measurement Period"
     )
-    or exists ((([ConditionProblemsHealthConcerns: "Hospice Diagnosis"])
-        union ([ConditionEncounterDiagnosis: "Hospice Diagnosis"])) HospiceCareDiagnosis
+    or exists ((([ConditionProblemsHealthConcerns: "Hospice Diagnosis"]
+        union [ConditionEncounterDiagnosis: "Hospice Diagnosis"]).verified()) HospiceCareDiagnosis
         where HospiceCareDiagnosis.prevalenceInterval() overlaps day of "Measurement Period"
     )

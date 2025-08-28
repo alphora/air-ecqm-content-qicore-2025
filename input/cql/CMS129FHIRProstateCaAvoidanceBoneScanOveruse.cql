@@ -1,4 +1,4 @@
-library CMS129FHIRProstateCaBoneScanOveruse version '1.1.000'
+library CMS129FHIRProstCaBoneScanUse version '1.1.001'
 
 using QICore version '6.0.0'
 
@@ -64,15 +64,18 @@ define "Bone Scan Study Performed":
     with "Prostate Cancer Diagnosis" ActiveProstateCancer
       such that BoneScan.effective.toInterval ( ) starts after start of ActiveProstateCancer.prevalenceInterval ( )
     where BoneScan.effective.toInterval ( ) ends during day of "Measurement Period"
-
+    and BoneScan.status in {'final', 'amended', 'corrected'}
+    
 define "Has Bone Scan Study Performed with Documented Reason":
   exists "Bone Scan Study Performed" BoneScanAfterDiagnosis
     where BoneScanAfterDiagnosis.value ~ "Procedure reason record (record artifact)"
 
 define "Has Diagnosis of Pain related to Prostate Cancer":
-  exists ( [ConditionProblemsHealthConcerns: "Pain Warranting Further Investigation for Prostate Cancer"] ProstateCancerPain
+  exists ( ([ConditionProblemsHealthConcerns: "Pain Warranting Further Investigation for Prostate Cancer"] union
+  [ConditionEncounterDiagnosis: "Pain Warranting Further Investigation for Prostate Cancer"]) ProstateCancerPain
       with "Prostate Cancer Diagnosis" ActiveProstateCancer
         such that ProstateCancerPain.prevalenceInterval ( ) starts after start of ActiveProstateCancer.prevalenceInterval ( )
+        and ProstateCancerPain.isVerified()
   )
 
 define "First Prostate Cancer Treatment during day of Measurement Period":
@@ -127,12 +130,16 @@ define "Most Recent Prostate Cancer Staging Tumor Size T1a to T2a":
 define "Prostate Cancer Diagnosis":
   [ConditionProblemsHealthConcerns: "Prostate Cancer"] ProstateCancer
     where ProstateCancer.prevalenceInterval ( ) overlaps day of "Measurement Period"
-    and ProstateCancer.isVerificationStatusNotInvalid()
+    and ProstateCancer.isVerified()
 
 /*
-@description: Returns true if the given condition's verification status has been invalidated.
-*/    
-define fluent function isVerificationStatusNotInvalid(condition Choice<"ConditionEncounterDiagnosis", "ConditionProblemsHealthConcerns">):
-  not (condition.verificationStatus ~ QICoreCommon."unconfirmed"
-  or condition.verificationStatus ~ QICoreCommon."refuted"
-  or condition.verificationStatus ~ QICoreCommon."entered-in-error")
+@note: When possible, this function should be migrated to QICoreCommon.
+@description: Returns true if the given Condition has a verification status of "confirmed", "unconfirmed", "provisional", or "differential"
+*/
+define fluent function isVerified(condition Choice<ConditionEncounterDiagnosis, ConditionProblemsHealthConcerns>):
+  condition.verificationStatus is not null implies
+    (condition.verificationStatus ~ QICoreCommon."confirmed"
+        or condition.verificationStatus ~ QICoreCommon."unconfirmed"
+        or condition.verificationStatus ~ QICoreCommon."provisional"
+        or condition.verificationStatus ~ QICoreCommon."differential"
+    )

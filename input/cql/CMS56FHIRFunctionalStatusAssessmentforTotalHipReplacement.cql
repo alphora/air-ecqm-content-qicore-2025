@@ -1,12 +1,12 @@
-library CMS56FHIRFuncStatHipReplacement version '1.1.000'
+library CMS56FHIRFuncStatHipReplacement version '1.1.001'
 
 using QICore version '6.0.0'
 
 include FHIRHelpers version '4.4.000' called FHIRHelpers
 include QICoreCommon version '4.0.000' called QICoreCommon
 include SupplementalDataElements version '5.1.000' called SDE
-include Hospice version '6.15.000' called Hospice
-include Status version '1.13.000' called Status
+include Hospice version '6.18.000' called Hospice
+include Status version '1.15.000' called Status
 
 codesystem "LOINC": 'http://loinc.org'
 codesystem "CPT": 'http://www.ama-assn.org/go/cpt'
@@ -70,7 +70,7 @@ define "Has Qualifying Encounter":
         )
         union [Encounter: "Telephone Visits"]
         union [Encounter: "Virtual Encounter"]
-    ).isEncounterPerformedLocal()) ValidEncounters
+    ).isEncounterPerformed()) ValidEncounters
       where ValidEncounters.period during day of Interval["August 1 Year Prior to the Measurement Period", end of "Measurement Period"]
   )
 
@@ -110,7 +110,8 @@ define "Has Total Hip Arthroplasty with 1 or More Lower Body Fractures":
   exists ("Total Hip Arthroplasty Procedure" THAProcedure
       with ([ConditionEncounterDiagnosis: "Lower Body Fractures Excluding Ankle and Foot"]
         union [ConditionProblemsHealthConcerns: "Lower Body Fractures Excluding Ankle and Foot"]) LowerBodyFracture
-        such that LowerBodyFracture.prevalenceInterval() starts 48 hours or less on or before start of THAProcedure.performed.toInterval() 
+        such that LowerBodyFracture.prevalenceInterval() starts 48 hours or less on or before start of THAProcedure.performed.toInterval()
+        and LowerBodyFracture.isVerified()
   )
 
 define "Has Partial Hip Arthroplasty Procedure":
@@ -129,14 +130,16 @@ define "Has Malignant Neoplasm of Lower and Unspecified Limbs":
   exists (([ConditionProblemsHealthConcerns: "Malignant Neoplasms of Lower and Unspecified Limbs"]
       union [ConditionEncounterDiagnosis: "Malignant Neoplasms of Lower and Unspecified Limbs"]) MalignantNeoplasm
       with "Total Hip Arthroplasty Procedure" THAProcedure
-        such that MalignantNeoplasm.prevalenceInterval() overlaps day of THAProcedure.performed.toInterval() 
+        such that MalignantNeoplasm.prevalenceInterval() overlaps day of THAProcedure.performed.toInterval()
+        and MalignantNeoplasm.isVerified()
   )
 
 define "Has Mechanical Complication":
   exists (([ConditionEncounterDiagnosis: "Mechanical Complications Excluding Upper Body"]
       union [ConditionProblemsHealthConcerns: "Mechanical Complications Excluding Upper Body"]) MechanicalComplications
       with "Total Hip Arthroplasty Procedure" THAProcedure
-        such that MechanicalComplications.prevalenceInterval() overlaps day of THAProcedure.performed.toInterval() 
+        such that MechanicalComplications.prevalenceInterval() overlaps day of THAProcedure.performed.toInterval()
+        and MechanicalComplications.isVerified()
   )
 
 define "Has More Than One Elective Primary Total Hip Arthroplasty Performed":
@@ -262,7 +265,15 @@ define "Date VR12 Orthogonal Total Assessment Completed":
       and (VR12MentalAssessment as ObservationScreeningAssessment).value is not null
       and (VR12PhysicalAssessment as ObservationScreeningAssessment).value is not null
     return Max({ VR12MentalAssessmentDate, VR12PhysicalAssessmentDate })
-
-define fluent function isEncounterPerformedLocal(Enc List<Encounter>):
-  Enc E
-    where E.status in { 'finished', 'in-progress' }
+    
+/*
+@note: When possible, this function should be migrated to QICoreCommon.
+@description: Returns true if the given Condition has a verification status of "confirmed", "unconfirmed", "provisional", or "differential"
+*/
+define fluent function isVerified(condition Choice<ConditionEncounterDiagnosis, ConditionProblemsHealthConcerns>):
+  condition.verificationStatus is not null implies
+    (condition.verificationStatus ~ QICoreCommon."confirmed"
+        or condition.verificationStatus ~ QICoreCommon."unconfirmed"
+        or condition.verificationStatus ~ QICoreCommon."provisional"
+        or condition.verificationStatus ~ QICoreCommon."differential"
+    )
