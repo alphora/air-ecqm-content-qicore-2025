@@ -1,4 +1,4 @@
-library CMS349FHIRHIVScreening version '0.3.001'
+library CMS349FHIRHIVScreening version '1.1.000'
 
 using QICore version '6.0.0'
 

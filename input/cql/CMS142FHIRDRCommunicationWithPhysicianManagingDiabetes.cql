@@ -1,4 +1,4 @@
-library CMS142FHIRCommWithDrManagingDiab version '0.2.001'
+library CMS142FHIRCommWithDrManagingDiab version '1.0.000'
 
 using QICore version '6.0.0'
 
@@ -82,7 +82,7 @@ define "Diabetic Retinopathy Encounter":
 define "Macular Exam Performed":
   ["ObservationClinicalResult": "Macular Exam"] MacularExam
     with "Diabetic Retinopathy Encounter" EncounterDiabeticRetinopathy
-      such that MacularExam.effective.toInterval ( ) during day of EncounterDiabeticRetinopathy.period
+      such that MacularExam.effective.toInterval ( ) during EncounterDiabeticRetinopathy.period
     where MacularExam.value is not null
       and MacularExam.status in { 'final', 'amended', 'corrected' }
 
@@ -110,7 +110,7 @@ define "Macular Edema Presence Communicated":
   ["Communication": category in "Macular Edema Findings Present"] MacularEdemaPresentCommunicated
     with "Diabetic Retinopathy Encounter" EncounterDiabeticRetinopathy
       such that MacularEdemaPresentCommunicated.sent after start of EncounterDiabeticRetinopathy.period
-        and MacularEdemaPresentCommunicated.sent during day of "Measurement Period"
+        and MacularEdemaPresentCommunicated.sent during "Measurement Period"
     where MacularEdemaPresentCommunicated.status = 'completed'
 
 define "Medical or Patient Reason for Not Communicating Level of Severity of Retinopathy":

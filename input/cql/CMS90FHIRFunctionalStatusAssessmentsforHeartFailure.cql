@@ -1,4 +1,4 @@
-library CMS90FHIRFSAforHeartFailure version '0.3.001'
+library CMS90FHIRFSAforHeartFailure version '1.0.000'
 
 using QICore version '6.0.0'
 

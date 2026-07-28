@@ -1,4 +1,4 @@
-library CMS69FHIRPCSBMIScreenAndFollowUp version '0.3.001'
+library CMS69FHIRPCSBMIScreenAndFollowUp version '1.0.000'
 
 using QICore version '6.0.0'
 
@@ -87,11 +87,9 @@ define "High BMI Interventions Ordered":
       union [ServiceRequest: "Referrals Where Weight Assessment May Occur"]
       union [MedicationRequest: "Medications for Above Normal BMI"] ) HighInterventionsOrdered
       where HighInterventionsOrdered.reasonCode in "Overweight or Obese"
-        or ( exists [ConditionProblemsHealthConcerns: "Overweight or Obese"] OverweightObese
-            where ( OverweightObese.isProblemListItem()
-                or OverweightObese.isHealthConcern()
-            )
-              and OverweightObese.prevalenceInterval() starts before or on day of HighInterventionsOrdered.authoredOn
+        or ( exists ([ConditionProblemsHealthConcerns: "Overweight or Obese"] union
+            [ConditionEncounterDiagnosis: "Overweight or Obese"]) OverweightObese
+            where OverweightObese.prevalenceInterval() starts before or on day of HighInterventionsOrdered.authoredOn
         )
   )
 
@@ -115,9 +113,9 @@ define "Low BMI Interventions Ordered":
       union [ServiceRequest: "Referrals Where Weight Assessment May Occur"]
       union [MedicationRequest: "Medications for Below Normal BMI"] ) LowInterventionsOrdered
       where LowInterventionsOrdered.reasonCode in "Underweight"
-        or ( exists [ConditionProblemsHealthConcerns: "Underweight"] UnderweightDiagnosis
-            where ( UnderweightDiagnosis.isHealthConcern() )
-              and UnderweightDiagnosis.prevalenceInterval() starts before or on day of LowInterventionsOrdered.authoredOn
+        or ( exists ([ConditionProblemsHealthConcerns: "Underweight"] union
+            [ConditionEncounterDiagnosis: "Underweight"]) UnderweightDiagnosis
+            where UnderweightDiagnosis.prevalenceInterval() starts before or on day of LowInterventionsOrdered.authoredOn
               and LowInterventionsOrdered.authoredOn during day of "Measurement Period"
         )
   )
