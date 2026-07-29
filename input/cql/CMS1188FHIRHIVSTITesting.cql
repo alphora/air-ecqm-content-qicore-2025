@@ -1,4 +1,4 @@
-library CMS1188FHIRHIVSTITesting version '0.4.001'
+library CMS1188FHIRHIVSTITesting version '1.0.000'
 
 using QICore version '6.0.0'
 

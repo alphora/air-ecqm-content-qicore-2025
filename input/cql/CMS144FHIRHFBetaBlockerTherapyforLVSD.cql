@@ -1,4 +1,4 @@
-library CMS144FHIRHFBetaBlockerForLVSD version '0.0.000'
+library CMS144FHIRHFBetaBlockerForLVSD version '1.0.000'
 
 using QICore version '6.0.0'
 
