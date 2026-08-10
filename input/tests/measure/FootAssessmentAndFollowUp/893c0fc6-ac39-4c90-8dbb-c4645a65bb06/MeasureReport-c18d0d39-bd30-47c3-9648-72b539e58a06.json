@@ -1,0 +1,93 @@
+{
+  "resourceType": "MeasureReport",
+  "id": "c18d0d39-bd30-47c3-9648-72b539e58a06",
+  "meta": {
+    "profile": [ "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/test-case-cqfm" ]
+  },
+  "contained": [ {
+    "resourceType": "Parameters",
+    "id": "fd367926-c3d2-40fa-8e0c-8164b1e30c76-parameters",
+    "parameter": [ {
+      "name": "subject",
+      "valueString": "893c0fc6-ac39-4c90-8dbb-c4645a65bb06"
+    } ]
+  } ],
+  "extension": [ {
+    "url": "http://hl7.org/fhir/StructureDefinition/cqf-inputParameters",
+    "valueReference": {
+      "reference": "#fd367926-c3d2-40fa-8e0c-8164b1e30c76-parameters"
+    }
+  }, {
+    "url": "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-testCaseDescription",
+    "valueMarkdown": "Pt is a 64 year old male with diabetes with onset before MP with an eligible encounter on 04/06/26. "
+  } ],
+  "modifierExtension": [ {
+    "url": "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-isTestCase",
+    "valueBoolean": true
+  } ],
+  "status": "complete",
+  "type": "individual",
+  "measure": "https://madie.cms.gov/Measure/FootAssessmentAndFollowUp",
+  "period": {
+    "start": "2026-01-01",
+    "end": "2026-12-31"
+  },
+  "group": [ {
+    "id": "Group_1",
+    "population": [ {
+      "id": "InitialPopulation_1",
+      "code": {
+        "coding": [ {
+          "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+          "code": "initial-population",
+          "display": "Initial Population"
+        } ]
+      },
+      "count": 1
+    }, {
+      "id": "Denominator_1",
+      "code": {
+        "coding": [ {
+          "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+          "code": "denominator",
+          "display": "Denominator"
+        } ]
+      },
+      "count": 1
+    }, {
+      "id": "DenominatorExclusion_1",
+      "code": {
+        "coding": [ {
+          "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+          "code": "denominator-exclusion",
+          "display": "Denominator Exclusion"
+        } ]
+      },
+      "count": 0
+    }, {
+      "id": "Numerator_1",
+      "code": {
+        "coding": [ {
+          "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+          "code": "numerator",
+          "display": "Numerator"
+        } ]
+      },
+      "count": 0
+    } ],
+    "measureScore": {
+      "value": 1.0
+    }
+  } ],
+  "evaluatedResource": [ {
+    "reference": "Patient/893c0fc6-ac39-4c90-8dbb-c4645a65bb06"
+  }, {
+    "reference": "Condition/bf98af64-03fd-4214-a2fb-c047b0fd3332"
+  }, {
+    "reference": "Encounter/12defea4-879d-4916-b90e-01bfe63a7ad5"
+  }, {
+    "reference": "Organization/71e950a2-d383-4564-be8b-1e52a202e5a0"
+  }, {
+    "reference": "Practitioner/123456"
+  } ]
+}

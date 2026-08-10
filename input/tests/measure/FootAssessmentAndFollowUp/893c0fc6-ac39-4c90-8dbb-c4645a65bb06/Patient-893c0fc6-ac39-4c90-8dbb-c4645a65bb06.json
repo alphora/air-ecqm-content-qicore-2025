@@ -1,0 +1,45 @@
+{
+  "resourceType": "Patient",
+  "id": "893c0fc6-ac39-4c90-8dbb-c4645a65bb06",
+  "meta": {
+    "profile": [ "http://hl7.org/fhir/us/qicore/StructureDefinition/qicore-patient" ]
+  },
+  "extension": [ {
+    "url": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-race",
+    "extension": [ {
+      "url": "ombCategory",
+      "valueCoding": {
+        "system": "urn:oid:2.16.840.1.113883.6.238",
+        "code": "2028-9",
+        "display": "Asian"
+      }
+    }, {
+      "url": "text",
+      "valueString": "Asian"
+    } ]
+  }, {
+    "url": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity",
+    "extension": [ {
+      "url": "ombCategory",
+      "valueCoding": {
+        "system": "urn:oid:2.16.840.1.113883.6.238",
+        "code": "2186-5",
+        "display": "Not Hispanic or Latino",
+        "userSelected": true
+      }
+    }, {
+      "url": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-sex",
+      "valueCode": "248153007"
+    } ]
+  },
+  {
+    "url": "http://sex",
+    "valueCode": "blah"
+  }],
+  "name": [ {
+    "family": "Denom",
+    "given": [ "One" ]
+  } ],
+  "gender": "male",
+  "birthDate": "1961-12-15"
+}
