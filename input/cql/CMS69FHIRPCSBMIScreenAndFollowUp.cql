@@ -102,11 +102,19 @@ define "High BMI Interventions Performed":
         )
   )
 
+define "BMI Exam Not Performed For Medical Or Patient Reason":
+  [TaskRejected] BMIExamRejected
+    with [ServiceRequest: "Body mass index (BMI) [Ratio]"] BMIExam
+      such that BMIExamRejected.focus.references(BMIExam)
+        where BMIExamRejected.code ~ QICoreCommon."Fulfill"
+        and ( BMIExamRejected.statusReason in "Patient Declined"
+              or BMIExamRejected.statusReason in "Medical Reason" )
+
+//Should the timing be anchored on service request (authoredOn) or task rejected (executionPeriod)
 define "Medical Reason Or Patient Reason For Not Performing BMI Exam":
-  [ObservationCancelled: "Body mass index (BMI) [Ratio]"] NoBMI
+  "BMI Exam Not Performed For Medical Or Patient Reason" NoBMI
     with "Qualifying Encounter During Day Of Measurement Period" QualifyingEncounter
-      such that NoBMI.effective.toInterval() ends same day as start of QualifyingEncounter.period
-    where (NoBMI.notDoneReason in "Patient Declined" or NoBMI.notDoneReason in "Medical Reason")
+      such that NoBMI.executionPeriod.toInterval() ends same day as start of QualifyingEncounter.period
 
 define "Low BMI Interventions Ordered":
   ( ( [ServiceRequest: "Follow Up for Below Normal BMI"]

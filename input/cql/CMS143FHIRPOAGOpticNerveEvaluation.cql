@@ -82,18 +82,30 @@ define "Numerator":
   exists "Cup to Disc Ratio Performed with Result"
     and exists "Optic Disc Exam Performed with Result"
 
+define "Cup to Disc Ratio Rejected":
+  [ServiceRequest: "Cup to Disc Ratio"] CupToDiscExam
+    with [TaskRejected] CupToDiscExamRejected
+      such that CupToDiscExamRejected.focus.references(CupToDiscExam)
+         and CupToDiscExamRejected.code ~ QICoreCommon."Fulfill"
+         and CupToDiscExamRejected.statusReason in "Medical Reason"
+
 define "Medical Reason for Not Performing Cup to Disc Ratio":
-  ["ObservationCancelled": "Cup to Disc Ratio"] CupToDiscExamNotPerformed
+  "Cup to Disc Ratio Rejected" CupToDiscExamNotPerformed
     with "Primary Open Angle Glaucoma Encounter" EncounterWithPOAG
-      such that CupToDiscExamNotPerformed.issued during day of EncounterWithPOAG.period
-    where CupToDiscExamNotPerformed.notDoneReason in "Medical Reason"
+      such that CupToDiscExamNotPerformed.authoredOn during day of EncounterWithPOAG.period
+
+define "Optic Disc Exam Rejected":
+  [ServiceRequest: "Optic Disc Exam for Structural Abnormalities"] OpticDiscExam
+    with [TaskRejected] OpticDiscExamRejected
+      such that OpticDiscExamRejected.focus.references(OpticDiscExam)
+        and OpticDiscExamRejected.code ~ QICoreCommon."Fulfill"
+        and OpticDiscExamRejected.statusReason in "Medical Reason"
 
 define "Medical Reason for Not Performing Optic Disc Exam":
-  ["ObservationCancelled": "Optic Disc Exam for Structural Abnormalities"] OpticDiscExamNotPerformed
+  "Optic Disc Exam Rejected" OpticDiscExamNotPerformed
     with "Primary Open Angle Glaucoma Encounter" EncounterWithPOAG
-      such that OpticDiscExamNotPerformed.issued during day of EncounterWithPOAG.period
-    where OpticDiscExamNotPerformed.notDoneReason in "Medical Reason"
-    
+      such that OpticDiscExamNotPerformed.authoredOn during day of EncounterWithPOAG.period
+
 define fluent function isVerified(condition Choice<ConditionEncounterDiagnosis, ConditionProblemsHealthConcerns>):
   condition.verificationStatus is not null implies
     (condition.verificationStatus ~ QICoreCommon."confirmed"

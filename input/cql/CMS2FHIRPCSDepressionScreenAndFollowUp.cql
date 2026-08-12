@@ -134,21 +134,31 @@ define "History of Bipolar Diagnosis Before Qualifying Encounter":
     with "Qualifying Encounter During Measurement Period" QualifyingEncounter
       such that BipolarDiagnosis.prevalenceInterval() starts before day of start of QualifyingEncounter.period
 
+define "Adolescent Depression Screening Rejected":
+  [ServiceRequest: code ~ "Adolescent depression screening assessment"] AdolescentScreen
+    with [TaskRejected] AdolescentScreeningRejected
+      such that AdolescentScreeningRejected.focus.references(AdolescentScreen)
+        and AdolescentScreeningRejected.code ~ QICoreCommon."Fulfill"
+        and ( AdolescentScreeningRejected.statusReason ~ "Depression screening declined (situation)"
+          or AdolescentScreeningRejected.statusReason in "Medical Reason" )
+
 define "Medical or Patient Reason for Not Screening Adolescent for Depression":
-  [ObservationCancelled: code ~ "Adolescent depression screening assessment"] NoAdolescentScreen
+  "Adolescent Depression Screening Rejected" NoAdolescentScreen
     with "Qualifying Encounter During Measurement Period" QualifyingEncounter
-      such that NoAdolescentScreen.issued during day of QualifyingEncounter.period
-    where ( NoAdolescentScreen.notDoneReason ~ "Depression screening declined (situation)"
-        or NoAdolescentScreen.notDoneReason in "Medical Reason"
-    )
+      such that NoAdolescentScreen.authoredOn during day of QualifyingEncounter.period
+
+define "Adult Depression Screening Rejected":
+  [ServiceRequest: code ~ "Adult depression screening assessment"] AdultScreen
+    with [TaskRejected] AdultScreeningRejected
+      such that AdultScreeningRejected.focus.references(AdultScreen)
+        and AdultScreeningRejected.code ~ QICoreCommon."Fulfill"
+        and ( AdultScreeningRejected.statusReason ~ "Depression screening declined (situation)"
+          or AdultScreeningRejected.statusReason in "Medical Reason")
 
 define "Medical or Patient Reason for Not Screening Adult for Depression":
-  [ObservationCancelled: code ~ "Adult depression screening assessment"] NoAdultScreen
+  "Adult Depression Screening Rejected" NoAdultScreen
     with "Qualifying Encounter During Measurement Period" QualifyingEncounter
-      such that NoAdultScreen.issued during day of QualifyingEncounter.period
-    where ( NoAdultScreen.notDoneReason ~ "Depression screening declined (situation)"
-        or NoAdultScreen.notDoneReason in "Medical Reason"
-    )
+      such that NoAdultScreen.authoredOn during day of QualifyingEncounter.period 
 
 define "Most Recent Adolescent Depression Screening":
   Last([ObservationScreeningAssessment: "Adolescent depression screening assessment"] AdolescentDepressionScreening
