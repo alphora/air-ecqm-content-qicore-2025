@@ -256,15 +256,20 @@ define "NonPharmacological Intervention Not Ordered":
     where NonPharmIntervention.status in { 'active', 'completed', 'on-hold' }
       and NonPharmIntervention.reasonRefused in "Patient Declined"
 
+define "Blood Pressure Measurement Rejected":
+  ([ServiceRequest: code ~ "Blood pressure panel with all children optional"]
+    union [ServiceRequest: code ~ "Systolic blood pressure"]
+    union [ServiceRequest: code ~ "Diastolic blood pressure"]) BPScreen
+      with [TaskRejected] BPScreenRejected
+        such that BPScreenRejected.focus.references(BPScreen)
+          and BPScreenRejected.code ~ QICoreCommon."Fulfill"
+          and ( BPScreenRejected.statusReason in "Patient Declined"
+             or BPScreenRejected.statusReason in "Medical Reason")
+
 define "Encounter with Medical Reason for Not Obtaining or Patient Declined Blood Pressure Measurement":
   "Qualifying Encounter during Measurement Period" QualifyingEncounter
-    with ( [ObservationCancelled: code ~ "Blood pressure panel with all children optional"]
-      union [ObservationCancelled: code ~ "Systolic blood pressure"]
-      union [ObservationCancelled: code ~ "Diastolic blood pressure"] ) NoBPScreen
-      such that NoBPScreen.issued during day of QualifyingEncounter.period
-        and ( NoBPScreen.notDoneReason in "Patient Declined"
-            or NoBPScreen.notDoneReason in "Medical Reason"
-        )
+    with "Blood Pressure Measurement Rejected" NoBPScreen
+      such that NoBPScreen.authoredOn during day of QualifyingEncounter.period
 
 define "Encounter with Order for Hypertension Follow Up Declined by Patient":
   ( ( "Encounter with Elevated Blood Pressure Reading SBP 120 to 129 AND DBP less than 80" ElevatedBPEncounter

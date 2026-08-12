@@ -77,12 +77,17 @@ define "Encounter to Assess Cognition":
     where EncounterAssessCognition.period during day of "Measurement Period"
       and EncounterAssessCognition.status ~ 'finished'
 
+define "Assessment of Cognition Using Standardized Tools or Alternate Methods Rejected":
+    ([ServiceRequest: code in "Standardized Tools for Assessment of Cognition"]
+        union [ServiceRequest: code in "Cognitive Assessment"]) CognitiveAssessment
+            with [TaskRejected] CognitiveAssessmentRejected
+                such that CognitiveAssessment.code ~ QICoreCommon."Fulfill"
+                    and CognitiveAssessmentRejected.statusReason in "Patient Reason"
+
 define "Patient Reason for Not Performing Assessment of Cognition Using Standardized Tools or Alternate Methods":
-([ObservationCancelled: code in "Standardized Tools for Assessment of Cognition"] 
-    union [ObservationCancelled: code in "Cognitive Assessment"] )NoCognitiveAssessment
+"Assessment of Cognition Using Standardized Tools or Alternate Methods Rejected" NoCognitiveAssessment
     with "Dementia Encounter During Measurement Period" EncounterDementia
-      such that NoCognitiveAssessment.issued during day of EncounterDementia.period
-    where NoCognitiveAssessment.notDoneReason in "Patient Reason"
+      such that NoCognitiveAssessment.authoredOn during day of EncounterDementia.period
     define fluent function isVerified(condition Choice<ConditionEncounterDiagnosis, ConditionProblemsHealthConcerns>):
   condition.verificationStatus is not null implies ( condition.verificationStatus ~ QICoreCommon."confirmed"
       or condition.verificationStatus ~ QICoreCommon."unconfirmed"

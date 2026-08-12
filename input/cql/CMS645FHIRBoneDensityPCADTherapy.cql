@@ -68,11 +68,17 @@ define "No Bone Density Scan Ordered Due to Patient Refusal":
       such that DEXANotOrdered.authoredOn 3 months or less on or after day of OrderTwelveMonthsADT.authoredOn
         and DEXANotOrdered.reasonRefused in "Patient Declined"
 
+define "Bone Density Scan Rejected":
+  [ServiceRequest: "DEXA Bone Density for Urology Care"] DEXAScan
+    with [TaskRejected] DEXARejected
+      such that DEXARejected.focus.references(DEXAScan)
+        and DEXARejected.code ~ QICoreCommon."Fulfill"
+        and DEXARejected.statusReason in "Patient Declined"
+
 define "No Bone Density Scan Performed Due to Patient Refusal":
-  [ObservationCancelled: "DEXA Bone Density for Urology Care"] DEXANotPerformed
+  "Bone Density Scan Rejected" DEXANotPerformed
     with "Order for 12 Months of ADT in 3 Months Before to 9 Months After Start of Measurement Period" OrderTwelveMonthsADT
-      such that DEXANotPerformed.issued 3 months or less on or after day of OrderTwelveMonthsADT.authoredOn
-        and DEXANotPerformed.notDoneReason in "Patient Declined"
+      such that DEXANotPerformed.authoredOn 3 months or less on or after day of OrderTwelveMonthsADT.authoredOn
 
 define "First ADT in 3 Months Before to 9 Months After Start of Measurement Period":
   First(("Androgen Deprivation Therapy for Urology Care Medication Active Start Dates"
